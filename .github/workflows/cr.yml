@@ -12,30 +12,22 @@ on:
 
 # 워크플로우 실행 작업 정의
 jobs:
-  test:
+  code-review:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          java-version: '17'
-          distribution: 'corretto'
+          node-version: '18'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-        shell: bash
+      - name: Install dependencies
+        run: npm install
 
-      ##############################################################
-      # 이후 이 부분은 envsubst가 추가될 예정
-      ##############################################################
-
-      - name: Build with Gradle
-        run: ./gradlew clean build -x test
-        #        run: ./gradlew clean build
-        shell: bash
+      - name: Build project with Vite
+        run: npm run build  
 
       - name: Get current time
         uses: 1466587594/get-current-time@v2
