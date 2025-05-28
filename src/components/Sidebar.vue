@@ -11,9 +11,15 @@
             <span class="menu-label">대시보드</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'dashboard'">
-            <li>사원별 실적 조회</li>
-            <li>상품별 매출 조회</li>
-            <li>영업부 매출 조회</li>
+            <li @click="$emit('open-tab', '사원별 실적 조회')">
+              사원별 실적 조회
+            </li>
+            <li @click="$emit('open-tab', '상품별 매출 조회')">
+              상품별 매출 조회
+            </li>
+            <li @click="$emit('open-tab', '영업부 매출 조회')">
+              영업부 매출 조회
+            </li>
           </ul>
         </li>
         <li>
@@ -24,12 +30,22 @@
             <span class="menu-label">실적</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'performance'">
-            <li>사업별 실적 조회</li>
-            <li>상품별 매출 조회</li>
-            <li>영업부 매출 조회</li>
-            <li>개인 실적 목표 관리</li>
-            <li>팀 실적 목표 관리</li>
-            <li>매출 관리</li>
+            <li @click="$emit('open-tab', '사업별 실적 조회')">
+              사업별 실적 조회
+            </li>
+            <li @click="$emit('open-tab', '상품별 매출 조회')">
+              상품별 매출 조회
+            </li>
+            <li @click="$emit('open-tab', '영업부 매출 조회')">
+              영업부 매출 조회
+            </li>
+            <li @click="$emit('open-tab', '개인 실적 목표 관리')">
+              개인 실적 목표 관리
+            </li>
+            <li @click="$emit('open-tab', '팀 실적 목표 관리')">
+              팀 실적 목표 관리
+            </li>
+            <li @click="$emit('open-tab', '매출 관리')">매출 관리</li>
           </ul>
         </li>
         <li>
@@ -40,8 +56,10 @@
             <span class="menu-label">계약</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'contract'">
-            <li>계약 관리</li>
-            <li>계약서 양식 관리</li>
+            <li @click="$emit('open-tab', '계약 관리')">계약 관리</li>
+            <li @click="$emit('open-tab', '계약서 양식 관리')">
+              계약서 양식 관리
+            </li>
           </ul>
         </li>
         <li>
@@ -52,9 +70,9 @@
             <span class="menu-label">고객</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'customer'">
-            <li>기존 고객</li>
-            <li>잠재 고객</li>
-            <li>상담 관리</li>
+            <li @click="$emit('open-tab', '기존 고객')">기존 고객</li>
+            <li @click="$emit('open-tab', '잠재 고객')">잠재 고객</li>
+            <li @click="$emit('open-tab', '상담 관리')">상담 관리</li>
           </ul>
         </li>
         <li>
@@ -65,7 +83,7 @@
             <span class="menu-label">상품</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'product'">
-            <li>상품 관리</li>
+            <li @click="$emit('open-tab', '상품 관리')">상품 관리</li>
           </ul>
         </li>
         <li>
@@ -76,10 +94,10 @@
             <span class="menu-label">관리</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'admin'">
-            <li>결제 관리</li>
-            <li>사업 조회</li>
-            <li>알림 관리</li>
-            <li>로그인 관리</li>
+            <li @click="$emit('open-tab', '결제 관리')">결제 관리</li>
+            <li @click="$emit('open-tab', '사업 조회')">사업 조회</li>
+            <li @click="$emit('open-tab', '알림 관리')">알림 관리</li>
+            <li @click="$emit('open-tab', '로그인 관리')">로그인 관리</li>
           </ul>
         </li>
       </ul>
@@ -101,8 +119,13 @@ const toggle = (menu) => {
   background-color: #f9f9f9;
   padding: 24px 20px;
   border-right: 1px solid #e0e0e0;
-  height: calc(100vh - 64px);
+  height: 100vh;
   overflow-y: auto;
+
+  position: fixed; /* 👉 헤더 위로 올라오게 */
+  top: 0;
+  left: 0;
+  z-index: 20;
 }
 
 .logo {
@@ -140,12 +163,6 @@ ul {
 .menu-title.active {
   background-color: #d5eb97;
   color: #1c1c1c;
-}
-
-.arrow {
-  font-size: 12px;
-  color: #666;
-  margin-left: auto;
 }
 
 .submenu {
