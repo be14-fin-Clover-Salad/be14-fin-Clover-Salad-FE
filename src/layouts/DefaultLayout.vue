@@ -1,56 +1,89 @@
 <template>
   <div class="layout">
-    <!-- 사이드바 -->
-    <Sidebar />
+    <Sidebar class="sidebar" @open-tab="handleOpenTab" />
 
-    <!-- 메인 영역 -->
     <div class="main">
-      <!-- 헤더 -->
-      <Header />
+      <Header class="header" />
 
-      <!-- 상단 탭 -->
-      <Tabs />
+      <TopTabs
+        :tabs="tabs"
+        :activeTab="activeTab"
+        @select-tab="handleSelectTab"
+        @close-tab="handleCloseTab"
+      />
 
-      <!-- 페이지 콘텐츠 -->
       <main class="content">
-        <h1>고객 관리</h1>
-        <!-- 실제 콘텐츠는 각 페이지마다 바뀔 수 있음 -->
+        <div v-if="activeTab">{{ activeTab }} 내용 표시 영역</div>
+        <div v-else class="placeholder">메뉴를 선택해 주세요.</div>
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import Sidebar from "@/components/Sidebar.vue";
 import Header from "@/components/Header.vue";
-import Tabs from "@/components/Tabs.vue";
+import Sidebar from "@/components/Sidebar.vue";
+import TopTabs from "@/components/TopTabs.vue";
+import { ref } from "vue";
+
+const tabs = ref([]);
+const activeTab = ref("");
+
+const handleOpenTab = (tab) => {
+  if (!tabs.value.includes(tab)) {
+    tabs.value.push(tab);
+  }
+  activeTab.value = tab;
+};
+
+const handleSelectTab = (tab) => {
+  activeTab.value = tab;
+};
+
+const handleCloseTab = (tab) => {
+  tabs.value = tabs.value.filter((t) => t !== tab);
+  if (activeTab.value === tab) {
+    activeTab.value = tabs.value[tabs.value.length - 1] || "";
+  }
+};
 </script>
 
 <style scoped>
 .layout {
   display: flex;
   height: 100vh;
-  width: 100vw;
   overflow: hidden;
-  font-family: "Pretendard", sans-serif;
+  user-select: none;
+}
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  z-index: 10;
+  position: relative;
 }
 
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.header {
+  height: 64px;
+  flex-shrink: 0;
 }
 
 .content {
   flex: 1;
-  padding: 32px 24px;
-  background-color: #ffffff;
+  padding: 24px;
   overflow-y: auto;
 }
 
-.content h1 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2f2f2f;
+.placeholder {
+  color: #888;
+  padding: 40px;
+  text-align: center;
 }
 </style>
