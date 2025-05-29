@@ -28,15 +28,37 @@
           <td>{{ customer.createdAt }}</td>
           <td>{{ customer.note }}</td>
         </tr>
+        <tr v-if="customers.length === 0">
+          <td colspan="8" style="text-align: center; color: #aaa">
+            조회된 고객이 없습니다.
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
-  customers: Array,
-});
+import { ref } from "vue";
+const customers = ref([]);
+
+const loadData = async (conditions) => {
+  console.log("검색 조건:", conditions);
+  customers.value = [
+    {
+      id: 1,
+      name: "홍길동",
+      birth: "1990-01-01",
+      phone: "010-1234-5678",
+      address: "서울시 강남구",
+      email: "hong@example.com",
+      createdAt: "2023-01-01",
+      note: "VIP 고객",
+    },
+  ];
+};
+
+defineExpose({ loadData });
 </script>
 
 <style scoped>

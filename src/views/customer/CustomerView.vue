@@ -1,53 +1,31 @@
 <template>
   <div class="customer-view">
-    <CustomersSearch @search="handleSearch" />
-    <CustomersTable :customers="filteredCustomers" />
+    <h2 class="page-title">고객 관리</h2>
+    <CustomerSearch @search="handleSearch" />
+    <CustomerTable ref="customerTableRef" />
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import CustomersSearch from "./CustomerSearch.vue";
-import CustomersTable from "./CustomerTable.vue";
+import CustomerSearch from "./CustomerSearch.vue";
+import CustomerTable from "./CustomerTable.vue";
 
-const customers = ref([]);
-const filteredCustomers = ref([]);
-
-const handleSearch = (criteria) => {
-  // 필터링 로직 (더미)
-  filteredCustomers.value = customers.value.filter((c) =>
-    c.name.includes(criteria.name)
-  );
+const customerTableRef = ref(null);
+const handleSearch = (conditions) => {
+  customerTableRef.value?.loadData(conditions);
 };
-
-// 테스트용 더미 데이터
-customers.value = [
-  {
-    id: 1,
-    name: "로라",
-    birth: "1998-04-12",
-    phone: "010-1234-5678",
-    address: "서울시 강남구",
-    email: "laura@example.com",
-    createdAt: "2024-01-01",
-    note: "",
-  },
-  {
-    id: 2,
-    name: "루카",
-    birth: "1999-07-08",
-    phone: "010-9876-5432",
-    address: "부산시 해운대구",
-    email: "luca@example.com",
-    createdAt: "2024-02-15",
-    note: "VIP",
-  },
-];
-filteredCustomers.value = customers.value;
 </script>
 
 <style scoped>
 .customer-view {
-  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 24px;
 }
 </style>

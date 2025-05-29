@@ -1,10 +1,13 @@
 <template>
-  <div class="search-box">
-    <label>
-      고객명:
-      <input v-model="criteria.name" placeholder="이름 입력" />
-    </label>
-    <button @click="onSearch">검색</button>
+  <div class="customer-search">
+    <input v-model="form.name" placeholder="고객명" />
+    <input v-model="form.phone" placeholder="연락처" />
+    <select v-model="form.status">
+      <option value="">전체 상태</option>
+      <option value="ACTIVE">활성</option>
+      <option value="INACTIVE">비활성</option>
+    </select>
+    <button @click="submit">조회</button>
   </div>
 </template>
 
@@ -12,33 +15,36 @@
 import { reactive } from "vue";
 const emit = defineEmits(["search"]);
 
-const criteria = reactive({
+const form = reactive({
   name: "",
+  phone: "",
+  status: "",
 });
 
-const onSearch = () => {
-  emit("search", { ...criteria });
+const submit = () => {
+  emit("search", { ...form });
 };
 </script>
 
 <style scoped>
-.search-box {
+.customer-search {
   display: flex;
-  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
 }
-input {
-  padding: 4px 8px;
+input,
+select {
+  padding: 8px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
+  width: 160px;
 }
 button {
-  padding: 6px 12px;
+  padding: 8px 16px;
   background-color: #86b649;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 </style>

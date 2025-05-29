@@ -1,66 +1,34 @@
 <template>
   <div class="layout">
-    <Sidebar class="sidebar" @open-tab="handleOpenTab" />
+    <!-- Sidebar (좌측 고정) -->
+    <aside class="sidebar-wrap">
+      <Sidebar />
+    </aside>
 
-    <div class="main">
-      <Header class="header" />
+    <!-- Content (우측 전체) -->
+    <div class="content-wrap">
+      <!-- Header -->
+      <header class="header-wrap">
+        <Header />
+      </header>
 
-      <TopTabs
-        v-if="showTabs"
-        :tabs="tabs"
-        :activeTab="activeTab"
-        @select-tab="handleSelectTab"
-        @close-tab="handleCloseTab"
-      />
+      <!-- Tabs -->
+      <div class="tabs-wrap">
+        <TopTabs v-if="$route.meta.showTabs" />
+      </div>
 
-      <main class="content">
-        <component :is="tabComponentMap[activeTab]" v-if="activeTab" />
-        <div v-else class="placeholder">메뉴를 선택해 주세요.</div>
+      <!-- Main Contents -->
+      <main class="main-wrap">
+        <router-view />
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import Header from "@/components/Header.vue";
-import Sidebar from "@/components/Sidebar.vue";
-import TopTabs from "@/components/TopTabs.vue";
-import CustomerView from "@/views/customer/CustomerView.vue";
-// 필요 시 추가 import
-
-import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
-
-const route = useRoute();
-const tabs = ref([]);
-const activeTab = ref("");
-
-const showTabs = computed(() => route.meta.showTabs);
-
-// 탭 이름에 해당하는 컴포넌트를 등록
-const tabComponentMap = {
-  "기존 고객": CustomerView,
-  // "계약 등록": ContractView,
-  // "상담 관리": ConsultationView,
-};
-
-const handleOpenTab = (tab) => {
-  if (!tabs.value.includes(tab)) {
-    tabs.value.push(tab);
-  }
-  activeTab.value = tab;
-};
-
-const handleSelectTab = (tab) => {
-  activeTab.value = tab;
-};
-
-const handleCloseTab = (tab) => {
-  tabs.value = tabs.value.filter((t) => t !== tab);
-  if (activeTab.value === tab) {
-    activeTab.value = tabs.value[tabs.value.length - 1] || "";
-  }
-};
+import Sidebar from "../components/Sidebar.vue";
+import Header from "../components/Header.vue";
+import TopTabs from "../components/TopTabs.vue";
 </script>
 
 <style scoped>
@@ -68,37 +36,40 @@ const handleCloseTab = (tab) => {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  user-select: none;
 }
 
-.sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  z-index: 10;
-  position: relative;
+.sidebar-wrap {
+  width: 280px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #e0e0e0;
 }
 
-.main {
+.content-wrap {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  background-color: white;
+  height: 100vh;
 }
 
-.header {
-  height: 64px;
+.header-wrap {
   flex-shrink: 0;
+  height: 64px;
+  background-color: #d5eb97;
+  border-bottom: 1px solid #ccc;
 }
 
-.content {
+.tabs-wrap {
+  flex-shrink: 0;
+  height: 42px;
+  background-color: #eef4d7;
+  border-bottom: 1px solid #ccc;
+}
+
+.main-wrap {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
-}
-
-.placeholder {
-  color: #888;
-  padding: 40px;
-  text-align: center;
+  padding: 32px 40px;
+  background-color: #ffffff;
 }
 </style>

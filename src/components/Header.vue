@@ -34,7 +34,6 @@
     <div class="right guest" v-else>
       <!-- 비로그인 상태 -->
       <button class="login" @click="handleLogin">로그인</button>
-      <!-- <button class="signup">회원가입</button> -->
     </div>
   </header>
 </template>
@@ -52,7 +51,6 @@ const user = {
   notifications: 2, // 0이면 배지 없음
 };
 
-// 상태 토글 함수
 const handleLogin = () => {
   isLoggedIn.value = true;
 };
@@ -164,8 +162,7 @@ const handleLogout = () => {
 .right.guest {
   gap: 16px;
 }
-.login,
-.signup {
+.login {
   background-color: white;
   border: 1px solid #ccc;
   padding: 6px 12px;
@@ -174,8 +171,7 @@ const handleLogout = () => {
   cursor: pointer;
   color: #333;
 }
-.login:hover,
-.signup:hover {
+.login:hover {
   background-color: #f5f5f5;
 }
 </style>
