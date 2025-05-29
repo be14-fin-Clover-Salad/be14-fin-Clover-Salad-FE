@@ -15,22 +15,22 @@
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { useTabStore } from "../stores/tabStore";
-import { watch } from "vue";
+import { useTabStore } from "@/stores/tabStore";
+import { computed, watch } from "vue";
+import { menuList } from "@/config/menuConfig";
 
 const route = useRoute();
 const router = useRouter();
 const tabStore = useTabStore();
-const tabs = tabStore.tabs;
+const tabs = computed(() => tabStore.tabs);
 
 watch(
   () => route.path,
   (newPath) => {
-    if (!tabs.find((t) => t.path === newPath)) {
-      tabStore.addTab({
-        title: route.meta.title || "이름 없는 탭",
-        path: newPath,
-      });
+    const allItems = menuList.flatMap((group) => group.items);
+    const match = allItems.find((item) => item.path === newPath);
+    if (match && !tabs.value.find((t) => t.path === newPath)) {
+      tabStore.addTab({ title: match.label, path: match.path });
     }
   },
   { immediate: true }

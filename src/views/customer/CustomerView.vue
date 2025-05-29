@@ -1,6 +1,10 @@
 <template>
   <div class="customer-view">
-    <h2 class="page-title">고객 관리</h2>
+    <nav class="breadcrumb">
+      <span>고객</span>
+      <span class="divider">›</span>
+      <span class="current">고객 관리</span>
+    </nav>
     <CustomerSearch @search="handleSearch" />
     <CustomerTable ref="customerTableRef" />
   </div>
@@ -27,5 +31,20 @@ const handleSearch = (conditions) => {
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 24px;
+}
+
+.breadcrumb {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+.divider {
+  margin: 0 6px;
+  color: #ccc;
+}
+.current {
+  color: #333;
 }
 </style>

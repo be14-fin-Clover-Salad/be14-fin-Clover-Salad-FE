@@ -3,103 +3,21 @@
     <div class="logo">salad</div>
     <nav>
       <ul>
-        <li>
+        <li v-for="group in menuList" :key="group.group">
           <div
-            @click="toggle('dashboard')"
-            :class="['menu-title', openMenu === 'dashboard' && 'active']"
+            @click="toggle(group.group)"
+            :class="['menu-title', openMenu === group.group && 'active']"
           >
-            <span class="menu-label">대시보드</span>
+            <span class="menu-label">{{ group.group }}</span>
           </div>
-          <ul class="submenu" v-show="openMenu === 'dashboard'">
-            <li @click="$emit('open-tab', '사원별 실적 조회')">
-              사원별 실적 조회
+          <ul class="submenu" v-show="openMenu === group.group">
+            <li
+              v-for="item in group.items"
+              :key="item.path"
+              @click="navigate(item.label, item.path)"
+            >
+              {{ item.label }}
             </li>
-            <li @click="$emit('open-tab', '상품별 매출 조회')">
-              상품별 매출 조회
-            </li>
-            <li @click="$emit('open-tab', '영업부 매출 조회')">
-              영업부 매출 조회
-            </li>
-          </ul>
-        </li>
-        <li>
-          <div
-            @click="toggle('performance')"
-            :class="['menu-title', openMenu === 'performance' && 'active']"
-          >
-            <span class="menu-label">실적</span>
-          </div>
-          <ul class="submenu" v-show="openMenu === 'performance'">
-            <li @click="$emit('open-tab', '사업별 실적 조회')">
-              사업별 실적 조회
-            </li>
-            <li @click="$emit('open-tab', '상품별 매출 조회')">
-              상품별 매출 조회
-            </li>
-            <li @click="$emit('open-tab', '영업부 매출 조회')">
-              영업부 매출 조회
-            </li>
-            <li @click="$emit('open-tab', '개인 실적 목표 관리')">
-              개인 실적 목표 관리
-            </li>
-            <li @click="$emit('open-tab', '팀 실적 목표 관리')">
-              팀 실적 목표 관리
-            </li>
-            <li @click="$emit('open-tab', '매출 관리')">매출 관리</li>
-          </ul>
-        </li>
-        <li>
-          <div
-            @click="toggle('contract')"
-            :class="['menu-title', openMenu === 'contract' && 'active']"
-          >
-            <span class="menu-label">계약</span>
-          </div>
-          <ul class="submenu" v-show="openMenu === 'contract'">
-            <li @click="$emit('open-tab', '계약 관리')">계약 관리</li>
-            <li @click="$emit('open-tab', '계약서 양식 관리')">
-              계약서 양식 관리
-            </li>
-          </ul>
-        </li>
-        <li>
-          <div
-            @click="toggle('customer')"
-            :class="['menu-title', openMenu === 'customer' && 'active']"
-          >
-            <span class="menu-label">고객</span>
-          </div>
-          <ul class="submenu" v-show="openMenu === 'customer'">
-            <li @click="openTabAndNavigate('기존 고객', '/customer')">
-              기존 고객
-            </li>
-            <li @click="$emit('open-tab', '잠재 고객')">잠재 고객</li>
-            <li @click="$emit('open-tab', '상담 관리')">상담 관리</li>
-          </ul>
-        </li>
-        <li>
-          <div
-            @click="toggle('product')"
-            :class="['menu-title', openMenu === 'product' && 'active']"
-          >
-            <span class="menu-label">상품</span>
-          </div>
-          <ul class="submenu" v-show="openMenu === 'product'">
-            <li @click="$emit('open-tab', '상품 관리')">상품 관리</li>
-          </ul>
-        </li>
-        <li>
-          <div
-            @click="toggle('admin')"
-            :class="['menu-title', openMenu === 'admin' && 'active']"
-          >
-            <span class="menu-label">관리</span>
-          </div>
-          <ul class="submenu" v-show="openMenu === 'admin'">
-            <li @click="$emit('open-tab', '결제 관리')">결제 관리</li>
-            <li @click="$emit('open-tab', '사업 조회')">사업 조회</li>
-            <li @click="$emit('open-tab', '알림 관리')">알림 관리</li>
-            <li @click="$emit('open-tab', '로그인 관리')">로그인 관리</li>
           </ul>
         </li>
       </ul>
@@ -110,17 +28,19 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { menuList } from "@/config/menuConfig";
+import { useTabStore } from "@/stores/tabStore";
 
-const emit = defineEmits(["open-tab"]);
 const openMenu = ref(null);
 const router = useRouter();
+const tabStore = useTabStore();
 
 const toggle = (menu) => {
   openMenu.value = openMenu.value === menu ? null : menu;
 };
 
-const openTabAndNavigate = (label, path) => {
-  emit("open-tab", label);
+const navigate = (label, path) => {
+  tabStore.addTab({ title: label, path });
   router.push(path);
 };
 </script>
@@ -138,20 +58,17 @@ const openTabAndNavigate = (label, path) => {
   left: 0;
   z-index: 20;
 }
-
 .logo {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 40px;
   color: #222;
 }
-
 ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
 .menu-title {
   display: flex;
   justify-content: space-between;
@@ -166,16 +83,13 @@ ul {
   transition: background-color 0.2s;
   user-select: none;
 }
-
 .menu-title:hover {
   background-color: #f2f2f2;
 }
-
 .menu-title.active {
   background-color: #d5eb97;
   color: #1c1c1c;
 }
-
 .submenu {
   margin-top: 6px;
   padding-left: 18px;
@@ -184,7 +98,6 @@ ul {
   cursor: pointer;
   user-select: none;
 }
-
 .submenu li {
   font-size: 14px;
   font-weight: 400;
@@ -193,7 +106,6 @@ ul {
   border-radius: 4px;
   transition: background-color 0.2s;
 }
-
 .submenu li:hover {
   background-color: #f0f6ea;
 }

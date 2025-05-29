@@ -1,24 +1,13 @@
 <template>
-  <div class="layout">
-    <!-- Sidebar (좌측 고정) -->
-    <aside class="sidebar-wrap">
-      <Sidebar />
-    </aside>
-
-    <!-- Content (우측 전체) -->
-    <div class="content-wrap">
-      <!-- Header -->
-      <header class="header-wrap">
-        <Header />
-      </header>
-
-      <!-- Tabs -->
-      <div class="tabs-wrap">
-        <TopTabs v-if="$route.meta.showTabs" />
+  <div class="layout-wrapper">
+    <Sidebar />
+    <div class="main-content">
+      <HeaderBar />
+      <TopTabs />
+      <div class="breadcrumb-wrapper">
+        <Breadcrumb />
       </div>
-
-      <!-- Main Contents -->
-      <main class="main-wrap">
+      <main class="view-area">
         <router-view />
       </main>
     </div>
@@ -26,50 +15,39 @@
 </template>
 
 <script setup>
-import Sidebar from "../components/Sidebar.vue";
-import Header from "../components/Header.vue";
-import TopTabs from "../components/TopTabs.vue";
+import Sidebar from "@/components/Sidebar.vue";
+import HeaderBar from "@/components/Header.vue";
+import TopTabs from "@/components/TopTabs.vue";
+import Breadcrumb from "@/components/Breadcrumb.vue";
 </script>
 
 <style scoped>
-.layout {
+.layout-wrapper {
   display: flex;
   height: 100vh;
   overflow: hidden;
 }
 
-.sidebar-wrap {
-  width: 280px;
-  background-color: #f9f9f9;
-  border-right: 1px solid #e0e0e0;
-}
-
-.content-wrap {
-  flex: 1;
+.main-content {
+  flex-grow: 1;
+  margin-left: 280px; /* Sidebar width */
   display: flex;
   flex-direction: column;
-  background-color: white;
   height: 100vh;
+  overflow: hidden;
 }
 
-.header-wrap {
+.breadcrumb-wrapper {
+  padding: 12px 32px 0;
+  background-color: #fdfdfd;
+  border-bottom: 1px solid #eee;
   flex-shrink: 0;
-  height: 64px;
-  background-color: #d5eb97;
-  border-bottom: 1px solid #ccc;
 }
 
-.tabs-wrap {
-  flex-shrink: 0;
-  height: 42px;
-  background-color: #eef4d7;
-  border-bottom: 1px solid #ccc;
-}
-
-.main-wrap {
+.view-area {
   flex: 1;
+  padding: 24px 32px;
   overflow-y: auto;
-  padding: 32px 40px;
-  background-color: #ffffff;
+  background-color: #fff;
 }
 </style>
