@@ -34,7 +34,7 @@
     <div class="right guest" v-else>
       <!-- 비로그인 상태 -->
       <button class="login" @click="handleLogin">로그인</button>
-      <button class="signup">회원가입</button>
+      <!-- <button class="signup">회원가입</button> -->
     </div>
   </header>
 </template>
