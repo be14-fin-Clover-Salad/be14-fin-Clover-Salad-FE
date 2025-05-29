@@ -70,7 +70,9 @@
             <span class="menu-label">고객</span>
           </div>
           <ul class="submenu" v-show="openMenu === 'customer'">
-            <li @click="$emit('open-tab', '기존 고객')">기존 고객</li>
+            <li @click="openTabAndNavigate('기존 고객', '/customer')">
+              기존 고객
+            </li>
             <li @click="$emit('open-tab', '잠재 고객')">잠재 고객</li>
             <li @click="$emit('open-tab', '상담 관리')">상담 관리</li>
           </ul>
@@ -107,9 +109,19 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+const emit = defineEmits(["open-tab"]);
 const openMenu = ref(null);
+const router = useRouter();
+
 const toggle = (menu) => {
   openMenu.value = openMenu.value === menu ? null : menu;
+};
+
+const openTabAndNavigate = (label, path) => {
+  emit("open-tab", label);
+  router.push(path);
 };
 </script>
 
@@ -121,8 +133,7 @@ const toggle = (menu) => {
   border-right: 1px solid #e0e0e0;
   height: 100vh;
   overflow-y: auto;
-
-  position: fixed; /* 👉 헤더 위로 올라오게 */
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 20;

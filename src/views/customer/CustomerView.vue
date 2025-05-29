@@ -7,8 +7,8 @@
 
 <script setup>
 import { ref } from "vue";
-import CustomersSearch from "./CustomersSearch.vue";
-import CustomersTable from "./CustomersTable.vue";
+import CustomersSearch from "./CustomerSearch.vue";
+import CustomersTable from "./CustomerTable.vue";
 
 const customers = ref([]);
 const filteredCustomers = ref([]);

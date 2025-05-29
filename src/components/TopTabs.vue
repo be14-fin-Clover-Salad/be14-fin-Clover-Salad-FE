@@ -1,34 +1,26 @@
 <template>
-  <div class="tabs">
+  <div v-if="tabs.length" class="tabs">
     <div
       v-for="tab in tabs"
       :key="tab"
       :class="['tab', activeTab === tab && 'active']"
-      @click="selectTab(tab)"
+      @click="$emit('select-tab', tab)"
     >
       {{ tab }}
-      <span class="close" @click.stop="closeTab(tab)">×</span>
+      <span class="close" @click.stop="$emit('close-tab', tab)">×</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-const props = defineProps({
+defineProps({
   tabs: Array,
   activeTab: String,
 });
-const emit = defineEmits(["select-tab", "close-tab"]);
-
-const selectTab = (tab) => emit("select-tab", tab);
-const closeTab = (tab) => emit("close-tab", tab);
+defineEmits(["select-tab", "close-tab"]);
 </script>
 
 <style scoped>
-div {
-  user-select: none;
-}
-
 .tabs {
   display: flex;
   gap: 2px;
@@ -41,7 +33,7 @@ div {
 
 .tab {
   font-size: 14px;
-  padding: 8px 12px 6px 12px;
+  padding: 8px 16px 6px;
   border: 1px solid transparent;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
@@ -49,7 +41,12 @@ div {
   background-color: transparent;
   cursor: pointer;
   transition: all 0.2s;
-  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tab:hover {
+  background-color: #f1f1f1;
 }
 
 .tab.active {
@@ -63,11 +60,12 @@ div {
 
 .close {
   margin-left: 8px;
+  font-weight: bold;
   font-size: 12px;
   cursor: pointer;
-  color: #999;
+  color: #888;
 }
 .close:hover {
-  color: #333;
+  color: #111;
 }
 </style>
