@@ -84,6 +84,11 @@
   background-color: white;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.register-button:hover {
+  background-color: #f5f5f5;
 }
 
 .form-box {
@@ -124,7 +129,7 @@ textarea {
   padding: 10px 12px;
   font-size: 14px;
   background-color: #fff;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus,
