@@ -1,15 +1,19 @@
 <template>
   <div class="layout-wrapper">
-    <Sidebar />
-    <div class="main-content">
-      <HeaderBar />
-      <TopTabs />
-      <div class="breadcrumb-wrapper">
-        <Breadcrumb />
+    <HeaderBar />
+
+    <div class="body-wrapper">
+      <Sidebar />
+
+      <div class="main-content">
+        <TopTabs />
+        <div class="breadcrumb-wrapper">
+          <Breadcrumb />
+        </div>
+        <main class="view-area">
+          <router-view />
+        </main>
       </div>
-      <main class="view-area">
-        <router-view />
-      </main>
     </div>
   </div>
 </template>
@@ -24,21 +28,26 @@ import Breadcrumb from "@/components/Breadcrumb.vue";
 <style scoped>
 .layout-wrapper {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.main-content {
-  flex-grow: 1;
-  margin-left: 280px; /* Sidebar width */
-  display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
 }
 
+.body-wrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .breadcrumb-wrapper {
-  padding: 12px 32px 0;
+  padding: 16px 32px;
   background-color: #fdfdfd;
   border-bottom: 1px solid #eee;
   flex-shrink: 0;

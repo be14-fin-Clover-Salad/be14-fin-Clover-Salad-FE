@@ -2,7 +2,7 @@
   <div class="table-box">
     <div class="table-header">
       <div class="row-count">총 {{ customers.length }}건</div>
-      <button class="register-button">등록</button>
+      <!-- <button class="register-button">등록</button> -->
     </div>
     <table>
       <thead>
@@ -78,14 +78,14 @@ defineExpose({ loadData });
   font-size: 14px;
   color: #666;
 }
-.register-button {
+/* .register-button {
   background-color: #86b649;
   color: white;
   border: none;
   padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
-}
+} */
 table {
   width: 100%;
   border-collapse: collapse;

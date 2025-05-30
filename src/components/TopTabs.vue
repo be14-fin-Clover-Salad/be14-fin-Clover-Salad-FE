@@ -27,6 +27,7 @@ const tabs = computed(() => tabStore.tabs);
 watch(
   () => route.path,
   (newPath) => {
+    if (newPath === "/") return;
     const allItems = menuList.flatMap((group) => group.items);
     const match = allItems.find((item) => item.path === newPath);
     if (match && !tabs.value.find((t) => t.path === newPath)) {
@@ -44,7 +45,11 @@ const closeTab = (tab) => {
   tabStore.removeTab(tab.path);
   if (tab.path === route.path) {
     const fallback = tabStore.tabs.at(-1);
-    if (fallback) router.push(fallback.path);
+    if (fallback) {
+      router.push(fallback.path);
+    } else {
+      router.push("/"); // 탭이 하나도 없을 경우 홈으로 이동
+    }
   }
 };
 </script>

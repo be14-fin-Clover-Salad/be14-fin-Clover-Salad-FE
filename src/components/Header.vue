@@ -1,6 +1,11 @@
 <template>
   <header class="header">
-    <div class="right" v-if="isLoggedIn">
+    <!-- 로고 -->
+    <div class="left" @click="goHome">
+      <img src="/public/salad_text.png" alt="logo" class="logo" />
+    </div>
+
+    <div class="right">
       <!-- 알림 -->
       <div class="notification">
         <span class="icon">🔔</span>
@@ -28,34 +33,24 @@
       </div>
 
       <!-- 로그아웃 버튼 -->
-      <button class="logout" @click="handleLogout">로그아웃</button>
-    </div>
-
-    <div class="right guest" v-else>
-      <!-- 비로그인 상태 -->
-      <button class="login" @click="handleLogin">로그인</button>
+      <button class="logout">로그아웃</button>
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
-const isLoggedIn = ref(false); // 초기 상태: 비로그인
-
+const goHome = () => {
+  router.push("/");
+};
 const user = {
   name: "강수지",
   role: "사원",
   team: "영업1팀",
   profileImageUrl: "",
   notifications: 2, // 0이면 배지 없음
-};
-
-const handleLogin = () => {
-  isLoggedIn.value = true;
-};
-const handleLogout = () => {
-  isLoggedIn.value = false;
 };
 </script>
 
@@ -64,11 +59,22 @@ const handleLogout = () => {
   height: 64px;
   background-color: #d5eb97;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 24px;
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
+}
+
+.left {
+  display: flex;
+  cursor: pointer;
+  margin: 10px 0 0 47px;
+}
+
+.logo {
+  height: 140px;
+  object-fit: cover;
 }
 
 .right {
@@ -156,22 +162,6 @@ const handleLogout = () => {
   color: #333;
 }
 .logout:hover {
-  background-color: #f5f5f5;
-}
-
-.right.guest {
-  gap: 16px;
-}
-.login {
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 6px 12px;
-  font-size: 13px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #333;
-}
-.login:hover {
   background-color: #f5f5f5;
 }
 </style>
