@@ -1,73 +1,96 @@
 <template>
-  <div class="tabs">
+  <div class="top-tabs">
     <div
-      v-for="tab in tabs"
-      :key="tab"
-      :class="['tab', activeTab === tab && 'active']"
-      @click="selectTab(tab)"
+      v-for="(tab, index) in tabs"
+      :key="tab.path"
+      class="tab"
+      :class="{ active: tab.path === route.path }"
+      @click="switchTab(tab)"
     >
-      {{ tab }}
+      {{ tab.title }}
       <span class="close" @click.stop="closeTab(tab)">×</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-const props = defineProps({
-  tabs: Array,
-  activeTab: String,
-});
-const emit = defineEmits(["select-tab", "close-tab"]);
+import { useRoute, useRouter } from "vue-router";
+import { useTabStore } from "@/stores/tabStore";
+import { computed, watch } from "vue";
+import { menuList } from "@/config/menuConfig";
 
-const selectTab = (tab) => emit("select-tab", tab);
-const closeTab = (tab) => emit("close-tab", tab);
+const route = useRoute();
+const router = useRouter();
+const tabStore = useTabStore();
+const tabs = computed(() => tabStore.tabs);
+
+watch(
+  () => route.path,
+  (newPath) => {
+    const allItems = menuList.flatMap((group) => group.items);
+    const match = allItems.find((item) => item.path === newPath);
+    if (match && !tabs.value.find((t) => t.path === newPath)) {
+      tabStore.addTab({ title: match.label, path: match.path });
+    }
+  },
+  { immediate: true }
+);
+
+const switchTab = (tab) => {
+  if (tab.path !== route.path) router.push(tab.path);
+};
+
+const closeTab = (tab) => {
+  tabStore.removeTab(tab.path);
+  if (tab.path === route.path) {
+    const fallback = tabStore.tabs.at(-1);
+    if (fallback) router.push(fallback.path);
+  }
+};
 </script>
 
 <style scoped>
-div {
-  user-select: none;
-}
-
-.tabs {
+.top-tabs {
   display: flex;
-  gap: 2px;
-  padding-left: 24px;
-  height: 44px;
+  padding: 0 16px;
+  background-color: #e8f2c9;
+  border-bottom: 1px solid #c8d6ae;
+  height: 42px;
   align-items: flex-end;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #ddd;
 }
-
 .tab {
-  font-size: 14px;
-  padding: 8px 12px 6px 12px;
-  border: 1px solid transparent;
+  padding: 8px 16px;
+  margin-right: 4px;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  color: #666;
-  background-color: transparent;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  color: #333;
   position: relative;
+  top: 1px;
 }
-
 .tab.active {
   background-color: white;
-  color: #222;
-  font-weight: 500;
-  border: 1px solid #ddd;
-  border-bottom: 1px solid white;
+  border-color: #d5eb97 #d5eb97 white;
   z-index: 1;
 }
-
+.tab:hover {
+  background-color: #f0f6ea;
+}
 .close {
   margin-left: 8px;
-  font-size: 12px;
+  font-weight: bold;
   cursor: pointer;
-  color: #999;
+  font-size: 12px;
+  color: #888;
 }
 .close:hover {
-  color: #333;
+  color: #444;
 }
 </style>

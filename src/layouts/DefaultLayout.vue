@@ -1,89 +1,53 @@
 <template>
-  <div class="layout">
-    <Sidebar class="sidebar" @open-tab="handleOpenTab" />
-
-    <div class="main">
-      <Header class="header" />
-
-      <TopTabs
-        :tabs="tabs"
-        :activeTab="activeTab"
-        @select-tab="handleSelectTab"
-        @close-tab="handleCloseTab"
-      />
-
-      <main class="content">
-        <div v-if="activeTab">{{ activeTab }} 내용 표시 영역</div>
-        <div v-else class="placeholder">메뉴를 선택해 주세요.</div>
+  <div class="layout-wrapper">
+    <Sidebar />
+    <div class="main-content">
+      <HeaderBar />
+      <TopTabs />
+      <div class="breadcrumb-wrapper">
+        <Breadcrumb />
+      </div>
+      <main class="view-area">
+        <router-view />
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import Header from "@/components/Header.vue";
 import Sidebar from "@/components/Sidebar.vue";
+import HeaderBar from "@/components/Header.vue";
 import TopTabs from "@/components/TopTabs.vue";
-import { ref } from "vue";
-
-const tabs = ref([]);
-const activeTab = ref("");
-
-const handleOpenTab = (tab) => {
-  if (!tabs.value.includes(tab)) {
-    tabs.value.push(tab);
-  }
-  activeTab.value = tab;
-};
-
-const handleSelectTab = (tab) => {
-  activeTab.value = tab;
-};
-
-const handleCloseTab = (tab) => {
-  tabs.value = tabs.value.filter((t) => t !== tab);
-  if (activeTab.value === tab) {
-    activeTab.value = tabs.value[tabs.value.length - 1] || "";
-  }
-};
+import Breadcrumb from "@/components/Breadcrumb.vue";
 </script>
 
 <style scoped>
-.layout {
+.layout-wrapper {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  user-select: none;
 }
 
-.sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  z-index: 10;
-  position: relative;
-}
-
-.main {
-  flex: 1;
+.main-content {
+  flex-grow: 1;
+  margin-left: 280px; /* Sidebar width */
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.header {
-  height: 64px;
+.breadcrumb-wrapper {
+  padding: 12px 32px 0;
+  background-color: #fdfdfd;
+  border-bottom: 1px solid #eee;
   flex-shrink: 0;
 }
 
-.content {
+.view-area {
   flex: 1;
-  padding: 24px;
+  padding: 24px 32px;
   overflow-y: auto;
-}
-
-.placeholder {
-  color: #888;
-  padding: 40px;
-  text-align: center;
+  background-color: #fff;
 }
 </style>
