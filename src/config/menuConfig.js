@@ -79,12 +79,12 @@ export const menuList = [
     items: [
       {
         label: "고객 등록",
-        path: "/customerRegister",
-        component: () => import("@/views/customer/CustomerRegister.vue"),
+        path: "/customer/register",
+        // component: () => import("@/views/customer/CustomerRegister.vue"),
       },
       {
         label: "고객 관리",
-        path: "/customerManage",
+        path: "/customer",
         component: () => import("@/views/customer/CustomerView.vue"),
       },
       {
