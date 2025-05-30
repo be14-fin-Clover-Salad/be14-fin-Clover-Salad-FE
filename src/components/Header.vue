@@ -2,7 +2,7 @@
   <header class="header">
     <!-- 로고 -->
     <div class="left" @click="goHome">
-      <img src="/public/salad_text.png" alt="logo" class="logo" />
+      <img src="/public/logo_text.svg" alt="logo" class="logo" />
     </div>
 
     <div class="right">
@@ -61,7 +61,7 @@ const user = {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 34px;
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
 }
@@ -69,11 +69,11 @@ const user = {
 .left {
   display: flex;
   cursor: pointer;
-  margin: 10px 0 0 47px;
+  margin: 47px;
 }
 
 .logo {
-  height: 140px;
+  height: 60px;
   object-fit: cover;
 }
 
