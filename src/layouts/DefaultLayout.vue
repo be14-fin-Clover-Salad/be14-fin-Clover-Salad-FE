@@ -38,7 +38,7 @@ import Breadcrumb from "@/components/Breadcrumb.vue";
 }
 
 .breadcrumb-wrapper {
-  padding: 12px 32px 0;
+  padding: 16px 32px;
   background-color: #fdfdfd;
   border-bottom: 1px solid #eee;
   flex-shrink: 0;
