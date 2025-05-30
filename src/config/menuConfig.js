@@ -78,8 +78,13 @@ export const menuList = [
     group: "고객",
     items: [
       {
+        label: "고객 등록",
+        path: "/customerRegister",
+        component: () => import("@/views/customer/CustomerRegister.vue"),
+      },
+      {
         label: "고객 관리",
-        path: "/customer",
+        path: "/customerManage",
         component: () => import("@/views/customer/CustomerView.vue"),
       },
       {
