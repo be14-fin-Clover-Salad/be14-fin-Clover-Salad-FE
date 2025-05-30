@@ -1,5 +1,10 @@
 <template>
   <header class="header">
+    <!-- 로고 -->
+    <div class="left" @click="goHome">
+      <img src="/public/salad_text.png" alt="logo" class="logo" />
+    </div>
+
     <div class="right">
       <!-- 알림 -->
       <div class="notification">
@@ -34,8 +39,12 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
+const goHome = () => {
+  router.push("/");
+};
 const user = {
   name: "강수지",
   role: "사원",
@@ -50,11 +59,22 @@ const user = {
   height: 64px;
   background-color: #d5eb97;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 0 24px;
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
+}
+
+.left {
+  display: flex;
+  cursor: pointer;
+  margin: 10px 0 0 47px;
+}
+
+.logo {
+  height: 140px;
+  object-fit: cover;
 }
 
 .right {

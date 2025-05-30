@@ -1,6 +1,8 @@
 <template>
   <aside class="sidebar">
-    <div class="logo">salad</div>
+    <div class="logo-wrap">
+      <img src="/public/logo.png" alt="logo" class="logo-img" />
+    </div>
     <nav>
       <ul>
         <li v-for="group in menuList" :key="group.group">
@@ -51,24 +53,31 @@ const navigate = (label, path) => {
   background-color: #f9f9f9;
   padding: 24px 20px;
   border-right: 1px solid #e0e0e0;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 20;
-}
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 40px;
-  color: #222;
+  position: relative;
 }
 ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
+.logo-wrap {
+  width: 100%;
+  height: 100px; /* 고정 높이 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logo-img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
 .menu-title {
   display: flex;
   justify-content: space-between;
