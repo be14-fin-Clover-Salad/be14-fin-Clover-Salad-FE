@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-wrapper">
+  <div class="notice-wrapper" v-if="employees.length && notices.length">
     <!-- 작성 버튼은 관리자 또는 팀장만 -->
     <div class="notice-actions">
       <button v-if="canWriteNotice" @click="goToWritePage">공지 등록</button>
@@ -64,7 +64,7 @@ const pageSize = 10
 
 // 유저 객체 가져오기
 const loginUser = computed(() => {
-  return employees.value.find(emp => emp.id === loginUserId) || {}
+  return employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {}
 })
 
 // 작성 권한 (관리자 or 팀장)
@@ -72,12 +72,13 @@ const canWriteNotice = computed(() => {
   return loginUser.value.name === '관리자' || loginUser.value.level === '팀장'
 })
 
-// 공지 필터링 (관리자는 전체, 일반은 부서 기준)
+// 공지 필터링 (관리자는 전체, 일반은 부서 기준, 관리자 글은 모두에게 공개)
 const filteredNotices = computed(() => {
   return notices.value.filter(notice => {
     const writer = getEmployee(notice.employee_id)
     if (!writer) return false
     if (loginUser.value.name === '관리자') return true
+    if (writer.name === '관리자') return true
     return writer.department_id === loginUser.value.department_id
   })
 })
@@ -90,13 +91,13 @@ const pagedNotices = computed(() => {
 
 // 작성자 정보
 const getEmployee = (employee_id) => {
-  return employees.value.find(emp => emp.id === employee_id) || {}
+  return employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null
 }
 
 const getEmployeeDisplayName = (employee_id) => {
   const emp = getEmployee(employee_id)
-  if (!emp.name) return '-'
-  return emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level}`
+  if (!emp || !emp.name) return '-'
+  return emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level || ''}`
 }
 
 // 제목 강조
