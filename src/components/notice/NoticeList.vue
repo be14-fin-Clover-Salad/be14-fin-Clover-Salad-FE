@@ -2,7 +2,7 @@
   <div class="notice-wrapper">
     <!-- 작성 버튼은 관리자 또는 팀장만 -->
     <div class="notice-actions">
-      <button v-if="canWriteNotice" @click="goToWritePage">공지 등록</button>
+      <button v-if="canWriteNotice" @click="goToWritePage"> 등록 </button>
     </div>
 
     <table class="notice-table">
@@ -55,7 +55,7 @@ import { ref, onMounted, computed } from 'vue'
 import Pagination from '@/components/notice/Pagination.vue'
 
 // 로그인 유저 ID만 저장
-const loginUserId = 8
+const loginUserId = 2
 
 const notices = ref([])
 const employees = ref([])
@@ -72,17 +72,24 @@ const canWriteNotice = computed(() => {
   return loginUser.value.name === '관리자' || loginUser.value.level === '팀장'
 })
 
-// 공지 필터링 (관리자는 전체, 일반은 부서 기준)
+// ✅ 관리자 공지는 모든 사용자에게 보여야 함
 const filteredNotices = computed(() => {
   return notices.value.filter(notice => {
     const writer = getEmployee(notice.employee_id)
     if (!writer) return false
+
+    // 1. 로그인한 사용자가 관리자
     if (loginUser.value.name === '관리자') return true
+
+    // 2. 게시글 작성자가 관리자
+    if (writer.name === '관리자') return true
+
+    // 3. 같은 부서
     return writer.department_id === loginUser.value.department_id
   })
 })
 
-// 페이지 계산
+// 페이징 처리
 const pagedNotices = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   return filteredNotices.value.slice(start, start + pageSize)
@@ -104,12 +111,12 @@ const formatTitle = (title) => {
   return title.replace(/(\[[^\]]+\])/g, '<strong>$1</strong>')
 }
 
-// 작성 이동
+// 작성 페이지 이동
 const goToWritePage = () => {
   alert('공지 등록 페이지로 이동합니다.')
 }
 
-// 데이터 불러오기
+// 데이터 로드
 onMounted(async () => {
   const [noticeRes, employeeRes] = await Promise.all([
     fetch('http://localhost:3001/notices'),
