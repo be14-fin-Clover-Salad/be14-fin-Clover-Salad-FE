@@ -1,5 +1,10 @@
 <template>
   <div class="notice-wrapper">
+    <!-- 작성 버튼은 관리자 또는 팀장만 -->
+    <div class="notice-actions">
+      <button v-if="canWriteNotice" @click="goToWritePage">공지 등록</button>
+    </div>
+
     <table class="notice-table">
       <thead>
         <tr>
@@ -37,7 +42,7 @@
     </table>
 
     <Pagination
-      :total="notices.length"
+      :total="filteredNotices.length"
       :pageSize="pageSize"
       :currentPage="currentPage"
       @update:currentPage="currentPage = $event"
@@ -49,16 +54,41 @@
 import { ref, onMounted, computed } from 'vue'
 import Pagination from '@/components/notice/Pagination.vue'
 
+// 로그인 유저 ID만 저장
+const loginUserId = 8
+
 const notices = ref([])
 const employees = ref([])
 const currentPage = ref(1)
 const pageSize = 10
 
-const pagedNotices = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return notices.value.slice(start, start + pageSize)
+// 유저 객체 가져오기
+const loginUser = computed(() => {
+  return employees.value.find(emp => emp.id === loginUserId) || {}
 })
 
+// 작성 권한 (관리자 or 팀장)
+const canWriteNotice = computed(() => {
+  return loginUser.value.name === '관리자' || loginUser.value.level === '팀장'
+})
+
+// 공지 필터링 (관리자는 전체, 일반은 부서 기준)
+const filteredNotices = computed(() => {
+  return notices.value.filter(notice => {
+    const writer = getEmployee(notice.employee_id)
+    if (!writer) return false
+    if (loginUser.value.name === '관리자') return true
+    return writer.department_id === loginUser.value.department_id
+  })
+})
+
+// 페이지 계산
+const pagedNotices = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filteredNotices.value.slice(start, start + pageSize)
+})
+
+// 작성자 정보
 const getEmployee = (employee_id) => {
   return employees.value.find(emp => emp.id === employee_id) || {}
 }
@@ -69,11 +99,17 @@ const getEmployeeDisplayName = (employee_id) => {
   return emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level}`
 }
 
-// ✅ 대괄호 전체 강조
+// 제목 강조
 const formatTitle = (title) => {
   return title.replace(/(\[[^\]]+\])/g, '<strong>$1</strong>')
 }
 
+// 작성 이동
+const goToWritePage = () => {
+  alert('공지 등록 페이지로 이동합니다.')
+}
+
+// 데이터 불러오기
 onMounted(async () => {
   const [noticeRes, employeeRes] = await Promise.all([
     fetch('http://localhost:3001/notices'),
@@ -82,7 +118,6 @@ onMounted(async () => {
   const noticeData = await noticeRes.json()
   const employeeData = await employeeRes.json()
 
-  // 최신순 정렬
   notices.value = noticeData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   employees.value = employeeData
 })
@@ -95,6 +130,28 @@ onMounted(async () => {
   font-size: 15px;
   font-weight: 500;
   color: #222;
+}
+
+.notice-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.notice-actions button {
+  background-color: #E7F3D9;
+  color: #222;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid #B8DCA6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notice-actions button:hover {
+  background-color: #d1e9c2;
 }
 
 .notice-table {
