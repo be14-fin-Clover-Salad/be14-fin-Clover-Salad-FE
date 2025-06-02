@@ -24,38 +24,10 @@ export const menuList = [
     group: "실적",
     items: [
       {
-        label: "사업별 실적 조회",
-        path: "/performance/business",
+        label: "실적 관리",
+        path: "/performance",
         // component: () =>
-        //   import("@/views/performance/BusinessPerformanceView.vue"),
-      },
-      {
-        label: "상품별 매출 조회",
-        path: "/performance/product",
-        // component: () =>
-        //   import("@/views/performance/ProductPerformanceView.vue"),
-      },
-      {
-        label: "영업부 매출 조회",
-        path: "/performance/department",
-        // component: () =>
-        //   import("@/views/performance/DepartmentPerformanceView.vue"),
-      },
-      {
-        label: "개인 실적 목표 관리",
-        path: "/performance/individual-target",
-        // component: () => import("@/views/performance/IndividualTargetView.vue"),
-      },
-      {
-        label: "팀 실적 목표 관리",
-        path: "/performance/team-target",
-        // component: () => import("@/views/performance/TeamTargetView.vue"),
-      },
-      {
-        label: "매출 관리",
-        path: "/performance/revenue",
-        // component: () =>
-        //   import("@/views/performance/RevenueManagementView.vue"),
+        //   import("@/views/performance/PerformanceManagementView.vue"),
       },
     ],
   },
@@ -79,12 +51,12 @@ export const menuList = [
     items: [
       {
         label: "고객 등록",
-        path: "/customer/register",
-        // component: () => import("@/views/customer/CustomerRegister.vue"),
+        path: "/customerRegister",
+        component: () => import("@/views/customer/CustomerRegister.vue"),
       },
       {
         label: "고객 관리",
-        path: "/customer",
+        path: "/customerManage",
         component: () => import("@/views/customer/CustomerView.vue"),
       },
       {
@@ -105,12 +77,27 @@ export const menuList = [
     ],
   },
   {
+    group: "고객 지원",
+    items: [
+      {
+        label: "공지 사항",
+        path: "/support/notice",
+        // component: () => import("@/views/support/NoticeView.vue"),
+      },
+      {
+        label: "문의 사항",
+        path: "/support/qna",
+        // component: () => import("@/views/support/QnaView.vue"),
+      },
+    ],
+  },
+  {
     group: "관리",
     items: [
       {
-        label: "결제 관리",
+        label: "결재 관리",
         path: "/admin/payment",
-        // component: () => import("@/views/admin/PaymentManagementView.vue"),
+        // component: () => import("@/views/admin/ApprovalManagementView.vue"),
       },
       {
         label: "사업 조회",
