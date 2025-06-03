@@ -53,6 +53,7 @@ const departments = ref([]);
 const checkList = ref([]);
 const searchKeyword = ref("");
 
+// 포맷: "영업1팀 홍길동 팀장"
 const formatEmployeeLabel = (id) => {
   const emp = employees.value.find(e => Number(e.id) === Number(id));
   if (!emp) return "-";
