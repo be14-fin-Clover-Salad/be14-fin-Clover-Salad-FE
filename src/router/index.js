@@ -6,13 +6,27 @@ const routes = menuList.flatMap((group) =>
   group.items.map((item) => ({
     path: item.path,
     component: item.component,
-    meta: { title: item.label },
+    meta: {
+      title: item.label,
+      basePath: item.path, // 상세 경로 포함 대비
+    },
   }))
 );
 
+// 기본 홈 화면
 routes.unshift({
   path: "/",
   component: HomeView,
+});
+
+// 공지사항 상세 화면
+routes.push({
+  path: "/support/notice/:id",
+  component: () => import("@/views/support/notice/NoticeDetail.vue"),
+  meta: {
+    title: "공지 사항",
+    basePath: "/support/notice", // 이 경로 기준으로 탭 유지
+  },
 });
 
 const router = createRouter({

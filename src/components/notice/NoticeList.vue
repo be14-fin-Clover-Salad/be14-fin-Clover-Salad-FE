@@ -27,15 +27,20 @@
             class="notice-title"
             :class="{
               system: getEmployee(notice.employee_id)?.name === '관리자',
-              read: notice.is_checked
+              read: notice.is_checked,
             }"
-            v-html="formatTitle(notice.title)"
-          ></td>
+          >
+            <router-link
+              :to="`/support/notice/${notice.id}`"
+              v-html="formatTitle(notice.title)"
+              class="notice-link"
+            ></router-link>
+          </td>
           <td class="notice-author">
             {{ getEmployeeDisplayName(notice.employee_id) }}
           </td>
           <td class="notice-date">
-            {{ notice.created_at.split('T')[0] }}
+            {{ notice.created_at.split("T")[0] }}
           </td>
         </tr>
       </tbody>
@@ -51,77 +56,84 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import Pagination from '@/components/common/Pagination.vue'
+import { ref, onMounted, computed } from "vue";
+import Pagination from "@/components/common/Pagination.vue";
 
 // 로그인 유저 ID만 저장
-const loginUserId = 8
+const loginUserId = 8;
 
-const notices = ref([])
-const employees = ref([])
-const currentPage = ref(1)
-const pageSize = 10
+const notices = ref([]);
+const employees = ref([]);
+const currentPage = ref(1);
+const pageSize = 10;
 
 // 유저 객체 가져오기
 const loginUser = computed(() => {
-  return employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {}
-})
+  return (
+    employees.value.find((emp) => Number(emp.id) === Number(loginUserId)) || {}
+  );
+});
 
 // 작성 권한 (관리자 or 팀장)
 const canWriteNotice = computed(() => {
-  return loginUser.value.name === '관리자' || loginUser.value.level === '팀장'
-})
+  return loginUser.value.name === "관리자" || loginUser.value.level === "팀장";
+});
 
 // 공지 필터링 (관리자는 전체, 일반은 부서 기준, 관리자 글은 모두에게 공개)
 const filteredNotices = computed(() => {
-  return notices.value.filter(notice => {
-    const writer = getEmployee(notice.employee_id)
-    if (!writer) return false
-    if (loginUser.value.name === '관리자') return true
-    if (writer.name === '관리자') return true
-    return writer.department_id === loginUser.value.department_id
-  })
-})
+  return notices.value.filter((notice) => {
+    const writer = getEmployee(notice.employee_id);
+    if (!writer) return false;
+    if (loginUser.value.name === "관리자") return true;
+    if (writer.name === "관리자") return true;
+    return writer.department_id === loginUser.value.department_id;
+  });
+});
 
 // 페이지 계산
 const pagedNotices = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredNotices.value.slice(start, start + pageSize)
-})
+  const start = (currentPage.value - 1) * pageSize;
+  return filteredNotices.value.slice(start, start + pageSize);
+});
 
 // 작성자 정보
 const getEmployee = (employee_id) => {
-  return employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null
-}
+  return (
+    employees.value.find((emp) => Number(emp.id) === Number(employee_id)) ||
+    null
+  );
+};
 
 const getEmployeeDisplayName = (employee_id) => {
-  const emp = getEmployee(employee_id)
-  if (!emp || !emp.name) return '-'
-  return emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level || ''}`
-}
+  const emp = getEmployee(employee_id);
+  if (!emp || !emp.name) return "-";
+  return emp.name === "관리자" ? "관리자" : `${emp.name} ${emp.level || ""}`;
+};
 
 // 제목 강조
 const formatTitle = (title) => {
-  return title.replace(/(\[[^\]]+\])/g, '<strong>$1</strong>')
-}
+  return title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
+};
 
 // 작성 이동
 const goToWritePage = () => {
-  alert('공지 등록 페이지로 이동합니다.')
-}
+  alert("공지 등록 페이지로 이동합니다.");
+};
 
 // 데이터 불러오기
 onMounted(async () => {
   const [noticeRes, employeeRes] = await Promise.all([
-    fetch('http://localhost:3001/notices'),
-    fetch('http://localhost:3001/employees')
-  ])
-  const noticeData = await noticeRes.json()
-  const employeeData = await employeeRes.json()
+    fetch("http://localhost:3001/notices"),
+    fetch("http://localhost:3001/employees"),
+  ]);
+  const noticeData = await noticeRes.json();
+  const employeeData = await employeeRes.json();
 
-  notices.value = noticeData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-  employees.value = employeeData
-})
+  notices.value = noticeData.sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  );
+  employees.value = employeeData;
+});
 </script>
 
 <style scoped>
@@ -140,12 +152,12 @@ onMounted(async () => {
 }
 
 .notice-actions button {
-  background-color: #E7F3D9;
+  background-color: #e7f3d9;
   color: #222;
   padding: 10px 20px;
   font-size: 15px;
   font-weight: 600;
-  border: 1px solid #B8DCA6;
+  border: 1px solid #b8dca6;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -161,7 +173,7 @@ onMounted(async () => {
 }
 
 thead {
-  background-color: #F0F7E4;
+  background-color: #f0f7e4;
   font-size: 16px;
   font-weight: 600;
 }
@@ -212,5 +224,14 @@ td {
 strong {
   font-weight: 900;
   font-size: 16px;
+}
+.notice-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.notice-link:hover {
+  text-decoration: underline;
+  color: #3a6b1d;
 }
 </style>
