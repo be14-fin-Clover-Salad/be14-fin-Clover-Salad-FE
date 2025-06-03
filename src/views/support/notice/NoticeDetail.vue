@@ -1,10 +1,9 @@
 <template>
   <div class="notice-detail-layout" v-if="notice && writer">
     <div class="notice-content">
-      <div class="breadcrumb">공지사항 &gt; 상세보기</div>
       <h1 class="notice-title">{{ notice.title }}</h1>
       <div class="notice-info">
-        <span>작성자: {{ writer.name }}</span>
+        <span>작성자: {{ formatEmployeeLabel(writer.id) }}</span>
         <span>등록일자: {{ formatDate(notice.created_at) }}</span>
       </div>
       <div class="notice-box" v-html="notice.content"></div>
@@ -54,7 +53,6 @@ const departments = ref([]);
 const checkList = ref([]);
 const searchKeyword = ref("");
 
-// 🔍 포맷: "영업1팀 홍길동 팀장"
 const formatEmployeeLabel = (id) => {
   const emp = employees.value.find(e => Number(e.id) === Number(id));
   if (!emp) return "-";
@@ -138,11 +136,6 @@ onMounted(fetchData);
   padding: 1rem;
   max-height: 500px;
   overflow-y: auto;
-}
-.breadcrumb {
-  font-size: 0.9rem;
-  color: #888;
-  margin-bottom: 1.2rem;
 }
 .notice-title {
   font-size: 1.6rem;
