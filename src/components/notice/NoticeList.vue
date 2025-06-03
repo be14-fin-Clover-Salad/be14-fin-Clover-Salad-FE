@@ -40,14 +40,14 @@
             {{ getEmployeeDisplayName(notice.employee_id) }}
           </td>
           <td class="notice-date">
-            {{ notice.created_at.split("T")[0] }}
+            {{ notice.created_at.split('T')[0] }}
           </td>
         </tr>
       </tbody>
     </table>
 
     <Pagination
-      :total="filteredNotices.length"
+      :total="notices.length"
       :pageSize="pageSize"
       :currentPage="currentPage"
       @update:currentPage="currentPage = $event"
@@ -59,49 +59,29 @@
 import { ref, onMounted, computed } from "vue";
 import Pagination from "@/components/common/Pagination.vue";
 
-// 로그인 유저 ID만 저장
-const loginUserId = 8;
+// 로그인 유저 ID (임시)
+const loginUserId = 2;
 
 const notices = ref([]);
 const employees = ref([]);
 const currentPage = ref(1);
 const pageSize = 10;
 
-// 유저 객체 가져오기
 const loginUser = computed(() => {
-  return (
-    employees.value.find((emp) => Number(emp.id) === Number(loginUserId)) || {}
-  );
+  return employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {};
 });
 
-// 작성 권한 (관리자 or 팀장)
 const canWriteNotice = computed(() => {
   return loginUser.value.name === "관리자" || loginUser.value.level === "팀장";
 });
 
-// 공지 필터링 (관리자는 전체, 일반은 부서 기준, 관리자 글은 모두에게 공개)
-const filteredNotices = computed(() => {
-  return notices.value.filter((notice) => {
-    const writer = getEmployee(notice.employee_id);
-    if (!writer) return false;
-    if (loginUser.value.name === "관리자") return true;
-    if (writer.name === "관리자") return true;
-    return writer.department_id === loginUser.value.department_id;
-  });
-});
-
-// 페이지 계산
 const pagedNotices = computed(() => {
   const start = (currentPage.value - 1) * pageSize;
-  return filteredNotices.value.slice(start, start + pageSize);
+  return notices.value.slice(start, start + pageSize);
 });
 
-// 작성자 정보
 const getEmployee = (employee_id) => {
-  return (
-    employees.value.find((emp) => Number(emp.id) === Number(employee_id)) ||
-    null
-  );
+  return employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null;
 };
 
 const getEmployeeDisplayName = (employee_id) => {
@@ -110,31 +90,50 @@ const getEmployeeDisplayName = (employee_id) => {
   return emp.name === "관리자" ? "관리자" : `${emp.name} ${emp.level || ""}`;
 };
 
-// 제목 강조
 const formatTitle = (title) => {
   return title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
 };
 
-// 작성 이동
 const goToWritePage = () => {
   alert("공지 등록 페이지로 이동합니다.");
 };
 
-// 데이터 불러오기
 onMounted(async () => {
-  const [noticeRes, employeeRes] = await Promise.all([
+  const [empNoticeRes, noticeRes, employeeRes] = await Promise.all([
+    fetch(`http://localhost:3001/employee_notice?employee_id=${loginUserId}`),
     fetch("http://localhost:3001/notices"),
-    fetch("http://localhost:3001/employees"),
+    fetch("http://localhost:3001/employees")
   ]);
+
+  const empNoticeData = await empNoticeRes.json();
   const noticeData = await noticeRes.json();
   const employeeData = await employeeRes.json();
 
-  notices.value = noticeData.sort(
-    (a, b) => new Date(b.created_at) - new Date(a.created_at)
-  );
   employees.value = employeeData;
+
+  const allowedNoticeIds = empNoticeData.map(item => Number(item.notice_id));
+  const isLoginUserAdmin = loginUser.value?.name === "관리자";
+
+  const visibleNotices = isLoginUserAdmin
+    ? noticeData
+    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id))); // 핵심 수정
+
+  const joined = visibleNotices.map(n => {
+    const writer = employeeData.find(e => e.id === n.employee_id);
+    return {
+      ...n,
+      employee_name: writer?.name || "알 수 없음",
+      is_checked: empNoticeData.find(e => Number(n.id) === Number(e.notice_id))?.is_checked || false
+    };
+  });
+
+  notices.value = joined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  console.log("🔐 로그인 사용자:", loginUser.value);
+  console.log("📌 보여줄 공지 목록:", joined);
 });
 </script>
+
 
 <style scoped>
 .notice-wrapper {
@@ -144,13 +143,11 @@ onMounted(async () => {
   font-weight: 500;
   color: #222;
 }
-
 .notice-actions {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 14px;
 }
-
 .notice-actions button {
   background-color: #e7f3d9;
   color: #222;
@@ -162,65 +159,53 @@ onMounted(async () => {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 .notice-actions button:hover {
   background-color: #d1e9c2;
 }
-
 .notice-table {
   width: 100%;
   border-collapse: collapse;
 }
-
 thead {
   background-color: #f0f7e4;
   font-size: 16px;
   font-weight: 600;
 }
-
 th,
 td {
   padding: 12px 20px;
   vertical-align: middle;
   border-bottom: 1px solid #ddd;
 }
-
 .notice-index {
   text-align: center;
   width: 60px;
 }
-
 .notice-title {
   text-align: left;
 }
-
 .notice-author {
   text-align: center;
   width: 260px;
 }
-
 .notice-date {
   text-align: center;
   padding: 0 10px;
   width: 120px;
 }
-
 .system {
   color: red;
   font-weight: bold;
   font-size: inherit;
 }
-
 .read {
   color: #aaa;
 }
-
 .system.read {
   color: #aaa !important;
   font-weight: normal;
   font-size: inherit;
 }
-
 strong {
   font-weight: 900;
   font-size: 16px;
@@ -229,7 +214,6 @@ strong {
   text-decoration: none;
   color: inherit;
 }
-
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
