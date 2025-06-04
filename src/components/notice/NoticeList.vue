@@ -2,7 +2,7 @@
   <div class="notice-wrapper" v-if="employees.length && notices.length">
     <!-- 작성 버튼은 관리자 또는 팀장만 -->
     <div class="notice-actions">
-      <button v-if="canWriteNotice" @click="goToWritePage">공지 등록</button>
+      <button v-if="canWriteNotice" @click="goToWritePage">등록</button>
     </div>
 
     <table class="notice-table">
