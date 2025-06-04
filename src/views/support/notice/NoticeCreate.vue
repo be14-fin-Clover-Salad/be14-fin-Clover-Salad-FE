@@ -2,7 +2,7 @@
   <div class="notice-create-layout">
     <div class="notice-header">
       <h2>공지사항 작성</h2>
-      <router-link to="/notices" class="back-btn">← 목록으로</router-link>
+      <router-link to="/support/notice" class="back-btn">목록</router-link>
     </div>
 
     <form @submit.prevent="submitNotice" class="notice-form">
@@ -26,7 +26,8 @@
             v-for="user in selectedEmployees"
             :key="user.id"
           >
-            {{ user.name }} <span @click="removeUser(user)">✕</span>
+            {{ user.name }} {{ user.level }} ({{ getDeptName(user.department_id) }})
+            <span @click="removeUser(user)">✕</span>
           </div>
         </div>
         <button type="button" class="add-btn" @click="openAddModal = true">
@@ -38,32 +39,69 @@
         <button type="submit" class="submit-btn">작성하기</button>
       </div>
     </form>
+
+    <!-- 대상자 추가 모달 -->
+    <AddTargetModal
+      v-if="openAddModal"
+      :employees="employees"
+      :departments="departments"
+      :preselected="selectedEmployees || []"
+      @update:selected="updateSelectedEmployees"
+      @close="openAddModal = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 
 const title = ref('')
 const content = ref('')
-const selectedEmployees = ref([]) // [{ id: 1, name: '홍길동' }, ...]
+const selectedEmployees = ref([])
 
 const openAddModal = ref(false)
+const employees = ref([])
+const departments = ref([])
+
 const router = useRouter()
+const loginUserId = 2
+
+const loginUser = computed(() => {
+  return employees.value.find(emp => emp.id === loginUserId) || {}
+})
+
+const getDeptName = (deptId) => {
+  const dept = departments.value.find(d => Number(d.id) === Number(deptId))
+  return dept ? dept.name : ''
+}
+
+const updateSelectedEmployees = (list) => {
+  selectedEmployees.value = list
+}
 
 const removeUser = (user) => {
   selectedEmployees.value = selectedEmployees.value.filter(u => u.id !== user.id)
 }
+
+onMounted(async () => {
+  const [empRes, deptRes] = await Promise.all([
+    axios.get('http://localhost:3001/employees'),
+    axios.get('http://localhost:3001/departments')
+  ])
+  employees.value = empRes.data
+  departments.value = deptRes.data
+})
 
 const submitNotice = async () => {
   try {
     const noticeRes = await axios.post('http://localhost:3001/notices', {
       title: title.value,
       content: content.value,
-      employee_id: 2, // 작성자
+      employee_id: loginUser.value.id,
       created_at: new Date().toISOString()
     })
 
@@ -79,7 +117,7 @@ const submitNotice = async () => {
     )
 
     alert('공지 등록 완료!')
-    router.push('/notices')
+    router.push('/support/notice')
   } catch (e) {
     alert('등록 실패!')
     console.error(e)
@@ -122,7 +160,7 @@ label {
   margin-bottom: 0.5rem;
 }
 input[type='text'] {
-  width: 100%;
+  width: 98%;
   padding: 0.6rem;
   font-size: 1rem;
   border: 1px solid #ccc;
@@ -144,15 +182,20 @@ input[type='text'] {
   margin-bottom: 0.5rem;
 }
 .selected-item {
-  background: #eee;
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
+  background: #f5f5f5;
+  border-radius: 9999px;
+  padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0 0 1px #ccc inset;
 }
 .selected-item span {
   margin-left: 8px;
   color: red;
   cursor: pointer;
+  font-weight: bold;
 }
 .add-btn {
   border: 1px solid #999;
