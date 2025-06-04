@@ -2,7 +2,7 @@
   <div class="notice-wrapper" v-if="employees.length && notices.length">
     <!-- 작성 버튼은 관리자 또는 팀장만 -->
     <div class="notice-actions">
-      <button v-if="canWriteNotice" @click="goToWritePage">등록</button>
+      <button v-if="canWriteNotice" @click="goToWritePage">공지 등록</button>
     </div>
 
     <table class="notice-table">
@@ -60,8 +60,8 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
-// 로그인 유저 ID (임시)
-const loginUserId = 2;
+// 로그인 유저 ID만 저장
+const loginUserId = 8;
 
 const router = useRouter();
 const notices = ref([]);

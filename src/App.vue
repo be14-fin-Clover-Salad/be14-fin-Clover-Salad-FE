@@ -1,9 +1,19 @@
 <template>
-  <DefaultLayout />
+  <component :is="layoutComponent">
+    <router-view />
+  </component>
 </template>
 
 <script setup>
-import DefaultLayout from "./layouts/DefaultLayout.vue";
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import DefaultLayout from './layouts/DefaultLayout.vue'
+
+const route = useRoute()
+
+const layoutComponent = computed(() => {
+  return route.meta.layout === 'none' ? 'div' : DefaultLayout
+})
 </script>
 
 <style>
