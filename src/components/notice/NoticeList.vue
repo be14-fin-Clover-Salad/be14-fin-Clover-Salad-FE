@@ -57,11 +57,13 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
 // 로그인 유저 ID (임시)
 const loginUserId = 2;
 
+const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);
 const currentPage = ref(1);
@@ -95,7 +97,7 @@ const formatTitle = (title) => {
 };
 
 const goToWritePage = () => {
-  alert("공지 등록 페이지로 이동합니다.");
+  router.push("/support/notice/create");
 };
 
 onMounted(async () => {
@@ -116,7 +118,7 @@ onMounted(async () => {
 
   const visibleNotices = isLoginUserAdmin
     ? noticeData
-    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id))); // 핵심 수정
+    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)));
 
   const joined = visibleNotices.map(n => {
     const writer = employeeData.find(e => e.id === n.employee_id);
@@ -133,7 +135,6 @@ onMounted(async () => {
   console.log("📌 보여줄 공지 목록:", joined);
 });
 </script>
-
 
 <style scoped>
 .notice-wrapper {
