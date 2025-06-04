@@ -2,7 +2,7 @@
   <header class="header">
     <!-- 로고 -->
     <div class="left" @click="goHome">
-      <img src="/public/logo_text.svg" alt="logo" class="logo" />
+      <img src="/logo_text.svg" alt="logo" class="logo" />
     </div>
 
     <div class="right">
@@ -33,24 +33,55 @@
       </div>
 
       <!-- 로그아웃 버튼 -->
-      <button class="logout">로그아웃</button>
+      <button class="logout" @click="logout">로그아웃</button>
     </div>
   </header>
 </template>
 
 <script setup>
 import { useRouter } from "vue-router";
+import axios from "@/api/auth"; // 설정된 axios 인스턴스
+import { useAuthStore } from "@/stores/auth";
+
 const router = useRouter();
+const auth = useAuthStore();
 
 const goHome = () => {
-  router.push("/");
+  router.push("/home");
 };
+
+const logout = async () => {
+  const token = auth.accessToken
+  if (!token) {
+    console.warn("⚠️ accessToken이 없어서 로그아웃 요청 건너뜀");
+    return;
+  }
+
+  try {
+    await axios.post(
+      "/employee/logout",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        withCredentials: true
+      }
+    );
+  } catch (e) {
+    console.warn("🚨 로그아웃 중 오류:", e.message);
+  } finally {
+    auth.clearToken()
+    router.push('/login') // 또는 window.location.href = '/login'
+}
+};
+
 const user = {
   name: "강수지",
   role: "사원",
   team: "영업1팀",
   profileImageUrl: "",
-  notifications: 2, // 0이면 배지 없음
+  notifications: 2
 };
 </script>
 
@@ -65,24 +96,20 @@ const user = {
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
 }
-
 .left {
   display: flex;
   cursor: pointer;
   margin: 47px;
 }
-
 .logo {
   height: 60px;
   object-fit: cover;
 }
-
 .right {
   display: flex;
   align-items: center;
   gap: 32px;
 }
-
 .notification {
   position: relative;
   font-size: 20px;
@@ -102,7 +129,6 @@ const user = {
   border-radius: 999px;
   font-weight: bold;
 }
-
 .profile {
   display: flex;
   align-items: center;
@@ -136,7 +162,6 @@ const user = {
   align-items: center;
   justify-content: center;
 }
-
 .info {
   display: flex;
   flex-direction: column;
@@ -151,7 +176,6 @@ const user = {
   font-weight: 500;
   color: #111;
 }
-
 .logout {
   background-color: white;
   border: 1px solid #ddd;
