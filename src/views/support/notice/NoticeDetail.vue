@@ -51,7 +51,9 @@ import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
-const noticeId = route.params.id; // 문자열 그대로 사용
+const noticeId = route.params.id;
+
+// 로그인 한 유저
 const loginUserId = 2;
 
 const notice = ref(null);

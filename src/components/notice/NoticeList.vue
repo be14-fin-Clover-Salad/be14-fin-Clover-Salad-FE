@@ -60,8 +60,8 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
-// 로그인 유저 ID만 저장
-const loginUserId = 8;
+// 로그인 한 유저
+const loginUserId = 2;
 
 const router = useRouter();
 const notices = ref([]);

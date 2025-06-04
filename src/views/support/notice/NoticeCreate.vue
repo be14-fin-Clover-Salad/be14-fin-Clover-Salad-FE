@@ -69,7 +69,8 @@ const employees = ref([])
 const departments = ref([])
 
 const router = useRouter()
-const loginUserId = 2 // 실제 로그인 사용자 ID
+// 로그인 한 유저
+const loginUserId = 2 
 const loginUser = ref({})
 
 const getDeptName = (deptId) => {
