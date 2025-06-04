@@ -46,6 +46,7 @@
       :employees="employees"
       :departments="departments"
       :preselected="selectedEmployees || []"
+      :loginUserId="loginUserId"
       @update:selected="updateSelectedEmployees"
       @close="openAddModal = false"
     />
@@ -68,11 +69,8 @@ const employees = ref([])
 const departments = ref([])
 
 const router = useRouter()
-const loginUserId = 2
-
-const loginUser = computed(() => {
-  return employees.value.find(emp => emp.id === loginUserId) || {}
-})
+const loginUserId = 2 // 실제 로그인 사용자 ID
+const loginUser = ref({})
 
 const getDeptName = (deptId) => {
   const dept = departments.value.find(d => Number(d.id) === Number(deptId))
@@ -94,9 +92,17 @@ onMounted(async () => {
   ])
   employees.value = empRes.data
   departments.value = deptRes.data
+
+  loginUser.value = employees.value.find(emp => Number(emp.id) === loginUserId)
+
+  if (!loginUser.value || !loginUser.value.id) {
+    alert('로그인 유저 정보를 불러오지 못했습니다.')
+  }
 })
 
 const submitNotice = async () => {
+  if (!loginUser.value || !loginUser.value.id) return
+
   try {
     const noticeRes = await axios.post('http://localhost:3001/notices', {
       title: title.value,
@@ -106,15 +112,22 @@ const submitNotice = async () => {
     })
 
     const noticeId = noticeRes.data.id
-    await Promise.all(
-      selectedEmployees.value.map(emp =>
+
+    // 대상자 + 작성자 본인까지 등록
+    await Promise.all([
+      ...selectedEmployees.value.map(emp =>
         axios.post('http://localhost:3001/employee_notice', {
           notice_id: noticeId,
           employee_id: emp.id,
           is_checked: false
         })
-      )
-    )
+      ),
+      axios.post('http://localhost:3001/employee_notice', {
+        notice_id: noticeId,
+        employee_id: loginUser.value.id,
+        is_checked: false
+      })
+    ])
 
     alert('공지 등록 완료!')
     router.push('/support/notice')
@@ -124,6 +137,7 @@ const submitNotice = async () => {
   }
 }
 </script>
+
 
 <style scoped>
 .notice-create-layout {

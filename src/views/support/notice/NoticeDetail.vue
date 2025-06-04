@@ -51,7 +51,7 @@ import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
-const noticeId = Number(route.params.id);
+const noticeId = route.params.id; // 문자열 그대로 사용
 const loginUserId = 2;
 
 const notice = ref(null);
@@ -62,15 +62,15 @@ const checkList = ref([]);
 const searchKeyword = ref("");
 
 const formatEmployeeLabel = (id) => {
-  const emp = employees.value.find(e => Number(e.id) === Number(id));
+  const emp = employees.value.find(e => e.id == id);
   if (!emp) return "-";
-  const dept = departments.value.find(d => Number(d.id) === Number(emp.department_id));
+  const dept = departments.value.find(d => d.id == emp.department_id);
   const deptName = dept?.name || '';
-  return `${deptName} ${emp.name} ${emp.level}`;
+  return `${emp.name} ${emp.level} (${deptName})`;
 };
 
 const alreadyChecked = computed(() => {
-  return checkList.value.find(e => Number(e.employee_id) === loginUserId)?.is_checked;
+  return checkList.value.find(e => e.employee_id == loginUserId)?.is_checked;
 });
 
 const filteredCheckList = computed(() => {
@@ -89,15 +89,15 @@ const fetchData = async () => {
   try {
     const [noticeRes, empRes, deptRes, empNoticeRes] = await Promise.all([
       axios.get(`http://localhost:3001/notices/${noticeId}`),
-      axios.get(`http://localhost:3001/employees`),
-      axios.get(`http://localhost:3001/departments`),
+      axios.get('http://localhost:3001/employees'),
+      axios.get('http://localhost:3001/departments'),
       axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
     ]);
 
     notice.value = noticeRes.data;
     employees.value = empRes.data;
     departments.value = deptRes.data;
-    writer.value = employees.value.find(e => Number(e.id) === Number(notice.value.employee_id));
+    writer.value = employees.value.find(e => e.id == notice.value.employee_id);
     checkList.value = empNoticeRes.data;
   } catch (e) {
     console.error("❌ fetchData 실패:", e);
@@ -105,7 +105,7 @@ const fetchData = async () => {
 };
 
 const confirmCheck = async () => {
-  const entry = checkList.value.find(e => Number(e.employee_id) === loginUserId);
+  const entry = checkList.value.find(e => e.employee_id == loginUserId);
   if (!entry || entry.is_checked) return;
 
   try {

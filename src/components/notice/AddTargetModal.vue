@@ -89,19 +89,31 @@ const props = defineProps({
   preselected: {
     type: Array,
     default: () => []
+  },
+  loginUserId: {
+    type: [Number, String],
+    required: true
   }
 })
+
+console.log('👤 props.loginUserId:', props.loginUserId)
 
 const emit = defineEmits(['update:selected', 'close'])
 
 const selectedDeptId = ref(null)
 const searchKeyword = ref('')
-const selectedIds = ref(props.preselected.map(e => e.id))
+const selectedIds = ref(
+  props.preselected
+    .filter(e => Number(e.id) !== Number(props.loginUserId))
+    .map(e => e.id)
+)
 
 watch(
   () => props.preselected,
   (newVal) => {
-    selectedIds.value = newVal.map(e => e.id)
+    selectedIds.value = newVal
+      .filter(e => Number(e.id) !== Number(props.loginUserId))
+      .map(e => e.id)
   },
   { immediate: true }
 )
@@ -124,12 +136,14 @@ const isSelectedDept = (id) => {
 const selected = computed(() =>
   props.employees
     .filter(emp => emp.level !== '관리자')
+    .filter(emp => Number(emp.id) !== Number(props.loginUserId))
     .filter(emp => selectedIds.value.includes(emp.id))
 )
 
 const filteredEmployees = computed(() =>
   props.employees
-    .filter(emp => emp.level !== '관리자') // ✅ 관리자 제외
+    .filter(emp => emp.level !== '관리자')
+    .filter(emp => Number(emp.id) !== Number(props.loginUserId))
     .filter(emp => selectedDeptId.value === null || Number(emp.department_id) === Number(selectedDeptId.value))
     .filter(emp => emp.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase()))
 )
@@ -164,7 +178,8 @@ const close = () => emit('close')
 
 const confirm = () => {
   const selectedEmps = props.employees
-    .filter(emp => emp.level !== '관리자') // ✅ 선택 확정 시도 관리자 제외
+    .filter(emp => emp.level !== '관리자')
+    .filter(emp => Number(emp.id) !== Number(props.loginUserId))
     .filter(emp => selectedIds.value.includes(emp.id))
   emit('update:selected', selectedEmps)
   close()
