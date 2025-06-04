@@ -37,7 +37,7 @@ export const menuList = [
       {
         label: "계약 관리",
         path: "/contract/manage",
-        // component: () => import("@/views/contract/ContractManagementView.vue"),
+        component: () => import("@/views/contract/ContractManagementView.vue"),
       },
       {
         label: "계약서 양식 관리",
