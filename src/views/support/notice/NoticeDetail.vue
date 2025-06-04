@@ -1,6 +1,11 @@
 <template>
   <div class="notice-detail-layout" v-if="notice && writer">
     <div class="notice-content">
+      <!-- 뒤로가기 버튼 -->
+      <button class="back-btn" @click="$router.back()">
+        <span class="arrow"></span>목록
+      </button>
+
       <h1 class="notice-title">{{ notice.title }}</h1>
       <div class="notice-info">
         <span>작성자: {{ formatEmployeeLabel(writer.id) }}</span>
@@ -9,7 +14,7 @@
       <div class="notice-box" v-html="notice.content"></div>
       <div class="btn-wrap">
         <button class="check-btn" :disabled="alreadyChecked" @click="confirmCheck">
-          ✅ 확인하기
+          {{ alreadyChecked ? "✔ 확인 완료" : "✅ 확인하기" }}
         </button>
       </div>
     </div>
@@ -26,7 +31,10 @@
         <li
           v-for="entry in filteredCheckList"
           :key="entry.employee_id"
-          :class="{ checked: entry.is_checked }"
+          :class="{
+            checked: entry.is_checked,
+            currentUser: entry.employee_id === loginUserId
+          }"
         >
           <span>{{ formatEmployeeLabel(entry.employee_id) }}</span>
           <span>{{ entry.is_checked ? "✅" : "❌" }}</span>
@@ -53,7 +61,6 @@ const departments = ref([]);
 const checkList = ref([]);
 const searchKeyword = ref("");
 
-// 포맷: "영업1팀 홍길동 팀장"
 const formatEmployeeLabel = (id) => {
   const emp = employees.value.find(e => Number(e.id) === Number(id));
   if (!emp) return "-";
@@ -68,9 +75,12 @@ const alreadyChecked = computed(() => {
 
 const filteredCheckList = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase();
-  return checkList.value.filter(entry =>
-    formatEmployeeLabel(entry.employee_id).toLowerCase().includes(keyword)
-  );
+  return checkList.value
+    .slice()
+    .sort((a, b) => b.is_checked - a.is_checked)
+    .filter(entry =>
+      formatEmployeeLabel(entry.employee_id).toLowerCase().includes(keyword)
+    );
 });
 
 const formatDate = (dateStr) => dateStr?.split('T')[0];
@@ -89,12 +99,6 @@ const fetchData = async () => {
     departments.value = deptRes.data;
     writer.value = employees.value.find(e => Number(e.id) === Number(notice.value.employee_id));
     checkList.value = empNoticeRes.data;
-
-    console.log("📌 공지:", notice.value);
-    console.log("👤 작성자:", writer.value);
-    console.log("👥 직원 목록:", employees.value);
-    console.log("🏢 부서 목록:", departments.value);
-    console.log("✅ 확인자 목록:", checkList.value);
   } catch (e) {
     console.error("❌ fetchData 실패:", e);
   }
@@ -109,7 +113,6 @@ const confirmCheck = async () => {
       is_checked: true
     });
     entry.is_checked = true;
-    console.log("✅ 확인 완료:", entry);
   } catch (e) {
     console.error("❌ 확인 PATCH 실패:", e);
   }
@@ -142,6 +145,7 @@ onMounted(fetchData);
   font-size: 1.6rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
+  text-align: left;
 }
 .notice-info {
   display: flex;
@@ -176,6 +180,26 @@ onMounted(fetchData);
   background-color: #ccc;
   cursor: not-allowed;
 }
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2d8f65;
+  background-color: transparent;
+  border: 1px solid #2d8f65;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 1.2rem;
+}
+.back-btn:hover {
+  background-color: #dff3eb;
+  color: #1d6b4f;
+  border-color: #1d6b4f;
+}
 .search-input {
   width: 90%;
   padding: 0.4rem 0.6rem;
@@ -197,9 +221,13 @@ onMounted(fetchData);
   font-size: 0.85rem;
 }
 .checklist li.checked {
-  background-color: #eee;
-  color: #888;
-  font-style: italic;
+  background-color: #eef6ee;
+  color: #666;
+  font-style: normal;
+}
+.checklist li.currentUser {
+  font-weight: bold;
+  color: #2d8f65;
 }
 .not-allowed {
   max-width: 960px;
