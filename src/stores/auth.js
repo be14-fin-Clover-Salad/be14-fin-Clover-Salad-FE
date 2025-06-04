@@ -1,17 +1,18 @@
 import { defineStore } from 'pinia'
-import api from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    accessToken: null
+    accessToken: localStorage.getItem('access_token') || null
   }),
   actions: {
     setAccessToken(token) {
       const pureToken = token.startsWith('Bearer ') ? token.split(' ')[1] : token
       this.accessToken = pureToken
+      localStorage.setItem('access_token', pureToken)
     },
     clearToken() {
       this.accessToken = null
+      localStorage.removeItem('access_token')
     },
     async refreshToken() {
       try {
@@ -24,7 +25,6 @@ export const useAuthStore = defineStore('auth', {
           throw new Error('No access token in response')
         }
       } catch (e) {
-        console.warn('🔁 accessToken 갱신 실패:', e.message)
         this.clearToken()
         window.location.href = '/login'
         throw e
