@@ -4,7 +4,7 @@
       v-for="(tab, index) in tabs"
       :key="tab.path"
       class="tab"
-      :class="{ active: tab.path === route.path }"
+      :class="{ active: isActive(tab) }"
       @click="switchTab(tab)"
     >
       {{ tab.title }}
@@ -24,32 +24,47 @@ const router = useRouter();
 const tabStore = useTabStore();
 const tabs = computed(() => tabStore.tabs);
 
+// 현재 route 기준 탭이 활성화됐는지 확인
+const isActive = (tab) => {
+  const current = route.meta.basePath || route.path;
+  return tab.path === current;
+};
+
+// 현재 route 기준으로 basePath 구함
+const getBasePath = () => {
+  return route.meta.basePath || route.path;
+};
+
 watch(
   () => route.path,
   (newPath) => {
     if (newPath === "/") return;
+
     const allItems = menuList.flatMap((group) => group.items);
-    const match = allItems.find((item) => item.path === newPath);
-    if (match && !tabs.value.find((t) => t.path === newPath)) {
-      tabStore.addTab({ title: match.label, path: match.path });
+    const basePath = route.meta.basePath || newPath;
+    const match = allItems.find((item) => item.path === basePath);
+
+    if (match && !tabs.value.find((t) => t.path === basePath)) {
+      tabStore.addTab({
+        title: match.label,
+        path: basePath,
+      });
     }
   },
   { immediate: true }
 );
 
 const switchTab = (tab) => {
-  if (tab.path !== route.path) router.push(tab.path);
+  if (!isActive(tab)) {
+    router.push(tab.path);
+  }
 };
 
 const closeTab = (tab) => {
   tabStore.removeTab(tab.path);
-  if (tab.path === route.path) {
+  if (isActive(tab)) {
     const fallback = tabStore.tabs.at(-1);
-    if (fallback) {
-      router.push(fallback.path);
-    } else {
-      router.push("/"); // 탭이 하나도 없을 경우 홈으로 이동
-    }
+    router.push(fallback ? fallback.path : "/");
   }
 };
 </script>

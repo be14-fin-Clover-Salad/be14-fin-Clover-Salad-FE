@@ -82,7 +82,7 @@ export const menuList = [
       {
         label: "공지 사항",
         path: "/support/notice",
-        component: () => import("@/views/support/NoticeView.vue"),
+        component: () => import("@/views/support/notice/NoticeView.vue"),
       },
       {
         label: "문의 사항",
