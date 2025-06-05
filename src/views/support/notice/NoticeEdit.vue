@@ -31,9 +31,7 @@
             <div style="font-size: 0.9rem; color: #999;">선택된 대상자가 없습니다.</div>
           </template>
         </div>
-        <button type="button" class="add-btn" @click="openAddModal = true">
-          대상 추가
-        </button>
+        <button type="button" class="add-btn" @click="openAddModal = true">대상 추가</button>
       </div>
 
       <div class="submit-wrap">
@@ -70,7 +68,6 @@ const title = ref('')
 const content = ref('')
 const isDeleted = ref(false)
 const employeeId = ref(null)
-const createdAt = ref('')
 
 const selectedEmployees = ref([])
 const openAddModal = ref(false)
@@ -107,7 +104,6 @@ const fetchNotice = async () => {
   title.value = data.title
   content.value = data.content
   employeeId.value = data.employee_id
-  createdAt.value = data.created_at // ✅ created_at 값 보존
 
   employees.value = empRes.data
   departments.value = deptRes.data
@@ -118,16 +114,14 @@ const fetchNotice = async () => {
 
 const submitEdit = async () => {
   try {
-    // 공지 수정 요청 시 created_at 포함
     await axios.put(`http://localhost:3001/notices/${noticeId}`, {
       title: title.value,
       content: content.value,
       employee_id: employeeId.value,
       is_deleted: false,
-      created_at: createdAt.value // ✅ created_at 유지
+      created_at: new Date().toISOString() // ✅ 현재 시간으로 덮어쓰기
     })
 
-    // 대상자 재등록
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
     await Promise.all(
       oldNoticeList.data.map(e => axios.delete(`http://localhost:3001/employee_notice/${e.id}`))
