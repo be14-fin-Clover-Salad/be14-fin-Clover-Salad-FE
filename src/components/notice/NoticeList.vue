@@ -18,6 +18,7 @@
           v-for="(notice, index) in pagedNotices"
           :key="notice.id"
           class="notice-row"
+          :class="{ deleted: notice.is_deleted }"
         >
           <td class="notice-index">
             {{ (currentPage - 1) * pageSize + index + 1 }}
@@ -26,14 +27,15 @@
             class="notice-title"
             :class="{
               system: getEmployee(notice.employee_id)?.name === '관리자',
-              read: notice.is_checked,
+              read: !isAdmin && notice.is_checked
             }"
           >
-            <router-link
-              :to="`/support/notice/${notice.id}`"
-              v-html="formatTitle(notice.title)"
-              class="notice-link"
-            ></router-link>
+            <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
+              <del v-if="isAdmin && notice.is_deleted">
+                <span v-html="formatTitle(notice.title)" />
+              </del>
+              <span v-else v-html="formatTitle(notice.title)" />
+            </router-link>
           </td>
           <td class="notice-author">
             {{ getEmployeeDisplayName(notice.employee_id) }}
@@ -60,7 +62,6 @@ import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
 const loginUserId = 2;
-
 const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);
@@ -71,8 +72,10 @@ const loginUser = computed(() => {
   return employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {};
 });
 
+const isAdmin = computed(() => loginUser.value.name === "관리자");
+
 const canWriteNotice = computed(() => {
-  return loginUser.value.name === "관리자" || loginUser.value.level === "팀장";
+  return isAdmin.value || loginUser.value.level === "팀장";
 });
 
 const pagedNotices = computed(() => {
@@ -117,29 +120,27 @@ onMounted(async () => {
   employees.value = employeeData;
 
   const allowedNoticeIds = empNoticeData.map(item => Number(item.notice_id));
-  const isLoginUserAdmin = loginUser.value?.name === "관리자";
 
-  const visibleNotices = isLoginUserAdmin
+  const visibleNotices = isAdmin.value
     ? noticeData
-    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)));
+    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)) && !n.is_deleted);
 
   const joined = visibleNotices.map(n => {
     const writer = employeeData.find(e => e.id === n.employee_id);
     return {
       ...n,
       employee_name: writer?.name || "알 수 없음",
-      is_checked: empNoticeData.find(e => Number(n.id) === Number(e.notice_id))?.is_checked || false
+      is_checked: isAdmin.value
+        ? false
+        : empNoticeData.find(e => Number(n.id) === Number(e.notice_id))?.is_checked || false
     };
   });
 
   notices.value = joined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-  console.log("🔐 로그인 사용자:", loginUser.value);
-  console.log("📌 보여줄 공지 목록:", joined);
 });
 </script>
 
-<style scoped>
+<style>
 .notice-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -172,7 +173,7 @@ onMounted(async () => {
 }
 thead {
   background-color: #f0f7e4;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 th,
@@ -210,6 +211,9 @@ td {
   font-weight: normal;
   font-size: inherit;
 }
+.deleted {
+  opacity: 0.5;
+}
 strong {
   font-weight: 900;
   font-size: 16px;
@@ -221,5 +225,9 @@ strong {
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
+}
+.notice-link del {
+  color: #e05d5d;
+  text-decoration: line-through;
 }
 </style>

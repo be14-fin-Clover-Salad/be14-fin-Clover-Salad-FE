@@ -1,9 +1,14 @@
 <template>
-  <div class="notice-detail-layout" v-if="notice && writer">
+  <div class="notice-detail-layout" v-if="notice && writer && (!notice.is_deleted || isAdmin)">
     <div class="notice-content">
       <button class="back-btn" @click="goBackToList">
         <span class="arrow"></span>목록
       </button>
+
+      <!-- 삭제된 공지 안내 배너 -->
+      <div v-if="notice.is_deleted" class="deleted-banner">
+        🗑 이 공지는 삭제된 상태입니다.
+      </div>
 
       <h1 class="notice-title">{{ notice.title }}</h1>
       <div class="notice-info">
@@ -13,21 +18,10 @@
       <div class="notice-box" v-html="notice.content"></div>
 
       <div class="btn-wrap">
+        <button v-if="canEditOrDelete && !notice.is_deleted" class="btn edit-btn" @click="goEditPage">수정</button>
+        <button v-if="canEditOrDelete && !notice.is_deleted" class="btn delete-btn" @click="deleteNotice">삭제</button>
         <button
-          v-if="Number(writer.id) === Number(loginUserId)"
-          class="btn edit-btn"
-          @click="goEditPage"
-        >
-          수정
-        </button>
-        <button
-          v-if="Number(writer.id) === Number(loginUserId)"
-          class="btn delete-btn"
-          @click="deleteNotice"
-        >
-          삭제
-        </button>
-        <button
+          v-if="!isAdmin && alreadyChecked !== undefined"
           class="btn check-btn"
           :disabled="alreadyChecked"
           @click="confirmCheck"
@@ -39,12 +33,7 @@
 
     <div class="notice-sidebar">
       <h3>확인자 목록</h3>
-      <input
-        type="text"
-        v-model="searchKeyword"
-        placeholder="검색"
-        class="search-input"
-      />
+      <input type="text" v-model="searchKeyword" placeholder="검색" class="search-input" />
       <ul class="checklist">
         <li
           v-for="entry in filteredCheckList"
@@ -60,6 +49,7 @@
       </ul>
     </div>
   </div>
+
   <div v-else class="not-allowed">해당 공지에 접근할 수 없습니다.</div>
 </template>
 
@@ -80,16 +70,26 @@ const departments = ref([]);
 const checkList = ref([]);
 const searchKeyword = ref("");
 
+const loginUser = computed(() =>
+  employees.value.find(e => Number(e.id) === loginUserId)
+);
+
+const isAdmin = computed(() => {
+  return loginUser.value?.name === '관리자';
+});
+
+const canEditOrDelete = computed(() => {
+  return Number(writer.value?.id) === loginUserId || isAdmin.value;
+});
+
 const formatEmployeeLabel = (id) => {
   const emp = employees.value.find(e => Number(e.id) === Number(id));
-  if (!emp) return "-";
-  const dept = departments.value.find(d => Number(d.id) === Number(emp.department_id));
-  const deptName = dept?.name || '';
-  return `${emp.name} ${emp.level} (${deptName})`;
+  const dept = departments.value.find(d => Number(d.id) === Number(emp?.department_id));
+  return emp ? `${emp.name} ${emp.level} (${dept?.name || ''})` : '-';
 };
 
 const alreadyChecked = computed(() => {
-  return checkList.value.find(e => Number(e.employee_id) === Number(loginUserId))?.is_checked;
+  return checkList.value.find(e => Number(e.employee_id) === loginUserId)?.is_checked;
 });
 
 const filteredCheckList = computed(() => {
@@ -124,9 +124,8 @@ const fetchData = async () => {
 };
 
 const confirmCheck = async () => {
-  const entry = checkList.value.find(e => Number(e.employee_id) === Number(loginUserId));
+  const entry = checkList.value.find(e => Number(e.employee_id) === loginUserId);
   if (!entry || entry.is_checked) return;
-
   try {
     await axios.patch(`http://localhost:3001/employee_notice/${entry.id}`, {
       is_checked: true
@@ -148,9 +147,10 @@ const goBackToList = () => {
 const deleteNotice = async () => {
   const confirmed = confirm('정말 삭제하시겠습니까?');
   if (!confirmed) return;
-
   try {
-    await axios.delete(`http://localhost:3001/notices/${notice.value.id}`);
+    await axios.patch(`http://localhost:3001/notices/${notice.value.id}`, {
+      is_deleted: true
+    });
     alert('삭제되었습니다.');
     router.push('/support/notice');
   } catch (e) {
@@ -204,6 +204,16 @@ onMounted(fetchData);
   line-height: 1.6;
   margin-bottom: 2rem;
 }
+.deleted-banner {
+  background-color: #fff0f0;
+  border: 1px dashed #d11a2a;
+  color: #d11a2a;
+  padding: 10px;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  font-size: 0.95rem;
+  border-radius: 6px;
+}
 
 .btn-wrap {
   display: flex;
@@ -211,7 +221,6 @@ onMounted(fetchData);
   gap: 0.8rem;
   margin: 1.5rem 0;
 }
-
 .btn {
   padding: 0.55rem 1.2rem;
   min-width: 90px;
@@ -222,7 +231,6 @@ onMounted(fetchData);
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
 .edit-btn {
   background-color: #e6f0fb;
   color: #1e6fd9;
@@ -231,7 +239,6 @@ onMounted(fetchData);
 .edit-btn:hover {
   background-color: #cfe2f8;
 }
-
 .delete-btn {
   background-color: #fbe6e6;
   color: #d11a2a;
@@ -240,7 +247,6 @@ onMounted(fetchData);
 .delete-btn:hover {
   background-color: #f5cfcf;
 }
-
 .check-btn {
   background-color: #e6f7ec;
   color: #1eaf67;
@@ -252,7 +258,6 @@ onMounted(fetchData);
   border: 1px solid #ccc;
   cursor: not-allowed;
 }
-
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -273,7 +278,6 @@ onMounted(fetchData);
   color: #1d6b4f;
   border-color: #1d6b4f;
 }
-
 .search-input {
   width: 90%;
   padding: 0.4rem 0.6rem;
@@ -282,7 +286,6 @@ onMounted(fetchData);
   border-radius: 4px;
   font-size: 0.9rem;
 }
-
 .checklist {
   list-style: none;
   padding: 0;
@@ -304,7 +307,6 @@ onMounted(fetchData);
   font-weight: bold;
   color: #2d8f65;
 }
-
 .not-allowed {
   max-width: 960px;
   margin: 3rem auto;
