@@ -4,6 +4,7 @@ import LoginView from "@/views/user/LoginView.vue";
 import HomeView from "@/views/HomeView.vue";
 import { useAuthStore } from "@/stores/auth";
 import ResetPassword from "@/views/user/ResetPassword.vue";
+import Mypage from "@/views/user/Mypage.vue";
 
 const routes = menuList.flatMap((group) =>
   group.items.map((item) => ({
@@ -78,6 +79,17 @@ routes.push({
     title: "고객 상세",
     basePath: "/customer",
   }            
+});
+
+// 마이페이지 라우트 추가
+routes.push({
+  path: "/mypage",
+  component: Mypage,
+  meta: {
+    title: "내 정보 수정",
+    requiresAuth: true,
+    basePath: "/mypage",
+  },
 });
 
 const router = createRouter({

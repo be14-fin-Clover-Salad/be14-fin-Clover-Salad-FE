@@ -43,7 +43,7 @@
               </div>
             </div>
             <div class="dropdown-divider"></div>
-            <div class="dropdown-item">
+            <div class="dropdown-item" @click.stop="goToMypage">
               <img src="/profile.svg" alt="내 정보 수정" class="dropdown-icon" />
               내 정보 수정
             </div>
@@ -85,6 +85,11 @@ const toggleDropdown = () => {
 
 const goHome = () => {
   router.push("/home");
+};
+
+const goToMypage = () => {
+  router.push("/mypage");
+  dropdownOpen.value = false;
 };
 
 const logout = async () => {

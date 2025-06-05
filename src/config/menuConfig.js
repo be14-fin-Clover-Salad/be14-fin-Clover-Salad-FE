@@ -116,4 +116,14 @@ export const menuList = [
       },
     ],
   },
+  {
+    group: "마이페이지",
+    items: [
+      {
+        label: "내 정보 수정",
+        path: "/mypage",
+        component: () => import("@/views/user/Mypage.vue"),
+      },
+    ],
+  },
 ];
