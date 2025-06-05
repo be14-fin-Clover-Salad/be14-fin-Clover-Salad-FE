@@ -31,9 +31,7 @@
             <div style="font-size: 0.9rem; color: #999;">선택된 대상자가 없습니다.</div>
           </template>
         </div>
-        <button type="button" class="add-btn" @click="openAddModal = true">
-          대상 추가
-        </button>
+        <button type="button" class="add-btn" @click="openAddModal = true">대상 추가</button>
       </div>
 
       <div class="submit-wrap">
@@ -116,15 +114,14 @@ const fetchNotice = async () => {
 
 const submitEdit = async () => {
   try {
-    // 공지 수정 (작성자는 그대로 유지)
     await axios.put(`http://localhost:3001/notices/${noticeId}`, {
       title: title.value,
       content: content.value,
       employee_id: employeeId.value,
-      is_deleted: false // 혹시 모르니 명시적으로
+      is_deleted: false,
+      created_at: new Date().toISOString() // ✅ 현재 시간으로 덮어쓰기
     })
 
-    // 기존 대상자 모두 삭제 후 새로 등록
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
     await Promise.all(
       oldNoticeList.data.map(e => axios.delete(`http://localhost:3001/employee_notice/${e.id}`))

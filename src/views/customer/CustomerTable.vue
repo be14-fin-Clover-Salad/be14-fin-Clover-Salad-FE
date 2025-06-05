@@ -2,7 +2,6 @@
   <div class="table-box">
     <div class="table-header">
       <div class="row-count">총 {{ customers.length }}건</div>
-      <!-- <button class="register-button">등록</button> -->
     </div>
     <table>
       <thead>
@@ -18,7 +17,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(customer, index) in customers" :key="customer.id">
+        <tr
+          v-for="(customer, index) in customers"
+          :key="customer.id"
+          @dblclick="goToDetail(customer.id)"
+          class="clickable-row"
+        >
           <td>{{ index + 1 }}</td>
           <td>{{ customer.name }}</td>
           <td>{{ customer.birth }}</td>
@@ -40,6 +44,9 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 const customers = ref([]);
 
 const loadData = async (conditions) => {
@@ -56,6 +63,10 @@ const loadData = async (conditions) => {
       note: "VIP 고객",
     },
   ];
+};
+
+const goToDetail = (id) => {
+  router.push(`/customer/${id}`);
 };
 
 defineExpose({ loadData });
@@ -78,14 +89,6 @@ defineExpose({ loadData });
   font-size: 14px;
   color: #666;
 }
-/* .register-button {
-  background-color: #86b649;
-  color: white;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-} */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -101,5 +104,11 @@ th {
   background-color: #f8f8f8;
   font-weight: 600;
   color: #333;
+}
+.clickable-row {
+  cursor: pointer;
+}
+.clickable-row:hover {
+  background-color: #f6f6f6;
 }
 </style>

@@ -61,7 +61,7 @@ import axios from 'axios';
 const route = useRoute();
 const router = useRouter();
 const noticeId = route.params.id;
-const loginUserId = 8;
+const loginUserId = 2;
 
 const notice = ref(null);
 const writer = ref(null);
@@ -79,7 +79,7 @@ const isAdmin = computed(() => {
 });
 
 const canEditOrDelete = computed(() => {
-  return writer.value?.id === loginUserId || isAdmin.value;
+  return Number(writer.value?.id) === loginUserId || isAdmin.value;
 });
 
 const formatEmployeeLabel = (id) => {

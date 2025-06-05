@@ -30,11 +30,12 @@
               read: !isAdmin && notice.is_checked
             }"
           >
-            <router-link
-              :to="`/support/notice/${notice.id}`"
-              class="notice-link"
-              v-html="formatTitle(notice.title + (notice.is_deleted ? ' (삭제됨)' : ''))"
-            ></router-link>
+            <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
+              <del v-if="isAdmin && notice.is_deleted">
+                <span v-html="formatTitle(notice.title)" />
+              </del>
+              <span v-else v-html="formatTitle(notice.title)" />
+            </router-link>
           </td>
           <td class="notice-author">
             {{ getEmployeeDisplayName(notice.employee_id) }}
@@ -60,7 +61,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
-const loginUserId = 8;
+const loginUserId = 2;
 const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);
@@ -139,7 +140,7 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
+<style>
 .notice-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -172,7 +173,7 @@ onMounted(async () => {
 }
 thead {
   background-color: #f0f7e4;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 th,
@@ -224,5 +225,9 @@ strong {
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
+}
+.notice-link del {
+  color: #e05d5d;
+  text-decoration: line-through;
 }
 </style>
