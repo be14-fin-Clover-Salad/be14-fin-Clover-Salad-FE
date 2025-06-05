@@ -17,10 +17,29 @@
           <input v-model="password" type="password" placeholder="비밀번호" />
         </div>
         <div class="button-group">
-          <button type="button" class="reset-btn">Reset Password</button>
+          <button type="button" class="reset-btn" @click="showResetModal = true">Reset Password</button>
           <button type="submit" class="login-btn">Login</button>
         </div>
       </form>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div v-if="showResetModal" class="modal-overlay" @click="showResetModal = false">
+      <div class="modal-content" @click.stop>
+        <h2>비밀번호 재설정</h2>
+        <form @submit.prevent="handleResetPassword">
+          <div class="form-row">
+            <input v-model="resetCode" placeholder="사번" />
+          </div>
+          <div class="form-row">
+            <input v-model="resetEmail" type="email" placeholder="이메일" />
+          </div>
+          <div class="modal-buttons">
+            <button type="submit" class="send-btn">Send E-mail</button>
+            <button type="button" class="cancel-btn" @click="showResetModal = false">Cancel</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -36,30 +55,53 @@ const password = ref('')
 const router = useRouter()
 const auth = useAuthStore()
 
+// Reset Password 관련 상태
+const showResetModal = ref(false)
+const resetCode = ref('')
+const resetEmail = ref('')
+
+const handleResetPassword = async () => {
+  console.log('handleResetPassword 함수 호출됨');
+  try {
+    const response = await api.post('/employee/password-reset', {
+      code: resetCode.value,
+      email: resetEmail.value
+    });
+
+    console.log('서버 응답:', response);
+    alert(response.data);
+    
+    showResetModal.value = false;
+    resetCode.value = '';
+    resetEmail.value = '';
+  } catch (error) {
+    console.log('서버 응답:', error.response);
+    alert(error.response.data);
+  }
+};
+
 const login = async () => {
   try {
-
-    const res = await api.post('/login', {
+    const res = await api.post('/auth/login', {
       code: code.value,
       password: password.value
-    })
+    });
 
-    const token = res.headers['authorization']?.split(' ')[1]
+    const token = res.headers['authorization']?.split(' ')[1];
     if (!token) {
-      console.warn('⚠️ accessToken이 응답에 포함되지 않았습니다.')
-      return
+      console.warn('⚠️ accessToken이 응답에 포함되지 않았습니다.');
+      return;
     }
 
-    auth.setAccessToken(token)
+    auth.setAccessToken(token);
+    auth.setUserInfo(res.data);
 
-    router.push('/')
+    router.push('/');
   } catch (e) {
-    console.warn('🚨 로그인 실패:', e)
-    console.warn('🚨 에러 메시지:', e.message)
-    console.warn('🚨 응답 데이터:', e.response?.data)
-    alert('로그인에 실패했습니다. 다시 시도해주세요.')
+    console.warn('🚨 로그인 실패:', e);
+    alert('로그인에 실패했습니다. 다시 시도해주세요.');
   }
-}
+};
 </script>
 
 <style scoped>
@@ -169,6 +211,70 @@ const login = async () => {
 
 .login-btn {
   background-color: #d5eb97;
-  color: white;
+  color: #474747;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 52px 32px 32px;
+  border-radius: 8px;
+  width: 400px;
+}
+
+.modal-content h2 {
+  margin: 0 0 34px 0;
+  color: #474747;
+  font-size: 24px;
+  text-align: center;
+}
+
+.modal-content .form-row input {
+  width: calc(100% - 60px);
+  margin: 0 30px;
+}
+
+.modal-content .form-row {
+  margin-bottom: 10px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 34px;
+}
+
+.cancel-btn,
+.send-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #474747;
+}
+
+.send-btn {
+  background-color: #d5eb97;
+  color: #474747;
 }
 </style>

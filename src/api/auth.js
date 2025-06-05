@@ -4,11 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // axios 인스턴스 생성
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: 'http://localhost:8080'
 })
 
 // 응답 인터셉터: accessToken 만료 시 자동 재발급

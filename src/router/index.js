@@ -82,30 +82,30 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
   // 개발 시 로그인 로직 하고 싶지 않으면 아래 부분 주석
-  // if (!authStore.accessToken && localStorage.getItem('access_token')) {
-  //   authStore.setAccessToken(localStorage.getItem('access_token'))
-  // }
+  if (!authStore.accessToken && localStorage.getItem('access_token')) {
+    authStore.setAccessToken(localStorage.getItem('access_token'))
+  }
 
-  // if (to.meta.requiresAuth) {
-  //   if (!authStore.accessToken) {
-  //     try {
-  //       await authStore.refreshToken()
-  //       next()
-  //     } catch {
-  //       next('/login')
-  //     }
-  //   } else {
-  //     next()
-  //   }
-  // } else {
-  //   if (to.path === '/login' && authStore.accessToken) {
-  //     next('/')
-  //   } else {
-  //     next()
-  //   }
-  // }
+  if (to.meta.requiresAuth) {
+    if (!authStore.accessToken) {
+      try {
+        await authStore.refreshToken()
+        next()
+      } catch {
+        next('/login')
+      }
+    } else {
+      next()
+    }
+  } else {
+    if (to.path === '/login' && authStore.accessToken) {
+      next('/')
+    } else {
+      next()
+    }
+  }
   // 여기부터 남기면 개발 단계에서 로그인 로직 건너 뜀
-  next();
+  // next();
 });
 
 export default router;

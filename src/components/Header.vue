@@ -5,7 +5,7 @@
       <img src="/logo_text.svg" alt="logo" class="logo" />
     </div>
 
-    <div class="right">
+    <div class="right" style="position: relative;">
       <!-- 알림 -->
       <div class="notification">
         <img src="/notification.svg" alt="알림" class="icon" />
@@ -15,11 +15,11 @@
       </div>
 
       <!-- 프로필 -->
-      <div class="profile">
+      <div class="profile" @click="toggleDropdown">
         <div class="avatar">
           <img
-            v-if="user.profileImagePath"
-            :src="user.profileImagePath"
+            v-if="user.profilePath"
+            :src="user.profilePath"
             alt="프로필"
           />
           <div v-else class="fallback-avatar">
@@ -27,33 +27,61 @@
           </div>
         </div>
         <div class="info">
-      <div class="team">{{ user.departmentName }}</div>
-      <div class="name">{{ user.name }} {{ user.level }}</div>
-    </div>
+          <div class="team">{{ user.departmentName }}</div>
+          <div class="name">{{ user.name }} {{ user.levelLabel }}</div>
+          <!-- 드롭다운 메뉴 (토글) -->
+          <div class="dropdown-menu" v-if="dropdownOpen">
+            <div class="dropdown-arrow"></div>
+            <div class="dropdown-header">
+              <div class="dropdown-header-left">
+                <img v-if="user.profilePath" :src="user.profilePath" alt="프로필" class="dropdown-avatar" />
+                <div v-else class="dropdown-fallback-avatar">{{ user.name?.charAt(0) }}</div>
+              </div>
+              <div class="dropdown-header-right">
+                <div class="dropdown-team">{{ user.departmentName }}</div>
+                <div class="dropdown-employee">{{ user.name }} 사원</div>
+              </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item">
+              <img src="/profile.svg" alt="내 정보 수정" class="dropdown-icon" />
+              내 정보 수정
+            </div>
+            <div class="dropdown-divider strong"></div>
+            <div class="dropdown-item" @click.stop="logout">
+              <img src="/logout.svg" alt="로그아웃" class="dropdown-icon" />
+              <span class="logout-text">로그아웃</span>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <!-- 로그아웃 버튼 -->
-      <button class="logout" @click="logout">로그아웃</button>
     </div>
   </header>
 </template>
 
 <script setup>
 import { useRouter } from "vue-router";
-import axios from "@/api/auth"; // 설정된 axios 인스턴스
+import axios from "@/api/auth";
 import { useAuthStore } from "@/stores/auth";
-import { ref, onMounted } from "vue";
+import { computed, ref } from "vue";
 
 const router = useRouter();
 const auth = useAuthStore();
 
-const user = ref({
-  name: "",
-  departmentName: "",
-  profileImagePath: null,
-  level: "",
-  notifications: 0
+const user = computed(() => {
+  return auth.userInfo || {
+    name: "",
+    departmentName: "",
+    profilePath: null,
+    levelLabel: "",
+    notifications: 0
+  };
 });
+
+const dropdownOpen = ref(false);
+const toggleDropdown = () => {
+  dropdownOpen.value = !dropdownOpen.value;
+};
 
 const goHome = () => {
   router.push("/home");
@@ -81,59 +109,9 @@ const logout = async () => {
     console.warn("🚨 로그아웃 중 오류:", e.message);
   } finally {
     auth.clearToken();
-    user.value = {
-      name: "",
-      departmentName: "",
-      profileImagePath: null,
-      notifications: 0
-    };
-    router.push('/login');
+    router.push("/login");
   }
 };
-
-// 로그인 응답 데이터로 user 정보 업데이트
-const updateUserInfo = (loginData) => {
-  console.log('로그인 데이터:', loginData);
-  if (!loginData?.loginHeaderInfo) {
-    console.warn('loginHeaderInfo가 없습니다');
-    return;
-  }
-
-  const { name, departmentName, profileImagePath, level } = loginData.loginHeaderInfo;
-
-  user.value = {
-    name: name || "",
-    departmentName: departmentName || "",
-    profileImagePath: profileImagePath || null,
-    level: level || "",
-    notifications: 0
-  };
-
-  localStorage.setItem('userInfo', JSON.stringify(loginData));
-};
-
-// 컴포넌트가 마운트될 때 로컬 스토리지에서 사용자 정보 가져오기
-onMounted(() => {
-  try {
-    const savedUserInfo = localStorage.getItem('userInfo');
-    console.log('저장된 사용자 정보:', savedUserInfo);
-    if (savedUserInfo) {
-      const parsedInfo = JSON.parse(savedUserInfo);
-      updateUserInfo(parsedInfo);
-    } else {
-      // 로컬 스토리지에 데이터가 없는 경우 빈 값으로 초기화
-      user.value = {
-        name: "",
-        departmentName: "",
-        profileImagePath: null,
-        level: "",
-        notifications: 0
-      };
-    }
-  } catch (error) {
-    console.error('사용자 정보를 불러오는 중 오류가 발생했습니다:', error);
-  }
-});
 </script>
 
 <style scoped>
@@ -143,14 +121,13 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 34px;
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
 }
 .left {
   display: flex;
   cursor: pointer;
-  margin: 47px;
+  margin-left: 30px;
 }
 .logo {
   height: 60px;
@@ -160,6 +137,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 15px;
+  padding-right: 40px;
 }
 .notification {
   position: relative;
@@ -188,11 +166,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-right: 8px;
+  height: 30px;
 }
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   overflow: hidden;
   border: 1px solid #ccc;
@@ -221,14 +199,19 @@ onMounted(() => {
 .info {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  height: 100%; /* avatar와 동일 높이 */
   line-height: 1.2;
 }
 .team {
-  font-size: 12px;
-  color: #444;
+  font-size: 11px;
+  color: #4B4B4B;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-weight: 400;
 }
 .name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: #111;
 }
@@ -243,5 +226,122 @@ onMounted(() => {
 }
 .logout:hover {
   background-color: #f5f5f5;
+}
+/* 드롭다운 메뉴 스타일 */
+.dropdown-menu {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 180px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  z-index: 100;
+  padding: 0;
+  margin-top: 8px;
+  font-size: 15px;
+}
+.dropdown-arrow {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #fff;
+  z-index: 101;
+  filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.04));
+}
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px 8px 16px;
+  background: #f7fbef;
+  border-radius: 8px 8px 0 0;
+}
+.dropdown-header-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+.dropdown-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e0e0e0;
+}
+.dropdown-fallback-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #d5eb97;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2f2f2f;
+  border: 1px solid #e0e0e0;
+}
+.dropdown-header-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.dropdown-team {
+  color: #4B4B4B;
+  font-size: 11px;
+  font-weight: 400;
+  margin-bottom: 4px;
+  margin-top: 0;
+}
+.dropdown-employee {
+  color: #111;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.dropdown-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 0 0 0 0;
+}
+.dropdown-divider.strong {
+  background: #e0e0e0;
+}
+.dropdown-item {
+  padding: 7px 0 7px 50px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+.dropdown-item:hover {
+  background: #f7fbef;
+}
+.dropdown-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.dropdown-item:last-of-type .dropdown-icon {
+  margin-left: 2px;
+}
+
+.logout-text {
+  margin-left: -1px;
 }
 </style>
