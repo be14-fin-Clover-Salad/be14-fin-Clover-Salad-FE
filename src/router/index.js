@@ -54,6 +54,14 @@ routes.push({
   },
 });
 
+routes.push({
+  path: "/support/notice/edit/:id",
+  component: () => import("@/views/support/notice/NoticeEdit.vue"),
+  meta: {
+    title: "공지 수정",
+    basePath: "/support/notice",
+  },
+
 // 고객 상세 화면
 routes.push({
   path: "/customer/:id",
@@ -61,7 +69,7 @@ routes.push({
   meta: {
     title: "고객 상세",
     basePath: "/customer",
-  },
+  }            
 });
 
 const router = createRouter({

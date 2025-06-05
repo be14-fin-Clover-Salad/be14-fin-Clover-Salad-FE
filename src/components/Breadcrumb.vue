@@ -20,12 +20,12 @@ const router = useRouter();
 
 const allItems = menuList.flatMap((group) => group.items);
 const matchedItem = computed(() =>
-  allItems.find((item) => item.path === route.path)
+  allItems.find((item) => route.path.startsWith(item.path))
 );
 
 const parentGroup = computed(() => {
   const group = menuList.find((g) =>
-    g.items.some((item) => item.path === route.path)
+    g.items.some((item) => route.path.startsWith(item.path))
   );
   return group?.group || "";
 });
