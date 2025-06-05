@@ -119,9 +119,10 @@ onMounted(async () => {
   const allowedNoticeIds = empNoticeData.map(item => Number(item.notice_id));
   const isLoginUserAdmin = loginUser.value?.name === "관리자";
 
-  const visibleNotices = isLoginUserAdmin
+  const visibleNotices = (isLoginUserAdmin
     ? noticeData
-    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)));
+    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)))
+  ).filter(n => n.is_deleted !== true);
 
   const joined = visibleNotices.map(n => {
     const writer = employeeData.find(e => e.id === n.employee_id);

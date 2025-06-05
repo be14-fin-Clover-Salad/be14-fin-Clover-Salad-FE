@@ -77,770 +77,880 @@
       "title": "업데이트 공지 1번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-02T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "2",
       "title": "업데이트 공지 2번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-03T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "3",
       "title": "긴급 점검 3번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-04T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "4",
       "title": "시스템 점검 4번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-05T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "5",
       "title": "보안 경고 5번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-06T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "6",
       "title": "정기 점검 6번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-07T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "7",
       "title": "이벤트 알림 7번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-08T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "8",
       "title": "서비스 안내 8번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-09T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "9",
       "title": "이벤트 알림 9번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-10T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "10",
       "title": "서비스 안내 10번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-11T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "11",
       "title": "보안 경고 11번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-12T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "12",
       "title": "시스템 점검 12번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-13T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "13",
       "title": "보안 경고 13번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-14T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "14",
       "title": "시스템 점검 14번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-15T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "15",
       "title": "[긴급] 정기 점검 15번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-16T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "16",
       "title": "정기 점검 16번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-17T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "17",
       "title": "업데이트 공지 17번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-18T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "18",
       "title": "시스템 점검 18번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-19T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "19",
       "title": "업데이트 공지 19번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-20T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "20",
       "title": "서비스 안내 20번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-21T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "21",
       "title": "긴급 점검 21번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-22T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "22",
       "title": "긴급 점검 22번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-23T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "23",
       "title": "시스템 점검 23번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-24T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "24",
       "title": "보안 경고 24번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-25T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "25",
       "title": "업데이트 공지 25번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-26T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "26",
       "title": "이벤트 알림 26번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-27T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "27",
       "title": "보안 경고 27번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-28T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "28",
       "title": "보안 경고 28번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-29T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "29",
       "title": "정기 점검 29번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-30T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "30",
       "title": "[긴급] 보안 경고 30번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-31T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "31",
       "title": "보안 경고 31번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-01T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "32",
       "title": "서비스 안내 32번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-02T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "33",
       "title": "이벤트 알림 33번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-03T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "34",
       "title": "보안 경고 34번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-04T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "35",
       "title": "서비스 안내 35번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-05T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "36",
       "title": "시스템 점검 36번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-06T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "37",
       "title": "업데이트 공지 37번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-07T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "38",
       "title": "정기 점검 38번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-08T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "39",
       "title": "서비스 안내 39번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-09T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "40",
       "title": "이벤트 알림 40번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-10T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "41",
       "title": "업데이트 공지 41번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-11T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "42",
       "title": "서비스 안내 42번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-12T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "43",
       "title": "서비스 안내 43번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-13T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "44",
       "title": "보안 경고 44번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-14T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "45",
       "title": "[긴급] 시스템 점검 45번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-15T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "46",
       "title": "보안 경고 46번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-16T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "47",
       "title": "업데이트 공지 47번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-17T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "48",
       "title": "정기 점검 48번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-18T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "49",
       "title": "시스템 점검 49번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-19T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "50",
       "title": "정기 점검 50번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-20T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "51",
       "title": "서비스 안내 51번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-21T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "52",
       "title": "정기 점검 52번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-22T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "53",
       "title": "시스템 점검 53번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-23T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "54",
       "title": "정기 점검 54번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-24T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "55",
       "title": "서비스 안내 55번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-25T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "56",
       "title": "이벤트 알림 56번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-26T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "57",
       "title": "업데이트 공지 57번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-27T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "58",
       "title": "서비스 안내 58번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-28T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "59",
       "title": "이벤트 알림 59번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-29T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "60",
       "title": "[긴급] 이벤트 알림 60번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-30T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "61",
       "title": "보안 경고 61번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-01T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "62",
       "title": "보안 경고 62번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-02T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "63",
       "title": "긴급 점검 63번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-03T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "64",
       "title": "긴급 점검 64번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-04T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "65",
       "title": "보안 경고 65번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-05T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "66",
       "title": "업데이트 공지 66번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-06T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "67",
       "title": "이벤트 알림 67번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-07T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "68",
       "title": "정기 점검 68번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-08T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "69",
       "title": "정기 점검 69번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-09T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "70",
       "title": "서비스 안내 70번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-10T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "71",
       "title": "업데이트 공지 71번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-11T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "72",
       "title": "이벤트 알림 72번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-12T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "73",
       "title": "정기 점검 73번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-13T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "74",
       "title": "업데이트 공지 74번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-14T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "75",
       "title": "[긴급] 정기 점검 75번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-15T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "76",
       "title": "시스템 점검 76번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-16T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "77",
       "title": "업데이트 공지 77번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-17T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "78",
       "title": "이벤트 알림 78번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-18T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "79",
       "title": "보안 경고 79번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-19T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "80",
       "title": "이벤트 알림 80번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-20T09:00:00",
-      "employee_id": 1
+      "employee_id": 1,
+      "is_deleted": false
     },
     {
       "id": "81",
       "title": "업데이트 공지 81번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-21T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "82",
       "title": "보안 경고 82번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-22T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "83",
       "title": "긴급 점검 83번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-23T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "84",
       "title": "정기 점검 84번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-24T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "85",
       "title": "보안 경고 85번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-25T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "86",
       "title": "업데이트 공지 86번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-26T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "87",
       "title": "업데이트 공지 87번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-27T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "88",
       "title": "이벤트 알림 88번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-28T09:00:00",
-      "employee_id": 3
+      "employee_id": 3,
+      "is_deleted": false
     },
     {
       "id": "89",
       "title": "긴급 점검 89번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-29T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "90",
       "title": "[긴급] 보안 경고 90번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-30T09:00:00",
-      "employee_id": 4
+      "employee_id": 4,
+      "is_deleted": false
     },
     {
       "id": "91",
       "title": "업데이트 공지 91번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-31T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "92",
       "title": "시스템 점검 92번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-08-01T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "93",
       "title": "보안 경고 93번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-08-02T09:00:00",
-      "employee_id": 7
+      "employee_id": 7,
+      "is_deleted": false
     },
     {
       "id": "94",
       "title": "이벤트 알림 94번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-08-03T09:00:00",
-      "employee_id": 6
+      "employee_id": 6,
+      "is_deleted": false
     },
     {
       "id": "95",
       "title": "서비스 안내 95번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-08-04T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "96",
       "title": "서비스 안내 96번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-08-05T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "97",
       "title": "긴급 점검 97번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-08-06T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "98",
       "title": "이벤트 알림 98번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-08-07T09:00:00",
-      "employee_id": 5
+      "employee_id": 5,
+      "is_deleted": false
     },
     {
       "id": "99",
       "title": "이벤트 알림 99번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-08-08T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "100",
       "title": "서비스 안내 100번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-08-09T09:00:00",
-      "employee_id": 2
+      "employee_id": 2,
+      "is_deleted": false
     },
     {
       "id": "101",
       "title": "관리자 공지 101번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-10T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "102",
       "title": "[긴급] 관리자 공지 102번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-11T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "103",
       "title": "관리자 공지 103번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-12T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "104",
       "title": "[긴급] 관리자 공지 104번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-13T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "105",
       "title": "관리자 공지 105번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-14T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "106",
       "title": "[긴급] 관리자 공지 106번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-15T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "107",
       "title": "관리자 공지 107번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-16T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "108",
       "title": "[긴급] 관리자 공지 108번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-17T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "109",
       "title": "관리자 공지 109번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-18T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     },
     {
       "id": "110",
       "title": "[긴급] 관리자 공지 110번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-19T09:00:00",
-      "employee_id": 8
+      "employee_id": 8,
+      "is_deleted": false
     }
   ],
   "employee_notice": [

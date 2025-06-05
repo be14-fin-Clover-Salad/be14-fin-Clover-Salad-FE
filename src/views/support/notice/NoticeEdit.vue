@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-create-layout">
+  <div class="notice-create-layout" v-if="!isDeleted">
     <div class="notice-header">
       <h2>공지사항 수정</h2>
       <router-link to="/support/notice" class="back-btn">목록</router-link>
@@ -51,6 +51,7 @@
       @close="openAddModal = false"
     />
   </div>
+  <div v-else class="not-allowed">삭제된 공지는 수정할 수 없습니다.</div>
 </template>
 
 <script setup>
@@ -67,6 +68,9 @@ const loginUserId = 2
 
 const title = ref('')
 const content = ref('')
+const isDeleted = ref(false)
+const employeeId = ref(null)
+
 const selectedEmployees = ref([])
 const openAddModal = ref(false)
 const employees = ref([])
@@ -93,8 +97,16 @@ const fetchNotice = async () => {
     axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
   ])
 
-  title.value = noticeRes.data.title
-  content.value = noticeRes.data.content
+  const data = noticeRes.data
+  if (data.is_deleted) {
+    isDeleted.value = true
+    return
+  }
+
+  title.value = data.title
+  content.value = data.content
+  employeeId.value = data.employee_id
+
   employees.value = empRes.data
   departments.value = deptRes.data
 
@@ -104,13 +116,15 @@ const fetchNotice = async () => {
 
 const submitEdit = async () => {
   try {
+    // 공지 수정 (작성자는 그대로 유지)
     await axios.put(`http://localhost:3001/notices/${noticeId}`, {
       title: title.value,
       content: content.value,
-      employee_id: loginUserId,
-      created_at: new Date().toISOString()
+      employee_id: employeeId.value,
+      is_deleted: false // 혹시 모르니 명시적으로
     })
 
+    // 기존 대상자 모두 삭제 후 새로 등록
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
     await Promise.all(
       oldNoticeList.data.map(e => axios.delete(`http://localhost:3001/employee_notice/${e.id}`))
@@ -234,5 +248,12 @@ input[type='text'] {
   border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
+}
+.not-allowed {
+  max-width: 960px;
+  margin: 3rem auto;
+  font-size: 1.2rem;
+  text-align: center;
+  color: #a00;
 }
 </style>

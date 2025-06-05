@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-detail-layout" v-if="notice && writer">
+  <div class="notice-detail-layout" v-if="notice && writer && !notice.is_deleted">
     <div class="notice-content">
       <button class="back-btn" @click="goBackToList">
         <span class="arrow"></span>목록
@@ -13,21 +13,14 @@
       <div class="notice-box" v-html="notice.content"></div>
 
       <div class="btn-wrap">
-        <button
-          v-if="Number(writer.id) === Number(loginUserId)"
-          class="btn edit-btn"
-          @click="goEditPage"
-        >
+        <button v-if="canEditOrDelete" class="btn edit-btn" @click="goEditPage">
           수정
         </button>
-        <button
-          v-if="Number(writer.id) === Number(loginUserId)"
-          class="btn delete-btn"
-          @click="deleteNotice"
-        >
+        <button v-if="canEditOrDelete" class="btn delete-btn" @click="deleteNotice">
           삭제
         </button>
         <button
+          v-if="!isAdmin"
           class="btn check-btn"
           :disabled="alreadyChecked"
           @click="confirmCheck"
@@ -60,6 +53,7 @@
       </ul>
     </div>
   </div>
+
   <div v-else class="not-allowed">해당 공지에 접근할 수 없습니다.</div>
 </template>
 
@@ -100,6 +94,15 @@ const filteredCheckList = computed(() => {
     .filter(entry =>
       formatEmployeeLabel(entry.employee_id).toLowerCase().includes(keyword)
     );
+});
+
+const isAdmin = computed(() => {
+  const user = employees.value.find(e => e.id === loginUserId);
+  return user?.name === '관리자';
+});
+
+const canEditOrDelete = computed(() => {
+  return Number(writer.value?.id) === loginUserId || isAdmin.value;
 });
 
 const formatDate = (dateStr) => dateStr?.split('T')[0];
@@ -150,7 +153,9 @@ const deleteNotice = async () => {
   if (!confirmed) return;
 
   try {
-    await axios.delete(`http://localhost:3001/notices/${notice.value.id}`);
+    await axios.patch(`http://localhost:3001/notices/${notice.value.id}`, {
+      is_deleted: true
+    });
     alert('삭제되었습니다.');
     router.push('/support/notice');
   } catch (e) {
