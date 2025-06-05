@@ -1,71 +1,71 @@
 {
   "departments": [
     {
-      "id": 1,
+      "id": "1",
       "name": "본부"
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "영업1팀"
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "영업2팀"
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "고객지원팀"
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "기술지원팀"
     }
   ],
   "employees": [
     {
-      "id": 1,
+      "id": "1",
       "name": "홍길동",
       "level": "사원",
       "department_id": 1
     },
     {
-      "id": 2,
+      "id": "2",
       "name": "홍길둉",
       "level": "팀장",
       "department_id": 2
     },
     {
-      "id": 3,
+      "id": "3",
       "name": "이영희",
       "level": "사원",
       "department_id": 3
     },
     {
-      "id": 4,
+      "id": "4",
       "name": "최준호",
       "level": "대리",
       "department_id": 4
     },
     {
-      "id": 5,
+      "id": "5",
       "name": "김예림",
       "level": "과장",
       "department_id": 5
     },
     {
-      "id": 6,
+      "id": "6",
       "name": "박상우",
       "level": "사원",
       "department_id": 5
     },
     {
-      "id": 7,
+      "id": "7",
       "name": "윤미래",
       "level": "부장",
       "department_id": 5
     },
     {
-      "id": 8,
+      "id": "8",
       "name": "관리자",
       "level": "관리자",
       "department_id": 1
@@ -73,883 +73,1909 @@
   ],
   "notices": [
     {
-      "id": 1,
+      "id": "1",
       "title": "업데이트 공지 1번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-02T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "업데이트 공지 2번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-03T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "긴급 점검 3번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-04T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "시스템 점검 4번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-05T09:00:00",
-      "employee_id": 3,
-      "is_checked": false
+      "employee_id": 3
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "보안 경고 5번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-06T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "정기 점검 6번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-07T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 7,
+      "id": "7",
       "title": "이벤트 알림 7번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-08T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 8,
+      "id": "8",
       "title": "서비스 안내 8번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-09T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 9,
+      "id": "9",
       "title": "이벤트 알림 9번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-10T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 10,
+      "id": "10",
       "title": "서비스 안내 10번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-11T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 11,
+      "id": "11",
       "title": "보안 경고 11번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-12T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 12,
+      "id": "12",
       "title": "시스템 점검 12번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-13T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 13,
+      "id": "13",
       "title": "보안 경고 13번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-14T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 14,
+      "id": "14",
       "title": "시스템 점검 14번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-15T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 15,
+      "id": "15",
       "title": "[긴급] 정기 점검 15번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-16T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 16,
+      "id": "16",
       "title": "정기 점검 16번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-17T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 17,
+      "id": "17",
       "title": "업데이트 공지 17번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-18T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 18,
+      "id": "18",
       "title": "시스템 점검 18번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-19T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 19,
+      "id": "19",
       "title": "업데이트 공지 19번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-20T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 20,
+      "id": "20",
       "title": "서비스 안내 20번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-21T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 21,
+      "id": "21",
       "title": "긴급 점검 21번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-22T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 22,
+      "id": "22",
       "title": "긴급 점검 22번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-23T09:00:00",
-      "employee_id": 3,
-      "is_checked": false
+      "employee_id": 3
     },
     {
-      "id": 23,
+      "id": "23",
       "title": "시스템 점검 23번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-24T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 24,
+      "id": "24",
       "title": "보안 경고 24번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-25T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 25,
+      "id": "25",
       "title": "업데이트 공지 25번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-26T09:00:00",
-      "employee_id": 3,
-      "is_checked": false
+      "employee_id": 3
     },
     {
-      "id": 26,
+      "id": "26",
       "title": "이벤트 알림 26번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-27T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 27,
+      "id": "27",
       "title": "보안 경고 27번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-28T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 28,
+      "id": "28",
       "title": "보안 경고 28번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-05-29T09:00:00",
-      "employee_id": 5,
-      "is_checked": false
+      "employee_id": 5
     },
     {
-      "id": 29,
+      "id": "29",
       "title": "정기 점검 29번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-05-30T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 30,
+      "id": "30",
       "title": "[긴급] 보안 경고 30번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-05-31T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 31,
+      "id": "31",
       "title": "보안 경고 31번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-01T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 32,
+      "id": "32",
       "title": "서비스 안내 32번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-02T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 33,
+      "id": "33",
       "title": "이벤트 알림 33번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-03T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 34,
+      "id": "34",
       "title": "보안 경고 34번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-04T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 35,
+      "id": "35",
       "title": "서비스 안내 35번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-05T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 36,
+      "id": "36",
       "title": "시스템 점검 36번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-06T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 37,
+      "id": "37",
       "title": "업데이트 공지 37번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-07T09:00:00",
-      "employee_id": 3,
-      "is_checked": false
+      "employee_id": 3
     },
     {
-      "id": 38,
+      "id": "38",
       "title": "정기 점검 38번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-08T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 39,
+      "id": "39",
       "title": "서비스 안내 39번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-09T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 40,
+      "id": "40",
       "title": "이벤트 알림 40번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-10T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 41,
+      "id": "41",
       "title": "업데이트 공지 41번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-11T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 42,
+      "id": "42",
       "title": "서비스 안내 42번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-12T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 43,
+      "id": "43",
       "title": "서비스 안내 43번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-13T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 44,
+      "id": "44",
       "title": "보안 경고 44번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-14T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 45,
+      "id": "45",
       "title": "[긴급] 시스템 점검 45번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-15T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 46,
+      "id": "46",
       "title": "보안 경고 46번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-16T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 47,
+      "id": "47",
       "title": "업데이트 공지 47번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-17T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 48,
+      "id": "48",
       "title": "정기 점검 48번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-18T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 49,
+      "id": "49",
       "title": "시스템 점검 49번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-19T09:00:00",
-      "employee_id": 5,
-      "is_checked": false
+      "employee_id": 5
     },
     {
-      "id": 50,
+      "id": "50",
       "title": "정기 점검 50번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-20T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 51,
+      "id": "51",
       "title": "서비스 안내 51번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-21T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 52,
+      "id": "52",
       "title": "정기 점검 52번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-22T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 53,
+      "id": "53",
       "title": "시스템 점검 53번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-23T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 54,
+      "id": "54",
       "title": "정기 점검 54번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-06-24T09:00:00",
-      "employee_id": 5,
-      "is_checked": false
+      "employee_id": 5
     },
     {
-      "id": 55,
+      "id": "55",
       "title": "서비스 안내 55번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-25T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 56,
+      "id": "56",
       "title": "이벤트 알림 56번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-26T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 57,
+      "id": "57",
       "title": "업데이트 공지 57번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-27T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 58,
+      "id": "58",
       "title": "서비스 안내 58번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-28T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 59,
+      "id": "59",
       "title": "이벤트 알림 59번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-06-29T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 60,
+      "id": "60",
       "title": "[긴급] 이벤트 알림 60번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-06-30T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 61,
+      "id": "61",
       "title": "보안 경고 61번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-01T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 62,
+      "id": "62",
       "title": "보안 경고 62번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-02T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 63,
+      "id": "63",
       "title": "긴급 점검 63번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-03T09:00:00",
-      "employee_id": 5,
-      "is_checked": false
+      "employee_id": 5
     },
     {
-      "id": 64,
+      "id": "64",
       "title": "긴급 점검 64번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-04T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 65,
+      "id": "65",
       "title": "보안 경고 65번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-05T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 66,
+      "id": "66",
       "title": "업데이트 공지 66번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-06T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 67,
+      "id": "67",
       "title": "이벤트 알림 67번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-07T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 68,
+      "id": "68",
       "title": "정기 점검 68번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-08T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 69,
+      "id": "69",
       "title": "정기 점검 69번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-09T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 70,
+      "id": "70",
       "title": "서비스 안내 70번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-10T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 71,
+      "id": "71",
       "title": "업데이트 공지 71번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-11T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
+      "employee_id": 6
     },
     {
-      "id": 72,
+      "id": "72",
       "title": "이벤트 알림 72번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-12T09:00:00",
-      "employee_id": 2,
-      "is_checked": false
+      "employee_id": 2
     },
     {
-      "id": 73,
+      "id": "73",
       "title": "정기 점검 73번",
       "content": "공지사항 내용입니다. 시스템 점검 안내 등",
       "created_at": "2025-07-13T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
+      "employee_id": 4
     },
     {
-      "id": 74,
+      "id": "74",
       "title": "업데이트 공지 74번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-14T09:00:00",
-      "employee_id": 1,
-      "is_checked": false
+      "employee_id": 1
     },
     {
-      "id": 75,
+      "id": "75",
       "title": "[긴급] 정기 점검 75번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-15T09:00:00",
-      "employee_id": 3,
-      "is_checked": false
+      "employee_id": 3
     },
     {
-      "id": 76,
+      "id": "76",
       "title": "시스템 점검 76번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-16T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 77,
+      "id": "77",
       "title": "업데이트 공지 77번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-17T09:00:00",
-      "employee_id": 7,
-      "is_checked": false
+      "employee_id": 7
     },
     {
-      "id": 78,
+      "id": "78",
       "title": "이벤트 알림 78번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-18T09:00:00",
+      "employee_id": 2
+    },
+    {
+      "id": "79",
+      "title": "보안 경고 79번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-07-19T09:00:00",
+      "employee_id": 7
+    },
+    {
+      "id": "80",
+      "title": "이벤트 알림 80번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-07-20T09:00:00",
+      "employee_id": 1
+    },
+    {
+      "id": "81",
+      "title": "업데이트 공지 81번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-07-21T09:00:00",
+      "employee_id": 3
+    },
+    {
+      "id": "82",
+      "title": "보안 경고 82번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-07-22T09:00:00",
+      "employee_id": 5
+    },
+    {
+      "id": "83",
+      "title": "긴급 점검 83번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-07-23T09:00:00",
+      "employee_id": 6
+    },
+    {
+      "id": "84",
+      "title": "정기 점검 84번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-07-24T09:00:00",
+      "employee_id": 7
+    },
+    {
+      "id": "85",
+      "title": "보안 경고 85번",
+      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
+      "created_at": "2025-07-25T09:00:00",
+      "employee_id": 4
+    },
+    {
+      "id": "86",
+      "title": "업데이트 공지 86번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-07-26T09:00:00",
+      "employee_id": 6
+    },
+    {
+      "id": "87",
+      "title": "업데이트 공지 87번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-07-27T09:00:00",
+      "employee_id": 4
+    },
+    {
+      "id": "88",
+      "title": "이벤트 알림 88번",
+      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
+      "created_at": "2025-07-28T09:00:00",
+      "employee_id": 3
+    },
+    {
+      "id": "89",
+      "title": "긴급 점검 89번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-07-29T09:00:00",
+      "employee_id": 6
+    },
+    {
+      "id": "90",
+      "title": "[긴급] 보안 경고 90번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-07-30T09:00:00",
+      "employee_id": 4
+    },
+    {
+      "id": "91",
+      "title": "업데이트 공지 91번",
+      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
+      "created_at": "2025-07-31T09:00:00",
+      "employee_id": 6
+    },
+    {
+      "id": "92",
+      "title": "시스템 점검 92번",
+      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
+      "created_at": "2025-08-01T09:00:00",
+      "employee_id": 2
+    },
+    {
+      "id": "93",
+      "title": "보안 경고 93번",
+      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
+      "created_at": "2025-08-02T09:00:00",
+      "employee_id": 7
+    },
+    {
+      "id": "94",
+      "title": "이벤트 알림 94번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-08-03T09:00:00",
+      "employee_id": 6
+    },
+    {
+      "id": "95",
+      "title": "서비스 안내 95번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-08-04T09:00:00",
+      "employee_id": 5
+    },
+    {
+      "id": "96",
+      "title": "서비스 안내 96번",
+      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
+      "created_at": "2025-08-05T09:00:00",
+      "employee_id": 5
+    },
+    {
+      "id": "97",
+      "title": "긴급 점검 97번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-08-06T09:00:00",
+      "employee_id": 5
+    },
+    {
+      "id": "98",
+      "title": "이벤트 알림 98번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-08-07T09:00:00",
+      "employee_id": 5
+    },
+    {
+      "id": "99",
+      "title": "이벤트 알림 99번",
+      "content": "서비스 이용에 참고 바랍니다.",
+      "created_at": "2025-08-08T09:00:00",
+      "employee_id": 2
+    },
+    {
+      "id": "100",
+      "title": "서비스 안내 100번",
+      "content": "서버 업데이트 예정입니다.",
+      "created_at": "2025-08-09T09:00:00",
+      "employee_id": 2
+    },
+    {
+      "id": "101",
+      "title": "관리자 공지 101번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-10T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "102",
+      "title": "[긴급] 관리자 공지 102번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-11T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "103",
+      "title": "관리자 공지 103번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-12T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "104",
+      "title": "[긴급] 관리자 공지 104번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-13T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "105",
+      "title": "관리자 공지 105번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-14T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "106",
+      "title": "[긴급] 관리자 공지 106번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-15T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "107",
+      "title": "관리자 공지 107번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-16T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "108",
+      "title": "[긴급] 관리자 공지 108번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-17T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "109",
+      "title": "관리자 공지 109번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-18T09:00:00",
+      "employee_id": 8
+    },
+    {
+      "id": "110",
+      "title": "[긴급] 관리자 공지 110번",
+      "content": "관리자 작성 공지사항입니다.",
+      "created_at": "2025-08-19T09:00:00",
+      "employee_id": 8
+    }
+  ],
+  "employee_notice": [
+    {
+      "id": "1",
+      "notice_id": 1,
       "employee_id": 2,
       "is_checked": false
     },
     {
-      "id": 79,
-      "title": "보안 경고 79번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-07-19T09:00:00",
-      "employee_id": 7,
+      "id": "2",
+      "notice_id": 1,
+      "employee_id": 3,
       "is_checked": false
     },
     {
-      "id": 80,
-      "title": "이벤트 알림 80번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-07-20T09:00:00",
+      "id": "3",
+      "notice_id": 2,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "4",
+      "notice_id": 2,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "5",
+      "notice_id": 3,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "6",
+      "notice_id": 4,
       "employee_id": 1,
       "is_checked": false
     },
     {
-      "id": 81,
-      "title": "업데이트 공지 81번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-07-21T09:00:00",
-      "employee_id": 3,
+      "id": "7",
+      "notice_id": 4,
+      "employee_id": 2,
       "is_checked": false
     },
     {
-      "id": 82,
-      "title": "보안 경고 82번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-07-22T09:00:00",
-      "employee_id": 5,
-      "is_checked": false
-    },
-    {
-      "id": 83,
-      "title": "긴급 점검 83번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-07-23T09:00:00",
+      "id": "8",
+      "notice_id": 5,
       "employee_id": 6,
       "is_checked": false
     },
     {
-      "id": 84,
-      "title": "정기 점검 84번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-07-24T09:00:00",
+      "id": "9",
+      "notice_id": 5,
       "employee_id": 7,
       "is_checked": false
     },
     {
-      "id": 85,
-      "title": "보안 경고 85번",
-      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
-      "created_at": "2025-07-25T09:00:00",
-      "employee_id": 4,
+      "id": "10",
+      "notice_id": 1,
+      "employee_id": 1,
       "is_checked": false
     },
     {
-      "id": 86,
-      "title": "업데이트 공지 86번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-07-26T09:00:00",
+      "id": "11",
+      "notice_id": 2,
       "employee_id": 6,
       "is_checked": false
     },
     {
-      "id": 87,
-      "title": "업데이트 공지 87번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-07-27T09:00:00",
-      "employee_id": 4,
+      "id": "12",
+      "notice_id": 3,
+      "employee_id": 1,
       "is_checked": false
     },
     {
-      "id": 88,
-      "title": "이벤트 알림 88번",
-      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
-      "created_at": "2025-07-28T09:00:00",
+      "id": "13",
+      "notice_id": 4,
       "employee_id": 3,
       "is_checked": false
     },
     {
-      "id": 89,
-      "title": "긴급 점검 89번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-07-29T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
-    },
-    {
-      "id": 90,
-      "title": "[긴급] 보안 경고 90번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-07-30T09:00:00",
-      "employee_id": 4,
-      "is_checked": false
-    },
-    {
-      "id": 91,
-      "title": "업데이트 공지 91번",
-      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
-      "created_at": "2025-07-31T09:00:00",
-      "employee_id": 6,
-      "is_checked": false
-    },
-    {
-      "id": 92,
-      "title": "시스템 점검 92번",
-      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
-      "created_at": "2025-08-01T09:00:00",
+      "id": "14",
+      "notice_id": 5,
       "employee_id": 2,
       "is_checked": false
     },
     {
-      "id": 93,
-      "title": "보안 경고 93번",
-      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
-      "created_at": "2025-08-02T09:00:00",
+      "id": "15",
+      "notice_id": 6,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "16",
+      "notice_id": 7,
       "employee_id": 7,
       "is_checked": false
     },
     {
-      "id": 94,
-      "title": "이벤트 알림 94번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-08-03T09:00:00",
+      "id": "17",
+      "notice_id": 8,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "18",
+      "notice_id": 9,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "19",
+      "notice_id": 10,
       "employee_id": 6,
       "is_checked": false
     },
     {
-      "id": 95,
-      "title": "서비스 안내 95번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-08-04T09:00:00",
-      "employee_id": 5,
+      "id": "20",
+      "notice_id": 11,
+      "employee_id": 4,
       "is_checked": false
     },
     {
-      "id": 96,
-      "title": "서비스 안내 96번",
-      "content": "공지사항 내용입니다. 시스템 점검 안내 등",
-      "created_at": "2025-08-05T09:00:00",
-      "employee_id": 5,
+      "id": "21",
+      "notice_id": 12,
+      "employee_id": 7,
       "is_checked": false
     },
     {
-      "id": 97,
-      "title": "긴급 점검 97번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-08-06T09:00:00",
-      "employee_id": 5,
+      "id": "22",
+      "notice_id": 13,
+      "employee_id": 7,
       "is_checked": false
     },
     {
-      "id": 98,
-      "title": "이벤트 알림 98번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-08-07T09:00:00",
-      "employee_id": 5,
-      "is_checked": false
-    },
-    {
-      "id": 99,
-      "title": "이벤트 알림 99번",
-      "content": "서비스 이용에 참고 바랍니다.",
-      "created_at": "2025-08-08T09:00:00",
+      "id": "23",
+      "notice_id": 14,
       "employee_id": 2,
       "is_checked": false
     },
     {
-      "id": 100,
-      "title": "서비스 안내 100번",
-      "content": "서버 업데이트 예정입니다.",
-      "created_at": "2025-08-09T09:00:00",
+      "id": "24",
+      "notice_id": 15,
       "employee_id": 2,
       "is_checked": false
     },
     {
-      "id": 101,
-      "title": "관리자 공지 101번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-10T09:00:00",
+      "id": "25",
+      "notice_id": 16,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "26",
+      "notice_id": 17,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "27",
+      "notice_id": 18,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "28",
+      "notice_id": 19,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "29",
+      "notice_id": 20,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "30",
+      "notice_id": 21,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "31",
+      "notice_id": 22,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "32",
+      "notice_id": 23,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "33",
+      "notice_id": 24,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "34",
+      "notice_id": 25,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "35",
+      "notice_id": 26,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "36",
+      "notice_id": 27,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "37",
+      "notice_id": 28,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "38",
+      "notice_id": 29,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "39",
+      "notice_id": 30,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "40",
+      "notice_id": 31,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "41",
+      "notice_id": 32,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "42",
+      "notice_id": 33,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "43",
+      "notice_id": 34,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "44",
+      "notice_id": 35,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "45",
+      "notice_id": 36,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "46",
+      "notice_id": 37,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "47",
+      "notice_id": 38,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "48",
+      "notice_id": 39,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "49",
+      "notice_id": 40,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "50",
+      "notice_id": 41,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "51",
+      "notice_id": 42,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "52",
+      "notice_id": 43,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "53",
+      "notice_id": 44,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "54",
+      "notice_id": 45,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "55",
+      "notice_id": 46,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "56",
+      "notice_id": 47,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "57",
+      "notice_id": 48,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "58",
+      "notice_id": 49,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "59",
+      "notice_id": 50,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "60",
+      "notice_id": 51,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "61",
+      "notice_id": 52,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "62",
+      "notice_id": 53,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "63",
+      "notice_id": 54,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "64",
+      "notice_id": 55,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "65",
+      "notice_id": 56,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "66",
+      "notice_id": 57,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "67",
+      "notice_id": 58,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "68",
+      "notice_id": 59,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "69",
+      "notice_id": 60,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "70",
+      "notice_id": 61,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "71",
+      "notice_id": 62,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "72",
+      "notice_id": 63,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "73",
+      "notice_id": 64,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "74",
+      "notice_id": 65,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "75",
+      "notice_id": 66,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "76",
+      "notice_id": 67,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "77",
+      "notice_id": 68,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "78",
+      "notice_id": 69,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "79",
+      "notice_id": 70,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "80",
+      "notice_id": 71,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "81",
+      "notice_id": 72,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "82",
+      "notice_id": 73,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "83",
+      "notice_id": 74,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "84",
+      "notice_id": 75,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "85",
+      "notice_id": 76,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "86",
+      "notice_id": 77,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "87",
+      "notice_id": 78,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "88",
+      "notice_id": 79,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "89",
+      "notice_id": 80,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "90",
+      "notice_id": 81,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "91",
+      "notice_id": 82,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "92",
+      "notice_id": 83,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "93",
+      "notice_id": 84,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "94",
+      "notice_id": 85,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "95",
+      "notice_id": 86,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "96",
+      "notice_id": 87,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "97",
+      "notice_id": 88,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "98",
+      "notice_id": 89,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "99",
+      "notice_id": 90,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "100",
+      "notice_id": 91,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "101",
+      "notice_id": 92,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "102",
+      "notice_id": 93,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "103",
+      "notice_id": 94,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "104",
+      "notice_id": 95,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "105",
+      "notice_id": 96,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "106",
+      "notice_id": 97,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "107",
+      "notice_id": 98,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "108",
+      "notice_id": 99,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "109",
+      "notice_id": 100,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "110",
+      "notice_id": 101,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 102,
-      "title": "[긴급] 관리자 공지 102번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-11T09:00:00",
+      "id": "111",
+      "notice_id": 102,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 103,
-      "title": "관리자 공지 103번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-12T09:00:00",
+      "id": "112",
+      "notice_id": 103,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 104,
-      "title": "[긴급] 관리자 공지 104번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-13T09:00:00",
+      "id": "113",
+      "notice_id": 104,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 105,
-      "title": "관리자 공지 105번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-14T09:00:00",
+      "id": "114",
+      "notice_id": 105,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 106,
-      "title": "[긴급] 관리자 공지 106번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-15T09:00:00",
+      "id": "115",
+      "notice_id": 106,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 107,
-      "title": "관리자 공지 107번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-16T09:00:00",
+      "id": "116",
+      "notice_id": 107,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 108,
-      "title": "[긴급] 관리자 공지 108번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-17T09:00:00",
+      "id": "117",
+      "notice_id": 108,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 109,
-      "title": "관리자 공지 109번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-18T09:00:00",
+      "id": "118",
+      "notice_id": 109,
       "employee_id": 8,
       "is_checked": false
     },
     {
-      "id": 110,
-      "title": "[긴급] 관리자 공지 110번",
-      "content": "관리자 작성 공지사항입니다.",
-      "created_at": "2025-08-19T09:00:00",
+      "id": "119",
+      "notice_id": 110,
       "employee_id": 8,
+      "is_checked": false
+    },
+    {
+      "id": "120",
+      "notice_id": 101,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "121",
+      "notice_id": 101,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "122",
+      "notice_id": 101,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "123",
+      "notice_id": 101,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "124",
+      "notice_id": 101,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "125",
+      "notice_id": 101,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "126",
+      "notice_id": 101,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "127",
+      "notice_id": 102,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "128",
+      "notice_id": 102,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "129",
+      "notice_id": 102,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "130",
+      "notice_id": 102,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "131",
+      "notice_id": 102,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "132",
+      "notice_id": 102,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "133",
+      "notice_id": 102,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "134",
+      "notice_id": 103,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "135",
+      "notice_id": 103,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "136",
+      "notice_id": 103,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "137",
+      "notice_id": 103,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "138",
+      "notice_id": 103,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "139",
+      "notice_id": 103,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "140",
+      "notice_id": 103,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "141",
+      "notice_id": 104,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "142",
+      "notice_id": 104,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "143",
+      "notice_id": 104,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "144",
+      "notice_id": 104,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "145",
+      "notice_id": 104,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "146",
+      "notice_id": 104,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "147",
+      "notice_id": 104,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "148",
+      "notice_id": 105,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "149",
+      "notice_id": 105,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "150",
+      "notice_id": 105,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "151",
+      "notice_id": 105,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "152",
+      "notice_id": 105,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "153",
+      "notice_id": 105,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "154",
+      "notice_id": 105,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "155",
+      "notice_id": 106,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "156",
+      "notice_id": 106,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "157",
+      "notice_id": 106,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "158",
+      "notice_id": 106,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "159",
+      "notice_id": 106,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "160",
+      "notice_id": 106,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "161",
+      "notice_id": 106,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "162",
+      "notice_id": 107,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "163",
+      "notice_id": 107,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "164",
+      "notice_id": 107,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "165",
+      "notice_id": 107,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "166",
+      "notice_id": 107,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "167",
+      "notice_id": 107,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "168",
+      "notice_id": 107,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "169",
+      "notice_id": 108,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "170",
+      "notice_id": 108,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "171",
+      "notice_id": 108,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "172",
+      "notice_id": 108,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "173",
+      "notice_id": 108,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "174",
+      "notice_id": 108,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "175",
+      "notice_id": 108,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "176",
+      "notice_id": 109,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "177",
+      "notice_id": 109,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "178",
+      "notice_id": 109,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "179",
+      "notice_id": 109,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "180",
+      "notice_id": 109,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "181",
+      "notice_id": 109,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "182",
+      "notice_id": 109,
+      "employee_id": 7,
+      "is_checked": false
+    },
+    {
+      "id": "183",
+      "notice_id": 110,
+      "employee_id": 1,
+      "is_checked": false
+    },
+    {
+      "id": "184",
+      "notice_id": 110,
+      "employee_id": 2,
+      "is_checked": false
+    },
+    {
+      "id": "185",
+      "notice_id": 110,
+      "employee_id": 3,
+      "is_checked": false
+    },
+    {
+      "id": "186",
+      "notice_id": 110,
+      "employee_id": 4,
+      "is_checked": false
+    },
+    {
+      "id": "187",
+      "notice_id": 110,
+      "employee_id": 5,
+      "is_checked": false
+    },
+    {
+      "id": "188",
+      "notice_id": 110,
+      "employee_id": 6,
+      "is_checked": false
+    },
+    {
+      "id": "189",
+      "notice_id": 110,
+      "employee_id": 7,
       "is_checked": false
     }
   ]
