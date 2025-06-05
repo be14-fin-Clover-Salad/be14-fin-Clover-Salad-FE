@@ -61,6 +61,7 @@ routes.push({
     title: "공지 수정",
     basePath: "/support/notice",
   },
+});
 
 // 고객 상세 화면
 routes.push({
