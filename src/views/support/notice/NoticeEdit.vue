@@ -70,6 +70,7 @@ const title = ref('')
 const content = ref('')
 const isDeleted = ref(false)
 const employeeId = ref(null)
+const createdAt = ref('')
 
 const selectedEmployees = ref([])
 const openAddModal = ref(false)
@@ -106,6 +107,7 @@ const fetchNotice = async () => {
   title.value = data.title
   content.value = data.content
   employeeId.value = data.employee_id
+  createdAt.value = data.created_at // ✅ created_at 값 보존
 
   employees.value = empRes.data
   departments.value = deptRes.data
@@ -116,15 +118,16 @@ const fetchNotice = async () => {
 
 const submitEdit = async () => {
   try {
-    // 공지 수정 (작성자는 그대로 유지)
+    // 공지 수정 요청 시 created_at 포함
     await axios.put(`http://localhost:3001/notices/${noticeId}`, {
       title: title.value,
       content: content.value,
       employee_id: employeeId.value,
-      is_deleted: false // 혹시 모르니 명시적으로
+      is_deleted: false,
+      created_at: createdAt.value // ✅ created_at 유지
     })
 
-    // 기존 대상자 모두 삭제 후 새로 등록
+    // 대상자 재등록
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
     await Promise.all(
       oldNoticeList.data.map(e => axios.delete(`http://localhost:3001/employee_notice/${e.id}`))
