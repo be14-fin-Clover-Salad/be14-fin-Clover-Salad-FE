@@ -61,7 +61,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
-const loginUserId = 8;
+const loginUserId = 2;
 const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);
@@ -173,7 +173,7 @@ onMounted(async () => {
 }
 thead {
   background-color: #f0f7e4;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 th,
