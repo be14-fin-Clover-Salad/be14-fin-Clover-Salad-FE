@@ -3,6 +3,7 @@ import { menuList } from "@/config/menuConfig";
 import LoginView from "@/views/user/LoginView.vue";
 import HomeView from "@/views/HomeView.vue";
 import { useAuthStore } from "@/stores/auth";
+import ResetPassword from "@/views/user/ResetPassword.vue";
 
 const routes = menuList.flatMap((group) =>
   group.items.map((item) => ({
@@ -21,6 +22,12 @@ routes.unshift({
   path: "/login",
   component: LoginView,
   meta: { layout: "none", title: "로그인" },
+});
+
+routes.unshift({
+  path: "/reset-password",
+  component: ResetPassword,
+  meta: { layout: "none", title: "비밀번호 재설정" },
 });
 
 routes.unshift({
