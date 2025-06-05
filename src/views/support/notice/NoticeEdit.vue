@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-create-layout">
+  <div class="notice-create-layout" v-if="!isDeleted">
     <div class="notice-header">
       <h2>공지사항 수정</h2>
       <router-link to="/support/notice" class="back-btn">목록</router-link>
@@ -31,9 +31,7 @@
             <div style="font-size: 0.9rem; color: #999;">선택된 대상자가 없습니다.</div>
           </template>
         </div>
-        <button type="button" class="add-btn" @click="openAddModal = true">
-          대상 추가
-        </button>
+        <button type="button" class="add-btn" @click="openAddModal = true">대상 추가</button>
       </div>
 
       <div class="submit-wrap">
@@ -51,6 +49,7 @@
       @close="openAddModal = false"
     />
   </div>
+  <div v-else class="not-allowed">삭제된 공지는 수정할 수 없습니다.</div>
 </template>
 
 <script setup>
@@ -67,6 +66,9 @@ const loginUserId = 2
 
 const title = ref('')
 const content = ref('')
+const isDeleted = ref(false)
+const employeeId = ref(null)
+
 const selectedEmployees = ref([])
 const openAddModal = ref(false)
 const employees = ref([])
@@ -93,8 +95,16 @@ const fetchNotice = async () => {
     axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
   ])
 
-  title.value = noticeRes.data.title
-  content.value = noticeRes.data.content
+  const data = noticeRes.data
+  if (data.is_deleted) {
+    isDeleted.value = true
+    return
+  }
+
+  title.value = data.title
+  content.value = data.content
+  employeeId.value = data.employee_id
+
   employees.value = empRes.data
   departments.value = deptRes.data
 
@@ -107,8 +117,9 @@ const submitEdit = async () => {
     await axios.put(`http://localhost:3001/notices/${noticeId}`, {
       title: title.value,
       content: content.value,
-      employee_id: loginUserId,
-      created_at: new Date().toISOString()
+      employee_id: employeeId.value,
+      is_deleted: false,
+      created_at: new Date().toISOString() // ✅ 현재 시간으로 덮어쓰기
     })
 
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
@@ -234,5 +245,12 @@ input[type='text'] {
   border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
+}
+.not-allowed {
+  max-width: 960px;
+  margin: 3rem auto;
+  font-size: 1.2rem;
+  text-align: center;
+  color: #a00;
 }
 </style>
