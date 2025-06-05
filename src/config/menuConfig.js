@@ -87,7 +87,7 @@ export const menuList = [
       {
         label: "문의 사항",
         path: "/support/qna",
-        // component: () => import("@/views/support/QnaView.vue"),
+        component: () => import("@/views/support/qna/QnaView.vue"),
       },
     ],
   },
