@@ -54,6 +54,15 @@ routes.push({
   },
 });
 
+routes.push({
+  path: "/support/notice/edit/:id",
+  component: () => import("@/views/support/notice/NoticeEdit.vue"),
+  meta: {
+    title: "공지 수정",
+    basePath: "/support/notice",
+  },
+});
+
 const router = createRouter({
   history: createWebHistory(),
   routes

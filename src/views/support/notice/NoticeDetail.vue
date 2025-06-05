@@ -1,7 +1,6 @@
 <template>
   <div class="notice-detail-layout" v-if="notice && writer">
     <div class="notice-content">
-      <!-- 뒤로가기 버튼 -->
       <button class="back-btn" @click="$router.back()">
         <span class="arrow"></span>목록
       </button>
@@ -12,8 +11,27 @@
         <span>등록일자: {{ formatDate(notice.created_at) }}</span>
       </div>
       <div class="notice-box" v-html="notice.content"></div>
+
       <div class="btn-wrap">
-        <button class="check-btn" :disabled="alreadyChecked" @click="confirmCheck">
+        <button
+          v-if="Number(writer.id) === Number(loginUserId)"
+          class="btn edit-btn"
+          @click="goEditPage"
+        >
+          수정
+        </button>
+        <button
+          v-if="Number(writer.id) === Number(loginUserId)"
+          class="btn delete-btn"
+          @click="deleteNotice"
+        >
+          삭제
+        </button>
+        <button
+          class="btn check-btn"
+          :disabled="alreadyChecked"
+          @click="confirmCheck"
+        >
           {{ alreadyChecked ? "✔ 확인 완료" : "✅ 확인하기" }}
         </button>
       </div>
@@ -33,7 +51,7 @@
           :key="entry.employee_id"
           :class="{
             checked: entry.is_checked,
-            currentUser: entry.employee_id === loginUserId
+            currentUser: Number(entry.employee_id) === Number(loginUserId)
           }"
         >
           <span>{{ formatEmployeeLabel(entry.employee_id) }}</span>
@@ -47,13 +65,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
 const route = useRoute();
+const router = useRouter();
 const noticeId = route.params.id;
-
-// 로그인 한 유저
 const loginUserId = 2;
 
 const notice = ref(null);
@@ -64,15 +81,15 @@ const checkList = ref([]);
 const searchKeyword = ref("");
 
 const formatEmployeeLabel = (id) => {
-  const emp = employees.value.find(e => e.id == id);
+  const emp = employees.value.find(e => Number(e.id) === Number(id));
   if (!emp) return "-";
-  const dept = departments.value.find(d => d.id == emp.department_id);
+  const dept = departments.value.find(d => Number(d.id) === Number(emp.department_id));
   const deptName = dept?.name || '';
   return `${emp.name} ${emp.level} (${deptName})`;
 };
 
 const alreadyChecked = computed(() => {
-  return checkList.value.find(e => e.employee_id == loginUserId)?.is_checked;
+  return checkList.value.find(e => Number(e.employee_id) === Number(loginUserId))?.is_checked;
 });
 
 const filteredCheckList = computed(() => {
@@ -99,7 +116,7 @@ const fetchData = async () => {
     notice.value = noticeRes.data;
     employees.value = empRes.data;
     departments.value = deptRes.data;
-    writer.value = employees.value.find(e => e.id == notice.value.employee_id);
+    writer.value = employees.value.find(e => Number(e.id) === Number(notice.value.employee_id));
     checkList.value = empNoticeRes.data;
   } catch (e) {
     console.error("❌ fetchData 실패:", e);
@@ -107,7 +124,7 @@ const fetchData = async () => {
 };
 
 const confirmCheck = async () => {
-  const entry = checkList.value.find(e => e.employee_id == loginUserId);
+  const entry = checkList.value.find(e => Number(e.employee_id) === Number(loginUserId));
   if (!entry || entry.is_checked) return;
 
   try {
@@ -117,6 +134,25 @@ const confirmCheck = async () => {
     entry.is_checked = true;
   } catch (e) {
     console.error("❌ 확인 PATCH 실패:", e);
+  }
+};
+
+// ✅ 여기만 수정
+const goEditPage = () => {
+  router.push(`/support/notice/edit/${notice.value.id}`);
+};
+
+const deleteNotice = async () => {
+  const confirmed = confirm('정말 삭제하시겠습니까?');
+  if (!confirmed) return;
+
+  try {
+    await axios.delete(`http://localhost:3001/notices/${notice.value.id}`);
+    alert('삭제되었습니다.');
+    router.push('/support/notice'); // 수정: 공지 리스트 경로 맞게 설정
+  } catch (e) {
+    console.error("❌ 삭제 실패:", e);
+    alert('삭제 중 오류가 발생했습니다.');
   }
 };
 
@@ -165,23 +201,55 @@ onMounted(fetchData);
   line-height: 1.6;
   margin-bottom: 2rem;
 }
+
 .btn-wrap {
   display: flex;
   justify-content: center;
+  gap: 0.8rem;
+  margin: 1.5rem 0;
 }
-.check-btn {
-  padding: 0.6rem 1.2rem;
-  background-color: #00a86b;
-  color: white;
-  border: none;
+
+.btn {
+  padding: 0.55rem 1.2rem;
+  min-width: 90px;
   border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 1px solid transparent;
   cursor: pointer;
-  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.edit-btn {
+  background-color: #e6f0fb;
+  color: #1e6fd9;
+  border-color: #1e6fd9;
+}
+.edit-btn:hover {
+  background-color: #cfe2f8;
+}
+
+.delete-btn {
+  background-color: #fbe6e6;
+  color: #d11a2a;
+  border-color: #d11a2a;
+}
+.delete-btn:hover {
+  background-color: #f5cfcf;
+}
+
+.check-btn {
+  background-color: #e6f7ec;
+  color: #1eaf67;
+  border-color: #1eaf67;
 }
 .check-btn:disabled {
-  background-color: #ccc;
+  background-color: #f0f0f0;
+  color: #aaa;
+  border: 1px solid #ccc;
   cursor: not-allowed;
 }
+
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -202,6 +270,7 @@ onMounted(fetchData);
   color: #1d6b4f;
   border-color: #1d6b4f;
 }
+
 .search-input {
   width: 90%;
   padding: 0.4rem 0.6rem;
@@ -210,6 +279,7 @@ onMounted(fetchData);
   border-radius: 4px;
   font-size: 0.9rem;
 }
+
 .checklist {
   list-style: none;
   padding: 0;
@@ -231,6 +301,7 @@ onMounted(fetchData);
   font-weight: bold;
   color: #2d8f65;
 }
+
 .not-allowed {
   max-width: 960px;
   margin: 3rem auto;
