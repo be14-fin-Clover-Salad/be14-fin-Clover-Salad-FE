@@ -1,6 +1,5 @@
 <template>
   <div class="notice-wrapper" v-if="employees.length && notices.length">
-    <!-- 작성 버튼은 관리자 또는 팀장만 -->
     <div class="notice-actions">
       <button v-if="canWriteNotice" @click="goToWritePage">등록</button>
     </div>
@@ -40,7 +39,7 @@
             {{ getEmployeeDisplayName(notice.employee_id) }}
           </td>
           <td class="notice-date">
-            {{ notice.created_at.split('T')[0] }}
+            {{ formatDate(notice.created_at) }}
           </td>
         </tr>
       </tbody>
@@ -60,7 +59,6 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
-// 로그인 한 유저
 const loginUserId = 2;
 
 const router = useRouter();
@@ -94,6 +92,11 @@ const getEmployeeDisplayName = (employee_id) => {
 
 const formatTitle = (title) => {
   return title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr || typeof dateStr !== 'string') return '-';
+  return dateStr.split('T')[0];
 };
 
 const goToWritePage = () => {

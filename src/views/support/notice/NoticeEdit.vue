@@ -106,7 +106,9 @@ const submitEdit = async () => {
   try {
     await axios.put(`http://localhost:3001/notices/${noticeId}`, {
       title: title.value,
-      content: content.value
+      content: content.value,
+      employee_id: loginUserId,
+      created_at: new Date().toISOString()
     })
 
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)

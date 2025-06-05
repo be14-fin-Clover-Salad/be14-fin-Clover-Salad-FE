@@ -1,7 +1,7 @@
 <template>
   <div class="notice-detail-layout" v-if="notice && writer">
     <div class="notice-content">
-      <button class="back-btn" @click="$router.back()">
+      <button class="back-btn" @click="goBackToList">
         <span class="arrow"></span>목록
       </button>
 
@@ -137,9 +137,12 @@ const confirmCheck = async () => {
   }
 };
 
-// ✅ 여기만 수정
 const goEditPage = () => {
   router.push(`/support/notice/edit/${notice.value.id}`);
+};
+
+const goBackToList = () => {
+  router.push('/support/notice');
 };
 
 const deleteNotice = async () => {
@@ -149,7 +152,7 @@ const deleteNotice = async () => {
   try {
     await axios.delete(`http://localhost:3001/notices/${notice.value.id}`);
     alert('삭제되었습니다.');
-    router.push('/support/notice'); // 수정: 공지 리스트 경로 맞게 설정
+    router.push('/support/notice');
   } catch (e) {
     console.error("❌ 삭제 실패:", e);
     alert('삭제 중 오류가 발생했습니다.');
