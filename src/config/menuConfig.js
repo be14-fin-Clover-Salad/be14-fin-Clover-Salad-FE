@@ -117,3 +117,15 @@ export const menuList = [
     ],
   }
 ];
+
+// 탭에서만 사용할 메뉴 항목들
+export const tabOnlyMenuItems = [
+  {
+    label: "내 정보 수정",
+    path: "/mypage",
+    component: () => import("@/views/user/Mypage.vue"),
+    meta: {
+      group: "마이페이지"
+    }
+  }
+];
