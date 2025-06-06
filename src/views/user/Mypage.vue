@@ -563,7 +563,7 @@ export default {
 .input-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
+  font-weight: normal;
   width: 100%;
   text-align: left;
   padding-left: 1rem;
