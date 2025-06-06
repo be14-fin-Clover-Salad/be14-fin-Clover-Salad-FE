@@ -20,19 +20,40 @@
       <div class="info-item">
         <label>이름</label>
         <span v-if="!isEditMode">{{ userInfo.name }}</span>
-        <input v-else type="text" v-model="tempUserInfo.name" class="edit-input">
+        <div v-else class="input-wrapper">
+          <input 
+            type="text" 
+            v-model="tempUserInfo.name" 
+            class="edit-input"
+            @input="validateName"
+            @keypress="onlyKorean"
+          >
+          <span v-if="nameError" class="error-message name-error">{{ nameError }}</span>
+        </div>
       </div>
       
       <div class="info-item">
         <label>연락처</label>
         <span v-if="!isEditMode">{{ formattedPhone }}</span>
-        <input v-else type="text" v-model="tempUserInfo.phone" class="edit-input">
+        <div v-else class="input-wrapper">
+          <input 
+            type="text" 
+            v-model="tempUserInfo.phone" 
+            class="edit-input"
+            @keypress="onlyNumbers"
+            @input="validatePhone"
+            maxlength="11"
+          >
+          <span v-if="phoneError" class="error-message phone-error">{{ phoneError }}</span>
+        </div>
       </div>
       
       <div class="info-item">
         <label>이메일</label>
         <span v-if="!isEditMode">{{ userInfo.email }}</span>
-        <input v-else type="email" v-model="tempUserInfo.email" class="edit-input">
+        <div v-else class="input-wrapper">
+          <input type="email" v-model="tempUserInfo.email" class="edit-input">
+        </div>
       </div>
       
       <div class="info-item">
@@ -158,7 +179,9 @@ export default {
       isEditMode: false,
       tempUserInfo: {},
       profileUrl: '',
-      selectedFile: null
+      selectedFile: null,
+      phoneError: '',
+      nameError: ''
     }
   },
   computed: {
@@ -276,6 +299,8 @@ export default {
         
         if (response.data) {
           this.userInfo = { ...this.tempUserInfo };
+          const auth = useAuthStore();
+          auth.updateUserName(this.tempUserInfo.name);
           this.isEditMode = false;
           alert('정보가 성공적으로 수정되었습니다.');
         }
@@ -288,6 +313,7 @@ export default {
         });
         if (error.response && error.response.data) {
           alert(error.response.data);
+          this.isEditMode = false;
         } else {
           alert('정보 수정에 실패했습니다.');
         }
@@ -341,6 +367,8 @@ export default {
 
           if (response.data) {
             this.userInfo.profilePath = this.profileUrl;
+            const auth = useAuthStore();
+            auth.updateProfileImage(this.profileUrl);
             alert('프로필 이미지가 변경되었습니다.');
             this.closeProfileModal();
           }
@@ -359,6 +387,54 @@ export default {
         } else {
           alert('프로필 이미지 변경에 실패했습니다.');
         }
+      }
+    },
+    validatePhone(event) {
+      const value = event.target.value;
+      if (!/^\d*$/.test(value)) {
+        this.phoneError = '숫자만 입력하실 수 있습니다.';
+        this.tempUserInfo.phone = value.replace(/[^\d]/g, '');
+      } else if (value.length > 11) {
+        this.phoneError = '연락처는 11자리만 입력 가능합니다.';
+        this.tempUserInfo.phone = value.slice(0, 11);
+      } else {
+        this.phoneError = '';
+      }
+    },
+    onlyNumbers(event) {
+      const keyCode = event.keyCode;
+      const currentValue = this.tempUserInfo.phone || '';
+      
+      if (keyCode < 48 || keyCode > 57) {
+        event.preventDefault();
+        this.phoneError = '숫자만 입력하실 수 있습니다.';
+      } else if (currentValue.length >= 11) {
+        event.preventDefault();
+        this.phoneError = '연락처는 11자리만 입력 가능합니다.';
+      } else {
+        this.phoneError = '';
+      }
+    },
+    validateName(event) {
+      const value = event.target.value;
+      if (!/^[가-힣]*$/.test(value)) {
+        this.nameError = '한글만 입력하실 수 있습니다.';
+        this.tempUserInfo.name = value.replace(/[^가-힣]/g, '');
+      } else {
+        this.nameError = '';
+      }
+    },
+    onlyKorean(event) {
+      const keyCode = event.keyCode;
+      // 한글 입력을 위한 키코드 범위 체크
+      if (!((keyCode >= 12593 && keyCode <= 12643) || // 한글 자모
+            (keyCode >= 44032 && keyCode <= 55203) || // 한글 완성형
+            keyCode === 8 || // 백스페이스
+            keyCode === 46)) { // 삭제
+        event.preventDefault();
+        this.nameError = '한글만 입력하실 수 있습니다.';
+      } else {
+        this.nameError = '';
       }
     }
   },
@@ -536,10 +612,18 @@ export default {
 }
 
 .error-message {
-  color: #f44336;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
+  color: #ff0000;
+  font-size: 0.6rem;
+  margin-top: 3px;
+  margin-left: 20px;
   display: block;
+  font-weight: 500;
+  margin-bottom: -17px;
+  margin-top: 3px;
+}
+
+.phone-error {
+  color: #ff0000 !important;
 }
 
 .confirm-btn:disabled {
@@ -579,13 +663,13 @@ export default {
 
 .edit-input {
   width: calc(100% - 130px);
-  padding: 0.5rem;
+  padding: 0.3rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   height: 24px;
   line-height: 24px;
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 .edit-btn:hover {
@@ -650,5 +734,16 @@ export default {
 .upload-box span {
   color: #666;
   font-size: 0.9rem;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+}
+
+.name-error {
+  color: #ff0000 !important;
 }
 </style>

@@ -99,7 +99,11 @@ const login = async () => {
     router.push('/');
   } catch (e) {
     console.warn('🚨 로그인 실패:', e);
-    alert('로그인에 실패했습니다. 다시 시도해주세요.');
+    if (e.response?.data?.message) {
+      alert(e.response.data.message);
+    } else {
+      alert('로그인 요청에 실패하였습니다.');
+    }
   }
 };
 </script>

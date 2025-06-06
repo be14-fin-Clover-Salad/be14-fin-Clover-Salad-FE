@@ -15,6 +15,18 @@ export const useAuthStore = defineStore('auth', {
       this.userInfo = info
       localStorage.setItem('userInfo', JSON.stringify(info))
     },
+    updateProfileImage(profilePath) {
+      if (this.userInfo) {
+        this.userInfo.profilePath = profilePath
+        localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+      }
+    },
+    updateUserName(name) {
+      if (this.userInfo) {
+        this.userInfo.name = name
+        localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
+      }
+    },
     clearToken() {
       this.accessToken = null
       this.userInfo = null
