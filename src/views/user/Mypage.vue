@@ -370,7 +370,7 @@ export default {
 
 <style scoped>
 .mypage-container {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -382,8 +382,8 @@ export default {
 }
 
 .profile-image {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid #e0e0e0;
@@ -413,6 +413,8 @@ export default {
   padding: 1rem 0;
   border-bottom: 1px solid #e0e0e0;
   min-height: 48px;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .info-item:last-child {
@@ -420,15 +422,17 @@ export default {
 }
 
 .info-item label {
-  width: 100px;
+  width: 120px;
   font-weight: bold;
   color: #333;
+  margin-right: 20px;
 }
 
 .info-item span {
   flex: 1;
   color: #666;
   line-height: 1.5;
+  padding-left: 10px;
 }
 
 .change-btn {
@@ -439,7 +443,7 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  margin-left: -3px;
+  margin-left: 10px;
 }
 
 .change-btn:hover {
@@ -574,13 +578,14 @@ export default {
 }
 
 .edit-input {
-  width: 100%;
+  width: calc(100% - 130px);
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
   height: 24px;
   line-height: 24px;
+  margin-left: 20px;
 }
 
 .edit-btn:hover {
