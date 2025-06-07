@@ -3,6 +3,8 @@ import { menuList } from "@/config/menuConfig";
 import LoginView from "@/views/user/LoginView.vue";
 import HomeView from "@/views/HomeView.vue";
 import { useAuthStore } from "@/stores/auth";
+import ResetPassword from "@/views/user/ResetPassword.vue";
+import Mypage from "@/views/user/Mypage.vue";
 
 const routes = menuList.flatMap((group) =>
   group.items.map((item) => ({
@@ -21,6 +23,12 @@ routes.unshift({
   path: "/login",
   component: LoginView,
   meta: { layout: "none", title: "로그인" },
+});
+
+routes.unshift({
+  path: "/reset-password",
+  component: ResetPassword,
+  meta: { layout: "none", title: "비밀번호 재설정" },
 });
 
 routes.unshift({
@@ -73,6 +81,17 @@ routes.push({
   }            
 });
 
+// 마이페이지 라우트 추가
+routes.push({
+  path: "/mypage",
+  component: Mypage,
+  meta: {
+    title: "내 정보 수정",
+    requiresAuth: true,
+    basePath: "/mypage",
+  },
+});
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -82,30 +101,30 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
   // 개발 시 로그인 로직 하고 싶지 않으면 아래 부분 주석
-  // if (!authStore.accessToken && localStorage.getItem('access_token')) {
-  //   authStore.setAccessToken(localStorage.getItem('access_token'))
-  // }
+  if (!authStore.accessToken && localStorage.getItem('access_token')) {
+    authStore.setAccessToken(localStorage.getItem('access_token'))
+  }
 
-  // if (to.meta.requiresAuth) {
-  //   if (!authStore.accessToken) {
-  //     try {
-  //       await authStore.refreshToken()
-  //       next()
-  //     } catch {
-  //       next('/login')
-  //     }
-  //   } else {
-  //     next()
-  //   }
-  // } else {
-  //   if (to.path === '/login' && authStore.accessToken) {
-  //     next('/')
-  //   } else {
-  //     next()
-  //   }
-  // }
+  if (to.meta.requiresAuth) {
+    if (!authStore.accessToken) {
+      try {
+        await authStore.refreshToken()
+        next()
+      } catch {
+        next('/login')
+      }
+    } else {
+      next()
+    }
+  } else {
+    if (to.path === '/login' && authStore.accessToken) {
+      next('/')
+    } else {
+      next()
+    }
+  }
   // 여기부터 남기면 개발 단계에서 로그인 로직 건너 뜀
-  next();
+  // next();
 });
 
 export default router;

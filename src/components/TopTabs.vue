@@ -17,7 +17,7 @@
 import { useRoute, useRouter } from "vue-router";
 import { useTabStore } from "@/stores/tabStore";
 import { computed, watch } from "vue";
-import { menuList } from "@/config/menuConfig";
+import { menuList, tabOnlyMenuItems } from "@/config/menuConfig";
 
 const route = useRoute();
 const router = useRouter();
@@ -40,7 +40,7 @@ watch(
   (newPath) => {
     if (newPath === "/") return;
 
-    const allItems = menuList.flatMap((group) => group.items);
+    const allItems = [...menuList.flatMap((group) => group.items), ...tabOnlyMenuItems];
     const basePath = route.meta.basePath || newPath;
     const match = allItems.find((item) => item.path === basePath);
 

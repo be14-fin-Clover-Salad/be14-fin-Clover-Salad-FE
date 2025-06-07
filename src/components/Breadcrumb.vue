@@ -12,13 +12,13 @@
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { menuList } from "@/config/menuConfig";
+import { menuList, tabOnlyMenuItems } from "@/config/menuConfig";
 import { computed } from "vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const allItems = menuList.flatMap((group) => group.items);
+const allItems = [...menuList.flatMap((group) => group.items), ...tabOnlyMenuItems];
 const matchedItem = computed(() =>
   allItems.find((item) => route.path.startsWith(item.path))
 );
@@ -27,7 +27,10 @@ const parentGroup = computed(() => {
   const group = menuList.find((g) =>
     g.items.some((item) => route.path.startsWith(item.path))
   );
-  return group?.group || "";
+  if (group) return group.group;
+  
+  const tabOnlyItem = tabOnlyMenuItems.find(item => route.path.startsWith(item.path));
+  return tabOnlyItem?.meta?.group || "";
 });
 
 const goHome = () => {
