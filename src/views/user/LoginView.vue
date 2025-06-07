@@ -89,21 +89,16 @@ const login = async () => {
 
     const token = res.headers['authorization']?.split(' ')[1];
     if (!token) {
-      console.warn('⚠️ accessToken이 응답에 포함되지 않았습니다.');
+      console.warn('accessToken이 응답에 포함되지 않았습니다.');
       return;
     }
 
     auth.setAccessToken(token);
     auth.setUserInfo(res.data);
-
     router.push('/');
   } catch (e) {
-    console.warn('🚨 로그인 실패:', e);
-    if (e.response?.data?.message) {
-      alert(e.response.data.message);
-    } else {
-      alert('로그인 요청에 실패하였습니다.');
-    }
+    const msg = e.response?.data?.message || '로그인 요청에 실패하였습니다.';
+    alert(msg);
   }
 };
 </script>
