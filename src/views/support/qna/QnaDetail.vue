@@ -18,25 +18,35 @@
         </span>
       </div>
 
-      <div class="qna-box" v-html="qna.content" />
+      <div class="qna-box">{{ qna.content }}</div>
 
       <!-- 답변 영역 -->
-      <div class="qna-answer">
+      <div class="qna-answer" v-if="qna.answer_content || isAdmin">
         <h3>답변</h3>
 
-        <!-- 답변이 있을 때 표시 -->
-        <div v-if="qna.answer_content && !isEditing" class="answer-box" v-html="qna.answer_content" />
+        <div v-if="qna.answer_content && !isEditing" class="answer-box">{{ qna.answer_content }}</div>
 
-        <!-- 답변 작성 or 수정 폼 -->
         <div v-if="isAdmin && (isEditing || !qna.answer_content)" class="qna-answer-form">
-          <textarea v-model="answerContent" rows="6" placeholder="답변 내용을 입력하세요." />
-          <div class="btn-wrap">
-            <button class="btn answer-btn" @click="submitAnswer">{{ qna.answer_content ? '수정' : '등록' }}</button>
-            <button v-if="qna.answer_content" class="btn cancel-btn" @click="cancelEdit">취소</button>
+          <textarea
+            v-model="answerContent"
+            rows="6"
+            placeholder="답변 내용을 입력하세요."
+          />
+          <div class="btn-wrap-between">
+            <div class="left-buttons">
+              <button class="btn answer-btn" @click="submitAnswer">
+                {{ qna.answer_content ? '수정' : '등록' }}
+              </button>
+              <button
+                v-if="qna.answer_content"
+                class="btn cancel-btn"
+                @click="cancelEdit"
+              >취소</button>
+            </div>
+            <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
         </div>
 
-        <!-- 수정 버튼 -->
         <div v-if="isAdmin && qna.answer_content && !isEditing" class="edit-btn-wrap">
           <button class="btn edit-btn" @click="startEdit">수정하기</button>
         </div>
@@ -64,18 +74,17 @@ const loginUser = computed(() =>
 )
 const isAdmin = computed(() => loginUser.value.name === '관리자')
 
-onMounted(async () => {
+const fetchQna = async () => {
   const [qnaRes, empRes] = await Promise.all([
     fetch(`http://localhost:3001/qnas/${qnaId}`),
     fetch(`http://localhost:3001/employees`)
   ])
   qna.value = await qnaRes.json()
   employees.value = await empRes.json()
+  answerContent.value = qna.value?.answer_content || ''
+}
 
-  if (qna.value?.answer_content) {
-    answerContent.value = qna.value.answer_content
-  }
-})
+onMounted(fetchQna)
 
 const getEmployeeDisplayName = (id) => {
   const emp = employees.value.find(e => Number(e.id) === Number(id))
@@ -113,7 +122,21 @@ const submitAnswer = async () => {
   })
 
   alert(qna.value.answer_content ? '답변이 수정되었습니다.' : '답변이 등록되었습니다.')
-  router.go(0)
+  await fetchQna()
+  isEditing.value = false
+}
+
+const deleteQna = async () => {
+  if (!confirm('정말로 삭제하시겠습니까?')) return
+
+  await fetch(`http://localhost:3001/qnas/${qnaId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_deleted: true })
+  })
+
+  alert('게시글이 삭제되었습니다.')
+  router.push('/support/qna')
 }
 </script>
 
@@ -139,13 +162,10 @@ const submitAnswer = async () => {
   border: 1px solid #2d8f65;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
   margin-bottom: 1.2rem;
 }
 .back-btn:hover {
   background-color: #dff3eb;
-  color: #1d6b4f;
-  border-color: #1d6b4f;
 }
 .qna-title {
   font-size: 1.6rem;
@@ -182,6 +202,7 @@ const submitAnswer = async () => {
   padding: 1rem;
   border-radius: 6px;
   line-height: 1.6;
+  white-space: pre-wrap;
 }
 .qna-answer-form textarea {
   width: 100%;
@@ -191,8 +212,14 @@ const submitAnswer = async () => {
   resize: vertical;
   border-radius: 6px;
   margin: 0.5rem 0 1rem;
+  white-space: pre-wrap;
 }
-.btn-wrap {
+.btn-wrap-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.left-buttons {
   display: flex;
   gap: 0.5rem;
 }
@@ -231,6 +258,14 @@ const submitAnswer = async () => {
 }
 .edit-btn:hover {
   background-color: #cfe2f8;
+}
+.delete-btn {
+  background-color: #ffeaea;
+  color: #cc0000;
+  border: 1px solid #cc0000;
+}
+.delete-btn:hover {
+  background-color: #ffdada;
 }
 .status-badge {
   padding: 0.2rem 0.6rem;
