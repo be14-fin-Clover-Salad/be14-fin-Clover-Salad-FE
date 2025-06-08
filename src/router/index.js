@@ -71,6 +71,15 @@ routes.push({
   },
 });
 
+routes.push({
+  path: "/support/qna/:id",
+  component: () => import("@/views/support/qna/QnaDetail.vue"),
+  meta: {
+    title: "문의사항",
+    basePath: "/support/qna",
+  },
+});
+
 // 고객 상세 화면
 routes.push({
   path: "/customer/:id",
