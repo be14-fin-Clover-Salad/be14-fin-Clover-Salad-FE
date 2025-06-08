@@ -8,9 +8,3 @@
 <script setup>
 import QnaList from '@/components/qna/QnaList.vue'
 </script>
-
-<style scoped>
-.qna-view {
-  padding: 2rem;
-}
-</style>
