@@ -12,7 +12,10 @@
       </div>
 
       <!-- 제목 -->
-      <h1 class="qna-title">{{ qna.title }}</h1>
+      <div v-if="isWriter && isEditing">
+        <input v-model="editTitle" class="edit-title" />
+      </div>
+      <h1 v-else class="qna-title">{{ qna.title }}</h1>
 
       <!-- 작성 정보 -->
       <div class="qna-info">
@@ -27,36 +30,48 @@
       </div>
 
       <!-- 본문 -->
-      <div class="qna-box">{{ qna.content }}</div>
+      <div v-if="isWriter && isEditing">
+        <textarea v-model="editContent" class="edit-content" rows="8" />
+      </div>
+      <div v-else class="qna-box">{{ qna.content }}</div>
+
+      <!-- 작성자 수정 버튼 -->
+      <div v-if="!qna.is_deleted && isWriter && !qna.answer_content" class="edit-btn-wrap">
+        <div class="btn-wrap-between">
+          <div class="left-buttons">
+            <button v-if="!isEditing" class="btn edit-btn" @click="startEdit">수정하기</button>
+            <button v-else class="btn answer-btn" @click="submitEdit">저장</button>
+            <button v-if="isEditing" class="btn cancel-btn" @click="cancelEdit">취소</button>
+          </div>
+          <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
+        </div>
+      </div>
 
       <!-- 답변 영역 -->
       <div class="qna-answer" v-if="qna.answer_content || isAdmin">
         <h3>답변</h3>
 
-        <!-- 답변 텍스트 -->
-        <div v-if="qna.answer_content && !isEditing" class="answer-box">
+        <div v-if="qna.answer_content && !isEditingAnswer" class="answer-box">
           {{ qna.answer_content }}
         </div>
 
-        <!-- 답변 작성/수정 -->
-        <div v-if="!qna.is_deleted && isAdmin && (isEditing || !qna.answer_content)" class="qna-answer-form">
+        <div v-if="!qna.is_deleted && isAdmin && (isEditingAnswer || !qna.answer_content)" class="qna-answer-form">
           <textarea v-model="answerContent" rows="6" placeholder="답변 내용을 입력하세요." />
           <div class="btn-wrap-between">
             <div class="left-buttons">
               <button class="btn answer-btn" @click="submitAnswer">
                 {{ qna.answer_content ? '수정' : '등록' }}
               </button>
-              <button v-if="qna.answer_content" class="btn cancel-btn" @click="cancelEdit">취소</button>
+              <button v-if="qna.answer_content" class="btn cancel-btn" @click="cancelAnswerEdit">취소</button>
             </div>
             <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
         </div>
 
-        <!-- 답변 있음 + 수정 중 아님 -->
-        <div v-if="!qna.is_deleted && (isAdmin || isWriter) && qna.answer_content && !isEditing" class="edit-btn-wrap">
+        <div v-if="!qna.is_deleted && (isAdmin || isWriter) && qna.answer_content && !isEditingAnswer" class="edit-btn-wrap">
           <div class="btn-wrap-between">
             <div class="left-buttons">
-              <button v-if="isAdmin" class="btn edit-btn" @click="startEdit">수정하기</button>
+              <button v-if="isAdmin" class="btn edit-btn" @click="startAnswerEdit">수정하기</button>
             </div>
             <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
@@ -65,7 +80,6 @@
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
@@ -78,12 +92,13 @@ const qnaId = Number(route.params.id)
 const qna = ref(null)
 const employees = ref([])
 const answerContent = ref('')
+const editTitle = ref('')
+const editContent = ref('')
 const isEditing = ref(false)
+const isEditingAnswer = ref(false)
 
-// 로그인한 유저 ID
-const loginUserId = 8
+const loginUserId = 2
 
-// 현재 로그인 유저 정보
 const loginUser = computed(() =>
   employees.value.find(emp => Number(emp.id) === loginUserId) || {}
 )
@@ -99,6 +114,8 @@ const fetchQna = async () => {
   qna.value = await qnaRes.json()
   employees.value = await empRes.json()
   answerContent.value = qna.value?.answer_content || ''
+  editTitle.value = qna.value?.title || ''
+  editContent.value = qna.value?.content || ''
 }
 
 onMounted(fetchQna)
@@ -109,20 +126,32 @@ const getEmployeeDisplayName = (id) => {
 }
 
 const formatDate = (str) => str?.split('T')[0] || '-'
+const goBackToList = () => router.push('/support/qna')
 
-const goBackToList = () => {
-  router.push('/support/qna')
-}
+const startEdit = () => isEditing.value = true
+const cancelEdit = () => isEditing.value = false
 
-const startEdit = () => {
-  isEditing.value = true
-  answerContent.value = qna.value.answer_content || ''
-}
+const submitEdit = async () => {
+  if (!editTitle.value.trim() || !editContent.value.trim()) {
+    alert('제목과 내용을 모두 입력해주세요.');
+    return;
+  }
 
-const cancelEdit = () => {
+  await fetch(`http://localhost:3001/qnas/${qnaId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: editTitle.value,
+      content: editContent.value
+    })
+  })
+  alert('문의사항이 수정되었습니다.')
   isEditing.value = false
-  answerContent.value = ''
+  await fetchQna()
 }
+
+const startAnswerEdit = () => isEditingAnswer.value = true
+const cancelAnswerEdit = () => isEditingAnswer.value = false
 
 const submitAnswer = async () => {
   if (!answerContent.value.trim()) {
@@ -141,7 +170,7 @@ const submitAnswer = async () => {
 
   alert(qna.value.answer_content ? '답변이 수정되었습니다.' : '답변이 등록되었습니다.')
   await fetchQna()
-  isEditing.value = false
+  isEditingAnswer.value = false
 }
 
 const deleteQna = async () => {
@@ -317,5 +346,14 @@ const deleteQna = async () => {
   border-radius: 8px;
   font-weight: bold;
   margin-bottom: 1.5rem;
+}
+.edit-title,
+.edit-content {
+  width: 100%;
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 1rem;
 }
 </style>

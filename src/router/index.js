@@ -80,6 +80,15 @@ routes.push({
   },
 });
 
+routes.push({
+  path: "/support/qna/create",
+  component: () => import("@/views/support/qna/QnaCreate.vue"),
+  meta: {
+    title: "문의 등록",
+    basePath: "/support/qna",
+  },
+});
+
 // 고객 상세 화면
 routes.push({
   path: "/customer/:id",
