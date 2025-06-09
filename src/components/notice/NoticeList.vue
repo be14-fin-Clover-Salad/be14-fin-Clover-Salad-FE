@@ -61,7 +61,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 
-const loginUserId = 2;
+const loginUserId = 8;
 const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);

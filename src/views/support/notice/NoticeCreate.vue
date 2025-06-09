@@ -70,7 +70,7 @@ const departments = ref([])
 
 const router = useRouter()
 // 로그인 한 유저
-const loginUserId = 2 
+const loginUserId = 8
 const loginUser = ref({})
 
 const getDeptName = (deptId) => {
