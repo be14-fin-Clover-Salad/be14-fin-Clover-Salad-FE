@@ -32,22 +32,6 @@ export const useAuthStore = defineStore('auth', {
       this.userInfo = null
       localStorage.removeItem('access_token')
       localStorage.removeItem('userInfo')
-    },
-    async refreshToken() {
-      try {
-        const res = await api.post('/employee/refresh-token')
-        const newToken = res.headers['authorization']?.split(' ')[1]
-        if (newToken) {
-          this.setAccessToken(newToken)
-          return newToken
-        } else {
-          throw new Error('No access token in response')
-        }
-      } catch (e) {
-        this.clearToken()
-        window.location.href = '/login'
-        throw e
-      }
     }
   }
 })
