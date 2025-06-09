@@ -1,12 +1,38 @@
 <template>
   <section>
-    <h2>계약 관리</h2>
-    <BaseDataTable :columns="columns" :rows="rows" />
+    <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
+      <template #fields="{ filters }">
+        <ContractSearchFields :filters="filters" />
+      </template>
+    </SearchFilterShell>
+
+    <div class="table-wrapper">
+      <BaseDataTable :columns="columns" :rows="rows" />
+    </div>
   </section>
 </template>
 
 <script setup>
-import BaseDataTable from '@/components/BaseDataTable.vue';
+import { reactive } from 'vue'
+import BaseDataTable from '@/components/BaseDataTable.vue'
+import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
+import ContractSearchFields from '@/components/contract/ContractSearchFields.vue'
+
+const searchForm = reactive({
+  code: '', createdAtStart: '', createdAtEnd: '',
+  startDateStart: '', startDateEnd: '',
+  status: '', bankName: '', paymentDayStart: '',
+  depositOwner: '', relationship: '', employeeName: '',
+  customerName: '', productName: ''
+})
+
+function handleSearch(data) {
+  console.log('검색 조건:', data)
+}
+
+function handleReset() {
+  console.log('검색 조건 초기화됨')
+}
 
 const columns = [
   { label: '계약 번호', key: 'contractCode' },
@@ -21,10 +47,10 @@ const columns = [
   { label: '등록 시간', key: 'registeredAt' },
   { label: '상품 명', key: 'productName' },
   { label: '비고', key: 'note' }
-];
+]
 
-const rows = Array.from({ length: 10 }).map((_, index) => ({
-  contractCode: 'con-001',
+const rows = Array.from({ length: 10 }).map(() => ({
+  contractCode: 'C-20240601',
   contractFile: '고성연–렌탈–계약서.pdf',
   rentalPrice: '55,000 원',
   contractState: '계약 중',
@@ -36,11 +62,15 @@ const rows = Array.from({ length: 10 }).map((_, index) => ({
   registeredAt: '2025-05-23일 1시',
   productName: 'TV 외 3개',
   note: '장기 렌탈 고객'
-}));
+}))
 </script>
 
 <style scoped>
 section {
   padding: 20px;
+}
+
+.table-wrapper {
+  margin-top: 24px;
 }
 </style>
