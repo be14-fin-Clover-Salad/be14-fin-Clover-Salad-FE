@@ -61,7 +61,7 @@ const submitQna = async () => {
     const savedQna = await res.json()
 
     alert('문의사항이 등록되었습니다.')
-    router.push(`/support/qna/${savedQna.id}`) // ✅ 등록 후 해당 QnA 상세 페이지로 이동
+    router.push(`/support/qna/${savedQna.id}`)
   } catch (error) {
     console.error(error)
     alert('등록에 실패했습니다.')
