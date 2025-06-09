@@ -1,12 +1,20 @@
 <template>
   <div class="qna-detail-layout" v-if="qna && employees.length">
     <div class="qna-content">
+      <!-- 목록 버튼 -->
       <button class="back-btn" @click="goBackToList">
         <span class="arrow"></span>목록
       </button>
 
+      <!-- 삭제 안내 배너 -->
+      <div v-if="qna.is_deleted" class="deleted-banner">
+        🗑 삭제된 게시글입니다.
+      </div>
+
+      <!-- 제목 -->
       <h1 class="qna-title">{{ qna.title }}</h1>
 
+      <!-- 작성 정보 -->
       <div class="qna-info">
         <span>작성자: {{ getEmployeeDisplayName(qna.employee_id) }}</span>
         <span>등록일자: {{ formatDate(qna.created_at) }}</span>
@@ -18,42 +26,46 @@
         </span>
       </div>
 
+      <!-- 본문 -->
       <div class="qna-box">{{ qna.content }}</div>
 
       <!-- 답변 영역 -->
       <div class="qna-answer" v-if="qna.answer_content || isAdmin">
         <h3>답변</h3>
 
-        <div v-if="qna.answer_content && !isEditing" class="answer-box">{{ qna.answer_content }}</div>
+        <!-- 답변 텍스트 -->
+        <div v-if="qna.answer_content && !isEditing" class="answer-box">
+          {{ qna.answer_content }}
+        </div>
 
-        <div v-if="isAdmin && (isEditing || !qna.answer_content)" class="qna-answer-form">
-          <textarea
-            v-model="answerContent"
-            rows="6"
-            placeholder="답변 내용을 입력하세요."
-          />
+        <!-- 답변 작성/수정 -->
+        <div v-if="!qna.is_deleted && isAdmin && (isEditing || !qna.answer_content)" class="qna-answer-form">
+          <textarea v-model="answerContent" rows="6" placeholder="답변 내용을 입력하세요." />
           <div class="btn-wrap-between">
             <div class="left-buttons">
               <button class="btn answer-btn" @click="submitAnswer">
                 {{ qna.answer_content ? '수정' : '등록' }}
               </button>
-              <button
-                v-if="qna.answer_content"
-                class="btn cancel-btn"
-                @click="cancelEdit"
-              >취소</button>
+              <button v-if="qna.answer_content" class="btn cancel-btn" @click="cancelEdit">취소</button>
             </div>
             <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
         </div>
 
-        <div v-if="isAdmin && qna.answer_content && !isEditing" class="edit-btn-wrap">
-          <button class="btn edit-btn" @click="startEdit">수정하기</button>
+        <!-- 답변 있음 + 수정 중 아님 -->
+        <div v-if="!qna.is_deleted && (isAdmin || isWriter) && qna.answer_content && !isEditing" class="edit-btn-wrap">
+          <div class="btn-wrap-between">
+            <div class="left-buttons">
+              <button v-if="isAdmin" class="btn edit-btn" @click="startEdit">수정하기</button>
+            </div>
+            <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
@@ -67,12 +79,17 @@ const qna = ref(null)
 const employees = ref([])
 const answerContent = ref('')
 const isEditing = ref(false)
+
+// 로그인한 유저 ID
 const loginUserId = 8
 
+// 현재 로그인 유저 정보
 const loginUser = computed(() =>
   employees.value.find(emp => Number(emp.id) === loginUserId) || {}
 )
+
 const isAdmin = computed(() => loginUser.value.name === '관리자')
+const isWriter = computed(() => qna.value && Number(qna.value.employee_id) === loginUserId)
 
 const fetchQna = async () => {
   const [qnaRes, empRes] = await Promise.all([
@@ -90,6 +107,7 @@ const getEmployeeDisplayName = (id) => {
   const emp = employees.value.find(e => Number(e.id) === Number(id))
   return emp?.name === '관리자' ? '관리자' : `${emp?.name || '-'} ${emp?.level || ''}`
 }
+
 const formatDate = (str) => str?.split('T')[0] || '-'
 
 const goBackToList = () => {
@@ -145,6 +163,13 @@ const deleteQna = async () => {
   display: flex;
   justify-content: center;
   padding: 2rem;
+}
+.qna-title.deleted {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #cc0000;
+  text-align: center;
+  margin: 2rem 0;
 }
 .qna-content {
   max-width: 800px;
@@ -282,5 +307,15 @@ const deleteQna = async () => {
   background-color: #e6f4ea;
   color: #43a047;
   border: 1px solid #43a047;
+}
+.deleted-banner {
+  background-color: #fff0f0;
+  border: 1px dashed #d11a2a;
+  color: #d11a2a;
+  padding: 12px;
+  text-align: left;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
 }
 </style>

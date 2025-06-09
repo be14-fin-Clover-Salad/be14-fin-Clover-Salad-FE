@@ -62,7 +62,7 @@ import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 const route = useRoute()
 const router = useRouter()
 const noticeId = route.params.id
-const loginUserId = 2
+const loginUserId = 8
 
 const title = ref('')
 const content = ref('')

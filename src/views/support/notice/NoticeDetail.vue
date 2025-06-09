@@ -61,7 +61,7 @@ import axios from 'axios';
 const route = useRoute();
 const router = useRouter();
 const noticeId = route.params.id;
-const loginUserId = 2;
+const loginUserId = 8;
 
 const notice = ref(null);
 const writer = ref(null);

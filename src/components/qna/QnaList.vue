@@ -27,15 +27,17 @@
         <tr
           v-for="(qna, index) in paginatedQnas"
           :key="qna.id"
-          :class="{ deleted: qna.is_deleted }"
+          :class="{ deleted: isAdmin && qna.is_deleted }"
         >
           <td class="qna-index">{{ (currentPage - 1) * pageSize + index + 1 }}</td>
           <td class="qna-title">
             <router-link :to="`/support/qna/${qna.id}`" class="qna-link">
-              <del v-if="isAdmin && qna.is_deleted">
+              <template v-if="isAdmin && qna.is_deleted">
+                <del v-html="formatTitle(qna.title)" />
+              </template>
+              <template v-else>
                 <span v-html="formatTitle(qna.title)" />
-              </del>
-              <span v-else v-html="formatTitle(qna.title)" />
+              </template>
             </router-link>
           </td>
           <td class="qna-status">
@@ -123,7 +125,6 @@ const formatTitle = (title) => {
 }
 </script>
 
-
 <style scoped>
 .qna-wrapper {
   max-width: 1200px;
@@ -132,14 +133,12 @@ const formatTitle = (title) => {
   font-weight: 500;
   color: #222;
 }
-
 .top-area {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 14px;
 }
-
 .filter-area select {
   padding: 8px 12px;
   min-width: 120px;
@@ -147,7 +146,6 @@ const formatTitle = (title) => {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .qna-actions button {
   background-color: #e7f3d9;
   color: #222;
@@ -162,25 +160,21 @@ const formatTitle = (title) => {
 .qna-actions button:hover {
   background-color: #d1e9c2;
 }
-
 .qna-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0;
 }
-
 .qna-table thead {
   background-color: #f0f7e4;
   font-weight: 600;
 }
-
 .qna-table th,
 .qna-table td {
   padding: 12px 20px;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;
 }
-
 .qna-index {
   text-align: center;
   width: 60px;
@@ -200,7 +194,6 @@ const formatTitle = (title) => {
   text-align: center;
   width: 120px;
 }
-
 .qna-link {
   text-decoration: none;
   color: inherit;
@@ -209,7 +202,6 @@ const formatTitle = (title) => {
   text-decoration: underline;
   color: #3a6b1d;
 }
-
 .status-badge {
   padding: 0.2rem 0.7rem;
   border-radius: 20px;
