@@ -50,6 +50,7 @@ const navigate = (label, path) => {
 <style scoped>
 .sidebar {
   width: 240px;
+  flex-shrink: 0;
   background-color: #f9f9f9;
   padding: 24px 20px;
   border-right: 1px solid #e0e0e0;
