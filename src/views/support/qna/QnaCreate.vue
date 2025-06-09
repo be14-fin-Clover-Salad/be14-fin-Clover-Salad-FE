@@ -14,7 +14,9 @@
       </div>
 
       <div class="btn-wrap">
-        <button type="submit" class="btn submit-btn">등록</button>
+        <button type="submit" class="btn submit-btn" :disabled="isSubmitting">
+          {{ isSubmitting ? '등록 중...' : '등록' }}
+        </button>
         <button type="button" class="btn cancel-btn" @click="goBack">취소</button>
       </div>
     </form>
@@ -28,13 +30,16 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const title = ref('')
 const content = ref('')
-const loginUserId = 2  // 로그인된 사용자 ID
+const isSubmitting = ref(false)
+const loginUserId = 8 // 로그인된 사용자 ID
 
 const submitQna = async () => {
   if (!title.value.trim() || !content.value.trim()) {
     alert('제목과 내용을 모두 입력해주세요.')
     return
   }
+
+  isSubmitting.value = true
 
   const newQna = {
     title: title.value.trim(),
@@ -46,14 +51,23 @@ const submitQna = async () => {
     is_deleted: false
   }
 
-  await fetch('http://localhost:3001/qnas', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newQna)
-  })
+  try {
+    const res = await fetch('http://localhost:3001/qnas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newQna)
+    })
 
-  alert('문의사항이 등록되었습니다.')
-  router.push('/support/qna')
+    const savedQna = await res.json()
+
+    alert('문의사항이 등록되었습니다.')
+    router.push(`/support/qna/${savedQna.id}`) // ✅ 등록 후 해당 QnA 상세 페이지로 이동
+  } catch (error) {
+    console.error(error)
+    alert('등록에 실패했습니다.')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 const goBack = () => {
@@ -69,7 +83,7 @@ const goBack = () => {
 }
 h2 {
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 .form-group {
   margin-bottom: 1.5rem;
@@ -105,6 +119,12 @@ textarea {
   background-color: #e6f7ec;
   color: #1eaf67;
   border: 1px solid #1eaf67;
+}
+.submit-btn:disabled {
+  background-color: #f0f0f0;
+  color: #aaa;
+  border-color: #ccc;
+  cursor: not-allowed;
 }
 .cancel-btn {
   background-color: #ffeaea;
