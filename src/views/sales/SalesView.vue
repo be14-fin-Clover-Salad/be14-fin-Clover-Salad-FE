@@ -107,8 +107,10 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // 사용자 권한 관리
 const userRole = ref('')
@@ -116,26 +118,12 @@ const userRole = ref('')
 // 사용자 권한 확인 함수
 function checkUserRole() {
   try {
-    // localStorage에서 사용자 정보 가져오기 (실제 저장 위치에 따라 수정 필요)
-    const userInfo = localStorage.getItem('userInfo')
-    if (userInfo) {
-      const parsedUserInfo = JSON.parse(userInfo)
-      if (parsedUserInfo.levelLabel === '관리자') {
-        userRole.value = 'admin'
-      } else {
-        userRole.value = 'user'
-      }
+    // Pinia 스토어에서 사용자 정보 가져오기
+    if (authStore.userInfo && authStore.userInfo.levelLabel === '관리자') {
+      userRole.value = 'admin'
+    } else {
+      userRole.value = 'user'
     }
-    
-    // 또는 sessionStorage 사용하는 경우:
-    // const userInfo = sessionStorage.getItem('userInfo')
-    
-    // 또는 Pinia/Vuex store 사용하는 경우:
-    // const userStore = useUserStore()
-    // if (userStore.user.levelLabel === '관리자') {
-    //   userRole.value = 'admin'
-    // }
-    
   } catch (error) {
     console.error('사용자 정보를 가져오는 중 오류 발생:', error)
     userRole.value = 'user' // 기본값으로 일반 사용자 설정

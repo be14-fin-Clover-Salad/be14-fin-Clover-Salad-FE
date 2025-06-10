@@ -110,15 +110,7 @@ routes.push({
   },
 });
 
-routes.push({
-  path: "/sales/delete",
-  component: () => import("@/views/sales/DeleteSales.vue"),
-  meta: {
-    title: "매출 삭제",
-    requiresAuth: true,
-    basePath: "/sales",
-  },
-});
+
 
 // 마이페이지 라우트 추가
 routes.push({
