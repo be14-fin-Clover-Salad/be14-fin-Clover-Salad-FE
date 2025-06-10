@@ -99,6 +99,27 @@ routes.push({
   }            
 });
 
+// 매출 관련 라우트 추가
+routes.push({
+  path: "/sales/register",
+  component: () => import("@/views/sales/RegisterSales.vue"),
+  meta: {
+    title: "매출 등록",
+    requiresAuth: true,
+    basePath: "/sales",
+  },
+});
+
+routes.push({
+  path: "/sales/delete",
+  component: () => import("@/views/sales/DeleteSales.vue"),
+  meta: {
+    title: "매출 삭제",
+    requiresAuth: true,
+    basePath: "/sales",
+  },
+});
+
 // 마이페이지 라우트 추가
 routes.push({
   path: "/mypage",

@@ -3,8 +3,13 @@
     <form @submit.prevent="emitSearch">
       <slot name="fields" :filters="filters" />
       <div class="actions">
-        <button type="submit" class="search-btn">검색</button>
-        <button type="button" class="reset-btn" @click="emitReset">초기화</button>
+        <div class="left-actions">
+          <slot name="leftActions" />
+        </div>
+        <div class="right-actions">
+          <button type="submit" class="search-btn">검색</button>
+          <button type="button" class="reset-btn" @click="emitReset">초기화</button>
+        </div>
       </div>
     </form>
   </div>
@@ -36,9 +41,19 @@ function emitReset() {
 }
 .actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 16px;
+}
+
+.left-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.right-actions {
+  display: flex;
+  gap: 8px;
 }
 .search-btn,
 .reset-btn {
