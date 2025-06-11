@@ -1,9 +1,5 @@
 <template>
   <div class="notice-wrapper" v-if="employees.length && notices.length">
-    <div class="notice-actions">
-      <button v-if="canWriteNotice" @click="goToWritePage">등록</button>
-    </div>
-
     <table class="notice-table">
       <thead>
         <tr>
@@ -44,12 +40,19 @@
       </tbody>
     </table>
 
-    <Pagination
-      :total="totalPages"
-      :pageSize="1"
-      :currentPage="currentPage"
-      @update:currentPage="currentPage = $event"
-    />
+    <div class="notice-bottom-actions">
+      <div class="pagination-wrapper">
+        <Pagination
+          :total="totalPages"
+          :pageSize="1"
+          :currentPage="currentPage"
+          @update:currentPage="currentPage = $event"
+        />
+      </div>
+      <div class="register-wrapper" v-if="canWriteNotice">
+        <button class="register-btn" @click="goToWritePage">등록</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -156,14 +159,23 @@ onMounted(async () => {
   font-weight: 500;
   color: #222;
 }
-
-.notice-actions {
+.notice-bottom-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+.pagination-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.register-wrapper {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 14px;
+  min-width: 100px;
 }
-
-.notice-actions button {
+.register-btn {
   background-color: #e7f3d9;
   color: #222;
   padding: 10px 20px;
@@ -174,11 +186,9 @@ onMounted(async () => {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
-.notice-actions button:hover {
+.register-btn:hover {
   background-color: #d1e9c2;
 }
-
 .notice-table {
   width: 100%;
   border-collapse: collapse;
@@ -215,7 +225,6 @@ td {
 th.notice-title {
   text-align: center;
 }
-
 .notice-author {
   text-align: center;
   width: 260px;
@@ -226,42 +235,34 @@ th.notice-title {
   padding: 0 10px;
   width: 120px;
 }
-
 .system {
   color: rgb(255, 66, 89);
   font-weight: bold;
   font-size: inherit;
 }
-
 .read {
   color: #aaa;
 }
-
 .system.read {
   color: rgba(218, 67, 67, 0.5);
   font-weight: normal;
   font-size: inherit;
 }
-
 .deleted {
   opacity: 0.5;
 }
-
 strong {
   font-weight: 600;
   font-size: 15px;
 }
-
 .notice-link {
   text-decoration: none;
   color: inherit;
 }
-
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
 }
-
 .notice-link del {
   color: #e05d5d;
   text-decoration: line-through;
