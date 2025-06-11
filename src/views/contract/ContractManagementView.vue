@@ -13,8 +13,8 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
-import axios from 'axios'
+import { reactive } from 'vue'
+import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
@@ -37,7 +37,7 @@ async function handleSearch(data) {
   const token = authStore.accessToken
 
   try {
-    const response = await axios.post('/api/query/contract/search', data, {
+    const response = await api.post('/api/query/contract/search', data, {
       headers: {
         Authorization: `Bearer ${token}`
       },
@@ -55,17 +55,17 @@ function handleReset() {
 }
 
 const columns = [
-  { label: '계약 번호', key: 'code' },
-  { label: '렌탈 비용', key: 'amount' },
-  { label: '계약 상태', key: 'status' },
-  { label: '고객 명', key: 'customerName' },
-  { label: '담당 영업사원', key: 'employeeName' },
-  { label: '계약 시작일', key: 'startDate' },
-  { label: '계약 만료일', key: 'endDate' },
-  { label: '납입 일자', key: 'paymentDay' },
-  { label: '등록일', key: 'createdAt' },
-  { label: '상품 명', key: 'productNames' },
-  { label: '비고', key: 'etc' }
+  { label: '계약 번호', key: 'code', width: '12 0px' },
+  { label: '렌탈 비용', key: 'amount', width: '100px' },
+  { label: '계약 상태', key: 'status', width: '100px' },
+  { label: '고객 명', key: 'customerName', width: '130px' },
+  { label: '담당 영업사원', key: 'employeeName', width: '130px' },
+  { label: '계약 시작일', key: 'startDate', width: '120px' },
+  { label: '계약 만료일', key: 'endDate', width: '120px' },
+  { label: '납입 일자', key: 'paymentDay', width: '100px' },
+  { label: '등록일', key: 'createdAt', width: '120px' },
+  { label: '상품 명', key: 'productNames', width: '200px' },
+  { label: '비고', key: 'etc', width: '150px' }
 ]
 </script>
 
@@ -78,3 +78,5 @@ section {
   margin-top: 24px;
 }
 </style>
+
+//
