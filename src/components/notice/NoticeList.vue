@@ -22,9 +22,7 @@
         >
           <td class="notice-index">
             <template v-if="getEmployee(notice.employee_id)?.name === '관리자'">🚩</template>
-            <template v-else>
-              {{ totalCount - ((currentPage - 1) * pageSize + index) }}
-            </template>
+            <template v-else>{{ calcNoticeNumber(index) }}</template>
           </td>
           <td
             class="notice-title"
@@ -40,19 +38,15 @@
               <span v-else v-html="formatTitle(notice.title)" />
             </router-link>
           </td>
-          <td class="notice-author">
-            {{ getEmployeeDisplayName(notice.employee_id) }}
-          </td>
-          <td class="notice-date">
-            {{ formatDate(notice.created_at) }}
-          </td>
+          <td class="notice-author">{{ getEmployeeDisplayName(notice.employee_id) }}</td>
+          <td class="notice-date">{{ formatDate(notice.created_at) }}</td>
         </tr>
       </tbody>
     </table>
 
     <Pagination
-      :total="notices.length"
-      :pageSize="pageSize"
+      :total="totalPages"
+      :pageSize="1"
       :currentPage="currentPage"
       @update:currentPage="currentPage = $event"
     />
@@ -69,47 +63,57 @@ const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);
 const currentPage = ref(1);
-const pageSize = 10;
+const pageSize = 15;
 
-const loginUser = computed(() => {
-  return employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {};
-});
-
+const loginUser = computed(() => employees.value.find(emp => Number(emp.id) === loginUserId) || {});
 const isAdmin = computed(() => loginUser.value.name === "관리자");
+const canWriteNotice = computed(() => isAdmin.value || loginUser.value.level === "팀장");
 
-const canWriteNotice = computed(() => {
-  return isAdmin.value || loginUser.value.level === "팀장";
+const adminNoticesAll = computed(() =>
+  notices.value.filter(n => getEmployee(n.employee_id)?.name === '관리자')
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+);
+
+const pinnedAdmins = computed(() => adminNoticesAll.value.slice(0, 5));
+const remainingAdmins = computed(() => adminNoticesAll.value.slice(5));
+
+const normalNotices = computed(() =>
+  notices.value.filter(n => getEmployee(n.employee_id)?.name !== '관리자')
+);
+
+const mixedNotices = computed(() =>
+  [...normalNotices.value, ...remainingAdmins.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+);
+
+const totalPages = computed(() => {
+  const remaining = mixedNotices.value.length - Math.max(0, 15 - pinnedAdmins.value.length);
+  return Math.ceil(remaining / pageSize) + 1;
 });
-
-const totalCount = computed(() => notices.value.length);
 
 const pagedNotices = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return notices.value.slice(start, start + pageSize);
+  if (currentPage.value === 1) {
+    const remaining = 15 - pinnedAdmins.value.length;
+    return [...pinnedAdmins.value, ...mixedNotices.value.slice(0, remaining)];
+  } else {
+    const offset = (currentPage.value - 2) * pageSize + (15 - pinnedAdmins.value.length);
+    return mixedNotices.value.slice(offset, offset + pageSize);
+  }
 });
 
-const getEmployee = (employee_id) => {
-  return employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null;
+const calcNoticeNumber = (index) => {
+  const offset = (currentPage.value - 1) * pageSize - pinnedAdmins.value.length;
+  return mixedNotices.value.length - (offset + index);
 };
 
+const getEmployee = (employee_id) => employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null;
 const getEmployeeDisplayName = (employee_id) => {
   const emp = getEmployee(employee_id);
-  if (!emp || !emp.name) return "-";
-  return emp.name === "관리자" ? "관리자" : `${emp.name} ${emp.level || ""}`;
+  return emp ? (emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level || ''}`) : '-';
 };
 
-const formatTitle = (title) => {
-  return title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr || typeof dateStr !== 'string') return '-';
-  return dateStr.split('T')[0];
-};
-
-const goToWritePage = () => {
-  router.push("/support/notice/create");
-};
+const formatTitle = (title) => title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
+const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
+const goToWritePage = () => router.push("/support/notice/create");
 
 onMounted(async () => {
   const [empNoticeRes, noticeRes, employeeRes] = await Promise.all([
@@ -125,7 +129,6 @@ onMounted(async () => {
   employees.value = employeeData;
 
   const allowedNoticeIds = empNoticeData.map(item => Number(item.notice_id));
-
   const visibleNotices = isAdmin.value
     ? noticeData
     : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)) && !n.is_deleted);

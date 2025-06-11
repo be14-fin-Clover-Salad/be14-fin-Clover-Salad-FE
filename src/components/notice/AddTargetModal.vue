@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
   departments: Array,
@@ -104,15 +104,9 @@ const searchKeyword = ref('')
 const selectedIds = ref([])
 
 onMounted(() => {
-  console.log('📥 preselected props:', props.preselected)
-})
-
-watchEffect(() => {
-  console.log('📥 preselected props:', props.preselected)
   selectedIds.value = props.preselected
     .filter(e => Number(e.id) !== Number(props.loginUserId))
-    .map(e => e.id);
-  console.log('✅ 초기 selectedIds 세팅 완료:', selectedIds.value)
+    .map(e => e.id)
 })
 
 const getDeptName = (deptId) => {
@@ -176,7 +170,6 @@ const confirm = () => {
     .filter(emp => emp.level !== '관리자')
     .filter(emp => Number(emp.id) !== Number(props.loginUserId))
     .filter(emp => selectedIds.value.includes(emp.id))
-  console.log('📤 emit update:selected:', selectedEmps)
   emit('update:selected', selectedEmps)
   close()
 }
@@ -239,6 +232,15 @@ const confirm = () => {
   font-weight: 600;
   color: #007a5c;
 }
+.employee-list li label {
+  display: block;
+  padding: 4px 6px;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+.employee-list li label:hover {
+  background-color: #f9f9f9;
+}
 .selected-dept-label {
   margin-top: -0.5rem;
   margin-bottom: 0.5rem;
@@ -246,7 +248,7 @@ const confirm = () => {
   color: #444;
 }
 .search-input {
-  width: 90%;
+  width: 95%;
   margin-bottom: 0.5rem;
   padding: 0.4rem;
 }

@@ -83,14 +83,10 @@ const loginUserId = 8;
 
 const isAddTargetOpen = ref(false);
 const openAddTargetModal = () => {
-  console.log('🚪 AddTargetModal 열림!');
-  console.log('👉 전달할 preselectedEmployees:', preselectedEmployees.value);
   isAddTargetOpen.value = true;
 };
 const closeAddTargetModal = () => (isAddTargetOpen.value = false);
 const handleTargetUpdate = async (selectedList) => {
-  console.log('✅ 선택된 대상자:', selectedList);
-
   const existingIds = checkList.value.map(entry => entry.employee_id);
   const newIds = selectedList.map(emp => emp.id);
 
@@ -133,10 +129,6 @@ watchEffect(() => {
         employees.value.find(emp => Number(emp.id) === Number(entry.employee_id))
       )
       .filter(Boolean);
-
-    console.log('👀 checkList:', checkList.value);
-    console.log('👀 employees:', employees.value);
-    console.log('✅ preselectedEmployees 세팅됨:', preselectedEmployees.value);
   }
 });
 
