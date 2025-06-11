@@ -1,5 +1,5 @@
 <template>
-  <header class="header">
+  <header class="header" v-if="user">
     <!-- 로고 -->
     <div class="left" @click="goHome">
       <img src="/logo_text.svg" alt="logo" class="logo" />
@@ -95,7 +95,7 @@ const goToMypage = () => {
 const logout = async () => {
   const token = auth.accessToken;
   if (!token) {
-    console.warn("⚠️ accessToken이 없어서 로그아웃 요청 건너뜀");
+    console.warn("accessToken이 없어서 로그아웃 요청 건너뜀");
     return;
   }
 
@@ -111,7 +111,7 @@ const logout = async () => {
       }
     );
   } catch (e) {
-    console.warn("🚨 로그아웃 중 오류:", e.message);
+    console.warn("로그아웃 중 오류:", e.message);
   } finally {
     auth.clearToken();
     router.push("/login");
