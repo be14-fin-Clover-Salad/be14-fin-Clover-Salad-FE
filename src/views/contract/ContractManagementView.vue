@@ -14,7 +14,7 @@
 
 <script setup>
 import { reactive } from 'vue'
-import axios from 'axios'
+import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
@@ -37,7 +37,7 @@ async function handleSearch(data) {
   const token = authStore.accessToken
 
   try {
-    const response = await axios.post('/api/query/contract/search', data, {
+    const response = await api.post('/api/query/contract/search', data, {
       headers: {
         Authorization: `Bearer ${token}`
       },
