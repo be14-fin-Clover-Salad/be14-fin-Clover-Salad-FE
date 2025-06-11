@@ -4,6 +4,7 @@ import router from './router'
 import { createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import api from '@/api/auth'
 
 const app = createApp(App)
 app.use(createPinia())
@@ -26,13 +27,14 @@ const tryRefreshAndLoadUser = async () => {
         },
         withCredentials: true
       })
+      
       auth.setUserInfo(res.data)
     } catch (err) {
       console.error('[userInfo 복구 실패]', err)
       auth.clearToken()
     }
   } else if (!auth.accessToken) {
-    // accessToken도 없는 경우 → refreshToken으로 재발급 시도
+    // accessToken도 없는 경우 → refreshToken으로 재발급
     try {
       const res = await api.post('/auth/refresh-token', null, {
         withCredentials: true
@@ -59,3 +61,5 @@ const tryRefreshAndLoadUser = async () => {
 }
 
 app.mount('#app')
+
+tryRefreshAndLoadUser()
