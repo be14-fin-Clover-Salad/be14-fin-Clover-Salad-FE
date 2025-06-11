@@ -39,7 +39,7 @@
               </div>
               <div class="dropdown-header-right">
                 <div class="dropdown-team">{{ user.departmentName }}</div>
-                <div class="dropdown-employee">{{ user.name }} 사원</div>
+                <div class="dropdown-employee">{{ user.name }} {{ user.levelLabel }}</div>
               </div>
             </div>
             <div class="dropdown-divider"></div>
