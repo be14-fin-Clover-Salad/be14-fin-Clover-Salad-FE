@@ -29,6 +29,11 @@ export const menuList = [
         // component: () =>
         //   import("@/views/performance/PerformanceManagementView.vue"),
       },
+      {
+        label: "매출 내역",
+        path: "/sales",
+        component: () => import("@/views/sales/SalesView.vue"),
+      },
     ],
   },
   {
