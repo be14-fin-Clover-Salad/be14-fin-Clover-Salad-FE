@@ -1,5 +1,6 @@
 <template>
   <div class="table-wrapper">
+    <!-- 상단 요약 -->
     <div class="table-header">
       <div class="summary">
         총 {{ rows.length }}건
@@ -136,7 +137,9 @@ const sortedRows = computed(() => {
   position: relative;
   transition: background-color 0.2s;
 }
-.info-badge:hover { background-color: #b2c49c; }
+.info-badge:hover {
+  background-color: #b2c49c;
+}
 .tooltip {
   position: absolute;
   top: 24px;
@@ -172,19 +175,34 @@ const sortedRows = computed(() => {
   text-align: center;
   vertical-align: middle;
 }
+.data-table th {
+  position: relative;
+}
 .label {
+  display: inline-block;
+  text-align: center;
   user-select: none;
+  font-weight: 500;
   cursor: pointer;
+  width: 100%;
 }
 .sort-icons {
-  display: inline-flex;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-left: 4px;
   font-size: 10px;
+  align-items: center;
+  line-height: 1;
 }
-.arrow { color: #aaa; }
-.arrow.active { color: #333; }
+.arrow {
+  color: #ccc;
+}
+.arrow.active {
+  color: #333;
+}
 .empty-msg {
   text-align: center;
   color: #999;
