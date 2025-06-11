@@ -101,7 +101,7 @@ const logout = async () => {
 
   try {
     await axios.post(
-      "/employee/logout",
+      "/auth/logout",
       {},
       {
         headers: {
