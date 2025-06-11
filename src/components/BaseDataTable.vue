@@ -17,12 +17,8 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th
-              v-for="col in columns"
-              :key="col.key"
-              @click="toggleSort(col.key)"
-              class="sortable"
-            >
+            <th v-for="col in columns" :key="col.key" @click="toggleSort(col.key)" class="sortable"
+              :style="{ width: col.width || 'auto' }">
               <span class="label">{{ col.label }}</span>
               <span class="sort-icons" v-if="sortState.key === col.key">
                 <span class="arrow up" :class="{ active: sortState.order === 'asc' }">▲</span>
@@ -34,7 +30,7 @@
 
         <tbody v-if="isLoading">
           <tr v-for="n in 10" :key="n">
-            <td v-for="col in columns" :key="col.key">
+            <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
               <div class="skeleton"></div>
             </td>
           </tr>
@@ -42,7 +38,7 @@
 
         <tbody v-else-if="sortedRows.length">
           <tr v-for="(row, rowIndex) in sortedRows" :key="rowIndex">
-            <td v-for="col in columns" :key="col.key">
+            <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
               {{ row[col.key] || '-' }}
             </td>
           </tr>
@@ -64,7 +60,7 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  columns: { type: Array, required: true },
+  columns: { type: Array, required: true }, // 각 column 객체는 { key, label, width(optional) }
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false }
 })
@@ -109,18 +105,21 @@ const sortedRows = computed(() => {
   background: #fff;
   padding: 12px;
 }
+
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
+
 .summary {
   font-size: 14px;
   font-weight: 500;
   color: #333;
   position: relative;
 }
+
 .info-badge {
   display: inline-flex;
   justify-content: center;
@@ -137,9 +136,11 @@ const sortedRows = computed(() => {
   position: relative;
   transition: background-color 0.2s;
 }
+
 .info-badge:hover {
   background-color: #b2c49c;
 }
+
 .tooltip {
   position: absolute;
   top: 24px;
@@ -153,20 +154,25 @@ const sortedRows = computed(() => {
   z-index: 10;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
+
 .table-scroll {
   max-height: 600px;
-  overflow-y: auto;
+  overflow: auto;
 }
+
 .data-table {
-  width: 100%;
+  width: max-content;
+  /* 중요: 컬럼 너비에 따라 테이블 확장 */
   border-collapse: collapse;
   font-size: 14px;
-  table-layout: auto;
+  table-layout: fixed;
 }
+
 .data-table thead tr {
   background-color: #f9f9f9;
   text-align: center;
 }
+
 .data-table th,
 .data-table td {
   padding: 12px 10px;
@@ -174,10 +180,13 @@ const sortedRows = computed(() => {
   white-space: nowrap;
   text-align: center;
   vertical-align: middle;
+  overflow: visible;
 }
+
 .data-table th {
   position: relative;
 }
+
 .label {
   display: inline-block;
   text-align: center;
@@ -186,6 +195,7 @@ const sortedRows = computed(() => {
   cursor: pointer;
   width: 100%;
 }
+
 .sort-icons {
   position: absolute;
   right: 8px;
@@ -197,12 +207,15 @@ const sortedRows = computed(() => {
   align-items: center;
   line-height: 1;
 }
+
 .arrow {
   color: #ccc;
 }
+
 .arrow.active {
   color: #333;
 }
+
 .empty-msg {
   text-align: center;
   color: #999;
@@ -210,6 +223,7 @@ const sortedRows = computed(() => {
   padding: 20px 0;
   font-style: italic;
 }
+
 .skeleton {
   height: 14px;
   width: 100%;
@@ -218,8 +232,14 @@ const sortedRows = computed(() => {
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
 }
+
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>
