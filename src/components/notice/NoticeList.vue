@@ -21,7 +21,10 @@
           :class="{ deleted: notice.is_deleted }"
         >
           <td class="notice-index">
-            {{ (currentPage - 1) * pageSize + index + 1 }}
+            <template v-if="getEmployee(notice.employee_id)?.name === '관리자'">🚩</template>
+            <template v-else>
+              {{ totalCount - ((currentPage - 1) * pageSize + index) }}
+            </template>
           </td>
           <td
             class="notice-title"
@@ -77,6 +80,8 @@ const isAdmin = computed(() => loginUser.value.name === "관리자");
 const canWriteNotice = computed(() => {
   return isAdmin.value || loginUser.value.level === "팀장";
 });
+
+const totalCount = computed(() => notices.value.length);
 
 const pagedNotices = computed(() => {
   const start = (currentPage.value - 1) * pageSize;
@@ -142,17 +147,19 @@ onMounted(async () => {
 
 <style>
 .notice-wrapper {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   font-size: 15px;
   font-weight: 500;
   color: #222;
 }
+
 .notice-actions {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 14px;
 }
+
 .notice-actions button {
   background-color: #e7f3d9;
   color: #222;
@@ -164,68 +171,94 @@ onMounted(async () => {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
+
 .notice-actions button:hover {
   background-color: #d1e9c2;
 }
+
 .notice-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
+
 thead {
   background-color: #f0f7e4;
   font-size: 15px;
   font-weight: 600;
 }
+
 th,
 td {
   padding: 12px 20px;
   vertical-align: middle;
   border-bottom: 1px solid #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 22px;
 }
+
 .notice-index {
   text-align: center;
   width: 60px;
+  font-size: 16px;
 }
+
 .notice-title {
   text-align: left;
 }
+
+th.notice-title {
+  text-align: center;
+}
+
 .notice-author {
   text-align: center;
   width: 260px;
 }
+
 .notice-date {
   text-align: center;
   padding: 0 10px;
   width: 120px;
 }
+
 .system {
-  color: red;
+  color: rgb(255, 66, 89);
   font-weight: bold;
   font-size: inherit;
 }
+
 .read {
   color: #aaa;
 }
+
 .system.read {
-  color: #aaa !important;
+  color: rgba(218, 67, 67, 0.5);
   font-weight: normal;
   font-size: inherit;
 }
+
 .deleted {
   opacity: 0.5;
 }
+
 strong {
-  font-weight: 900;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 15px;
 }
+
 .notice-link {
   text-decoration: none;
   color: inherit;
 }
+
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
 }
+
 .notice-link del {
   color: #e05d5d;
   text-decoration: line-through;

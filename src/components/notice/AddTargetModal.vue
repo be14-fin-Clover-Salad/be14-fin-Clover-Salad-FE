@@ -62,8 +62,9 @@
 
         <!-- 우측: 선택된 대상자 -->
         <div class="selected-panel">
-          <h4>받는 사람 {{ selected.length }}</h4>
+          <h4>받는 사람 <span class="count">{{ selected.length }}</span></h4>
           <ul>
+            <li v-if="selected.length === 0" class="empty-selected">선택된 인원이 없습니다.</li>
             <li v-for="emp in selected" :key="emp.id">
               {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.department_id) }})
               <span @click="remove(emp.id)">✕</span>
@@ -81,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watchEffect, onMounted } from 'vue'
 
 const props = defineProps({
   departments: Array,
@@ -96,27 +97,23 @@ const props = defineProps({
   }
 })
 
-console.log('👤 props.loginUserId:', props.loginUserId)
-
 const emit = defineEmits(['update:selected', 'close'])
 
 const selectedDeptId = ref(null)
 const searchKeyword = ref('')
-const selectedIds = ref(
-  props.preselected
-    .filter(e => Number(e.id) !== Number(props.loginUserId))
-    .map(e => e.id)
-)
+const selectedIds = ref([])
 
-watch(
-  () => props.preselected,
-  (newVal) => {
-    selectedIds.value = newVal
-      .filter(e => Number(e.id) !== Number(props.loginUserId))
-      .map(e => e.id)
-  },
-  { immediate: true }
-)
+onMounted(() => {
+  console.log('📥 preselected props:', props.preselected)
+})
+
+watchEffect(() => {
+  console.log('📥 preselected props:', props.preselected)
+  selectedIds.value = props.preselected
+    .filter(e => Number(e.id) !== Number(props.loginUserId))
+    .map(e => e.id);
+  console.log('✅ 초기 selectedIds 세팅 완료:', selectedIds.value)
+})
 
 const getDeptName = (deptId) => {
   const dept = props.departments.find(d => Number(d.id) === Number(deptId))
@@ -129,9 +126,7 @@ const selectedDeptName = computed(() => {
   return dept ? dept.name : '-'
 })
 
-const isSelectedDept = (id) => {
-  return Number(selectedDeptId.value) === Number(id)
-}
+const isSelectedDept = (id) => Number(selectedDeptId.value) === Number(id)
 
 const selected = computed(() =>
   props.employees
@@ -181,6 +176,7 @@ const confirm = () => {
     .filter(emp => emp.level !== '관리자')
     .filter(emp => Number(emp.id) !== Number(props.loginUserId))
     .filter(emp => selectedIds.value.includes(emp.id))
+  console.log('📤 emit update:selected:', selectedEmps)
   emit('update:selected', selectedEmps)
   close()
 }
@@ -280,5 +276,14 @@ const confirm = () => {
   margin-left: 8px;
   color: red;
   cursor: pointer;
+}
+.empty-selected {
+  color: #888;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+}
+.count {
+  font-weight: bold;
+  color: #00a86b;
 }
 </style>
