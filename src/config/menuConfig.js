@@ -101,8 +101,8 @@ export const menuList = [
     items: [
       {
         label: "결재 관리",
-        path: "/admin/payment",
-        // component: () => import("@/views/admin/ApprovalManagementView.vue"),
+        path: "/admin/approval",
+        component: () => import("@/views/approval/Approval.vue"),
       },
       {
         label: "사업 조회",
