@@ -18,6 +18,7 @@ if (!auth.accessToken && localStorage.getItem('access_token')) {
 }
 
 const tryRefreshAndLoadUser = async () => {
+
   if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') {
     return
   }
@@ -65,4 +66,5 @@ const tryRefreshAndLoadUser = async () => {
 
 app.mount('#app')
 
+// 인증 로직 활성화
 tryRefreshAndLoadUser()
