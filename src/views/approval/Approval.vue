@@ -23,6 +23,7 @@
       :isOpen="showDetailModal"
       :approval="selectedApproval"
       @close="showDetailModal = false"
+      @refresh="handleRefresh"
     />
   </section>
 </template>
@@ -58,6 +59,9 @@ const rows = reactive([])
 const isLoading = ref(false)
 const showDetailModal = ref(false)
 const selectedApproval = ref(null)
+
+// 마지막 검색 조건 저장
+let lastSearchData = null
 
 // 날짜 형식 변환 함수
 const formatDateTime = (dateTimeString) => {
@@ -97,6 +101,8 @@ const filteredRows = computed(() => {
 
 // 이벤트 핸들러
 async function handleSearch(data) {
+  lastSearchData = data // 검색 조건 저장
+  
   const authStore = useAuthStore()
   const token = authStore.accessToken
   
@@ -158,6 +164,7 @@ async function handleSearch(data) {
 
 function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
+  lastSearchData = null
 }
 
 function handleRowClick(row) {
@@ -167,6 +174,13 @@ function handleRowClick(row) {
 
 function handleRegisterClick() {
   // 등록 모달 등의 로직
+}
+
+function handleRefresh() {
+  // 승인/반려 후 마지막 검색 조건으로 다시 검색
+  if (lastSearchData) {
+    handleSearch(lastSearchData)
+  }
 }
 </script>
 
