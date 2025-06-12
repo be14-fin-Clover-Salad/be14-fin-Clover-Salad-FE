@@ -62,8 +62,9 @@
 
         <!-- 우측: 선택된 대상자 -->
         <div class="selected-panel">
-          <h4>받는 사람 {{ selected.length }}</h4>
+          <h4>받는 사람 <span class="count">{{ selected.length }}</span></h4>
           <ul>
+            <li v-if="selected.length === 0" class="empty-selected">선택된 인원이 없습니다.</li>
             <li v-for="emp in selected" :key="emp.id">
               {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.department_id) }})
               <span @click="remove(emp.id)">✕</span>
@@ -81,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
   departments: Array,
@@ -96,27 +97,17 @@ const props = defineProps({
   }
 })
 
-console.log('👤 props.loginUserId:', props.loginUserId)
-
 const emit = defineEmits(['update:selected', 'close'])
 
 const selectedDeptId = ref(null)
 const searchKeyword = ref('')
-const selectedIds = ref(
-  props.preselected
+const selectedIds = ref([])
+
+onMounted(() => {
+  selectedIds.value = props.preselected
     .filter(e => Number(e.id) !== Number(props.loginUserId))
     .map(e => e.id)
-)
-
-watch(
-  () => props.preselected,
-  (newVal) => {
-    selectedIds.value = newVal
-      .filter(e => Number(e.id) !== Number(props.loginUserId))
-      .map(e => e.id)
-  },
-  { immediate: true }
-)
+})
 
 const getDeptName = (deptId) => {
   const dept = props.departments.find(d => Number(d.id) === Number(deptId))
@@ -129,9 +120,7 @@ const selectedDeptName = computed(() => {
   return dept ? dept.name : '-'
 })
 
-const isSelectedDept = (id) => {
-  return Number(selectedDeptId.value) === Number(id)
-}
+const isSelectedDept = (id) => Number(selectedDeptId.value) === Number(id)
 
 const selected = computed(() =>
   props.employees
@@ -243,6 +232,15 @@ const confirm = () => {
   font-weight: 600;
   color: #007a5c;
 }
+.employee-list li label {
+  display: block;
+  padding: 4px 6px;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+.employee-list li label:hover {
+  background-color: #f9f9f9;
+}
 .selected-dept-label {
   margin-top: -0.5rem;
   margin-bottom: 0.5rem;
@@ -250,7 +248,7 @@ const confirm = () => {
   color: #444;
 }
 .search-input {
-  width: 90%;
+  width: 95%;
   margin-bottom: 0.5rem;
   padding: 0.4rem;
 }
@@ -280,5 +278,14 @@ const confirm = () => {
   margin-left: 8px;
   color: red;
   cursor: pointer;
+}
+.empty-selected {
+  color: #888;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+}
+.count {
+  font-weight: bold;
+  color: #00a86b;
 }
 </style>

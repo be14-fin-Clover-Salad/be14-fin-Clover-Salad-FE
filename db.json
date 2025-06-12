@@ -557,7 +557,7 @@
       "title": "보안 경고 61번",
       "content": "서비스 이용에 참고 바랍니다.",
       "created_at": "2025-07-01T09:00:00",
-      "employee_id": 6,
+      "employee_id": 8,
       "is_deleted": false
     },
     {
@@ -621,7 +621,7 @@
       "title": "정기 점검 69번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-09T09:00:00",
-      "employee_id": 7,
+      "employee_id": 8,
       "is_deleted": false
     },
     {
@@ -709,7 +709,7 @@
       "title": "이벤트 알림 80번",
       "content": "서버 업데이트 예정입니다.",
       "created_at": "2025-07-20T09:00:00",
-      "employee_id": 1,
+      "employee_id": 8,
       "is_deleted": false
     },
     {
@@ -877,7 +877,7 @@
       "title": "관리자 공지 101번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-10T09:00:00",
-      "employee_id": 8,
+      "employee_id": 1,
       "is_deleted": false
     },
     {
@@ -885,7 +885,7 @@
       "title": "[긴급] 관리자 공지 102번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-11T09:00:00",
-      "employee_id": 8,
+      "employee_id": 2,
       "is_deleted": false
     },
     {
@@ -893,7 +893,7 @@
       "title": "관리자 공지 103번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-12T09:00:00",
-      "employee_id": 8,
+      "employee_id": 3,
       "is_deleted": false
     },
     {
@@ -901,7 +901,7 @@
       "title": "[긴급] 관리자 공지 104번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-13T09:00:00",
-      "employee_id": 8,
+      "employee_id": 4,
       "is_deleted": false
     },
     {
@@ -909,12 +909,12 @@
       "title": "관리자 공지 105번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-14T09:00:00",
-      "employee_id": 8,
+      "employee_id": 5,
       "is_deleted": false
     },
     {
       "id": "106",
-      "title": "[긴급] 관리자 공지 106번",
+      "title": "[긴급] 관리자 공지 106번 인데 107번 인줄 알았지만 106번",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-15T09:00:00",
       "employee_id": 8,
@@ -922,7 +922,7 @@
     },
     {
       "id": "107",
-      "title": "관리자 공지 107번",
+      "title": "관리자 공지 107번 인줄 알았지만 실은 106번 이였는데 알고 보니 107번 이였네",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-16T09:00:00",
       "employee_id": 8,
@@ -938,7 +938,7 @@
     },
     {
       "id": "109",
-      "title": "관리자 공지 109번",
+      "title": "정보처리기사/산업기사 실기 스터디 안내 (6/10[화])댓글수",
       "content": "관리자 작성 공지사항입니다.",
       "created_at": "2025-08-18T09:00:00",
       "employee_id": 8,
