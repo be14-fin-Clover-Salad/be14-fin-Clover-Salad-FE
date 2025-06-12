@@ -17,6 +17,13 @@
         @register-click="handleRegisterClick"
       />
     </div>
+
+    <!-- 상세보기 모달 -->
+    <ApprovalDetailModal
+      :isOpen="showDetailModal"
+      :approval="selectedApproval"
+      @close="showDetailModal = false"
+    />
   </section>
 </template>
 
@@ -27,6 +34,7 @@ import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import ApprovalSearchFields from '@/components/approval/ApprovalSearchFields.vue'
+import ApprovalDetailModal from '@/components/approval/ApprovalDetailModal.vue'
 
 // 검색 폼 초기값
 const searchForm = reactive({
@@ -48,6 +56,8 @@ const searchForm = reactive({
 const rows = reactive([])
 
 const isLoading = ref(false)
+const showDetailModal = ref(false)
+const selectedApproval = ref(null)
 
 // 날짜 형식 변환 함수
 const formatDateTime = (dateTimeString) => {
@@ -106,6 +116,8 @@ async function handleSearch(data) {
     contractCode: data.contractCode || ""
   }
   
+
+  
   try {
     isLoading.value = true
     const response = await api.post('/approval/search', requestBody, {
@@ -125,6 +137,8 @@ async function handleSearch(data) {
       rows.splice(0, rows.length)
       return
     }
+    
+
     
     // 날짜 형식 변환
     const formattedData = dataArray.map(item => ({
@@ -147,7 +161,8 @@ function handleReset() {
 }
 
 function handleRowClick(row) {
-  // 상세보기 모달 등의 로직
+  selectedApproval.value = row
+  showDetailModal.value = true
 }
 
 function handleRegisterClick() {
