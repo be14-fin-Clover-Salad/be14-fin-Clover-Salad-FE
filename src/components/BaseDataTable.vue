@@ -197,6 +197,8 @@ const sortedRows = computed(() => {
   text-align: center;
   vertical-align: middle;
   overflow: visible;
+  cursor: default;
+  user-select: none;
 }
 
 .data-table th {
