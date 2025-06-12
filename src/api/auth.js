@@ -19,7 +19,10 @@ api.interceptors.response.use(
   async error => {
     const originalRequest = error.config
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 로그인 페이지에서는 토큰 재발급 로직 제외
+    const isLoginPage = window.location.pathname === '/login'
+    
+    if (error.response?.status === 401 && !originalRequest._retry && !isLoginPage) {
       originalRequest._retry = true
 
       const auth = useAuthStore()
