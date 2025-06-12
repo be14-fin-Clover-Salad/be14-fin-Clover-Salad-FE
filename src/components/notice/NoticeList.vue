@@ -1,9 +1,5 @@
 <template>
   <div class="notice-wrapper" v-if="employees.length && notices.length">
-    <div class="notice-actions">
-      <button v-if="canWriteNotice" @click="goToWritePage">등록</button>
-    </div>
-
     <table class="notice-table">
       <thead>
         <tr>
@@ -21,7 +17,8 @@
           :class="{ deleted: notice.is_deleted }"
         >
           <td class="notice-index">
-            {{ (currentPage - 1) * pageSize + index + 1 }}
+            <template v-if="getEmployee(notice.employee_id)?.name === '관리자'">🚩</template>
+            <template v-else>{{ calcNoticeNumber(index) }}</template>
           </td>
           <td
             class="notice-title"
@@ -37,22 +34,25 @@
               <span v-else v-html="formatTitle(notice.title)" />
             </router-link>
           </td>
-          <td class="notice-author">
-            {{ getEmployeeDisplayName(notice.employee_id) }}
-          </td>
-          <td class="notice-date">
-            {{ formatDate(notice.created_at) }}
-          </td>
+          <td class="notice-author">{{ getEmployeeDisplayName(notice.employee_id) }}</td>
+          <td class="notice-date">{{ formatDate(notice.created_at) }}</td>
         </tr>
       </tbody>
     </table>
 
-    <Pagination
-      :total="notices.length"
-      :pageSize="pageSize"
-      :currentPage="currentPage"
-      @update:currentPage="currentPage = $event"
-    />
+    <div class="notice-bottom-actions">
+      <div class="pagination-wrapper">
+        <Pagination
+          :total="totalPages"
+          :pageSize="1"
+          :currentPage="currentPage"
+          @update:currentPage="currentPage = $event"
+        />
+      </div>
+      <div class="register-wrapper" v-if="canWriteNotice">
+        <button class="register-btn" @click="goToWritePage">등록</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -66,45 +66,57 @@ const router = useRouter();
 const notices = ref([]);
 const employees = ref([]);
 const currentPage = ref(1);
-const pageSize = 10;
+const pageSize = 15;
 
-const loginUser = computed(() => {
-  return employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {};
-});
-
+const loginUser = computed(() => employees.value.find(emp => Number(emp.id) === loginUserId) || {});
 const isAdmin = computed(() => loginUser.value.name === "관리자");
+const canWriteNotice = computed(() => isAdmin.value || loginUser.value.level === "팀장");
 
-const canWriteNotice = computed(() => {
-  return isAdmin.value || loginUser.value.level === "팀장";
+const adminNoticesAll = computed(() =>
+  notices.value.filter(n => getEmployee(n.employee_id)?.name === '관리자')
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+);
+
+const pinnedAdmins = computed(() => adminNoticesAll.value.slice(0, 5));
+const remainingAdmins = computed(() => adminNoticesAll.value.slice(5));
+
+const normalNotices = computed(() =>
+  notices.value.filter(n => getEmployee(n.employee_id)?.name !== '관리자')
+);
+
+const mixedNotices = computed(() =>
+  [...normalNotices.value, ...remainingAdmins.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+);
+
+const totalPages = computed(() => {
+  const remaining = mixedNotices.value.length - Math.max(0, 15 - pinnedAdmins.value.length);
+  return Math.ceil(remaining / pageSize) + 1;
 });
 
 const pagedNotices = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return notices.value.slice(start, start + pageSize);
+  if (currentPage.value === 1) {
+    const remaining = 15 - pinnedAdmins.value.length;
+    return [...pinnedAdmins.value, ...mixedNotices.value.slice(0, remaining)];
+  } else {
+    const offset = (currentPage.value - 2) * pageSize + (15 - pinnedAdmins.value.length);
+    return mixedNotices.value.slice(offset, offset + pageSize);
+  }
 });
 
-const getEmployee = (employee_id) => {
-  return employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null;
+const calcNoticeNumber = (index) => {
+  const offset = (currentPage.value - 1) * pageSize - pinnedAdmins.value.length;
+  return mixedNotices.value.length - (offset + index);
 };
 
+const getEmployee = (employee_id) => employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null;
 const getEmployeeDisplayName = (employee_id) => {
   const emp = getEmployee(employee_id);
-  if (!emp || !emp.name) return "-";
-  return emp.name === "관리자" ? "관리자" : `${emp.name} ${emp.level || ""}`;
+  return emp ? (emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level || ''}`) : '-';
 };
 
-const formatTitle = (title) => {
-  return title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr || typeof dateStr !== 'string') return '-';
-  return dateStr.split('T')[0];
-};
-
-const goToWritePage = () => {
-  router.push("/support/notice/create");
-};
+const formatTitle = (title) => title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
+const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
+const goToWritePage = () => router.push("/support/notice/create");
 
 onMounted(async () => {
   const [empNoticeRes, noticeRes, employeeRes] = await Promise.all([
@@ -120,7 +132,6 @@ onMounted(async () => {
   employees.value = employeeData;
 
   const allowedNoticeIds = empNoticeData.map(item => Number(item.notice_id));
-
   const visibleNotices = isAdmin.value
     ? noticeData
     : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)) && !n.is_deleted);
@@ -142,18 +153,29 @@ onMounted(async () => {
 
 <style>
 .notice-wrapper {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   font-size: 15px;
   font-weight: 500;
   color: #222;
 }
-.notice-actions {
+.notice-bottom-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+.pagination-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.register-wrapper {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 14px;
+  min-width: 100px;
 }
-.notice-actions button {
+.register-btn {
   background-color: #e7f3d9;
   color: #222;
   padding: 10px 20px;
@@ -164,42 +186,57 @@ onMounted(async () => {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.notice-actions button:hover {
+.register-btn:hover {
   background-color: #d1e9c2;
 }
 .notice-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
+
 thead {
   background-color: #f0f7e4;
   font-size: 15px;
   font-weight: 600;
 }
+
 th,
 td {
   padding: 12px 20px;
   vertical-align: middle;
   border-bottom: 1px solid #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 22px;
 }
+
 .notice-index {
   text-align: center;
   width: 60px;
+  font-size: 16px;
 }
+
 .notice-title {
   text-align: left;
+}
+
+th.notice-title {
+  text-align: center;
 }
 .notice-author {
   text-align: center;
   width: 260px;
 }
+
 .notice-date {
   text-align: center;
   padding: 0 10px;
   width: 120px;
 }
 .system {
-  color: red;
+  color: rgb(255, 66, 89);
   font-weight: bold;
   font-size: inherit;
 }
@@ -207,7 +244,7 @@ td {
   color: #aaa;
 }
 .system.read {
-  color: #aaa !important;
+  color: rgba(218, 67, 67, 0.5);
   font-weight: normal;
   font-size: inherit;
 }
@@ -215,8 +252,8 @@ td {
   opacity: 0.5;
 }
 strong {
-  font-weight: 900;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 15px;
 }
 .notice-link {
   text-decoration: none;

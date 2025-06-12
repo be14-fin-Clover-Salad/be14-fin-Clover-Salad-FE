@@ -1,67 +1,118 @@
 <template>
-  <div class="notice-detail-layout" v-if="notice && writer && (!notice.is_deleted || isAdmin)">
-    <div class="notice-content">
-      <button class="back-btn" @click="goBackToList">
-        <span class="arrow"></span>목록
-      </button>
-
-      <!-- 삭제된 공지 안내 배너 -->
-      <div v-if="notice.is_deleted" class="deleted-banner">
-        🗑 이 공지는 삭제된 상태입니다.
-      </div>
-
-      <h1 class="notice-title">{{ notice.title }}</h1>
-      <div class="notice-info">
-        <span>작성자: {{ formatEmployeeLabel(writer.id) }}</span>
-        <span>등록일자: {{ formatDate(notice.created_at) }}</span>
-      </div>
-      <div class="notice-box" v-html="notice.content"></div>
-
-      <div class="btn-wrap">
-        <button v-if="canEditOrDelete && !notice.is_deleted" class="btn edit-btn" @click="goEditPage">수정</button>
-        <button v-if="canEditOrDelete && !notice.is_deleted" class="btn delete-btn" @click="deleteNotice">삭제</button>
-        <button
-          v-if="!isAdmin && alreadyChecked !== undefined"
-          class="btn check-btn"
-          :disabled="alreadyChecked"
-          @click="confirmCheck"
-        >
-          {{ alreadyChecked ? "✔ 확인 완료" : "✅ 확인하기" }}
+  <div v-if="notice && writer">
+    <div v-if="!notice.is_deleted || isAdmin" class="notice-detail-layout">
+      <div class="notice-content">
+        <button class="back-btn" @click="goBackToList">
+          <span class="arrow"></span>목록
         </button>
+
+        <div v-if="notice.is_deleted" class="deleted-banner">
+          🗑 이 공지는 삭제된 상태입니다.
+        </div>
+
+        <h1 class="notice-title">{{ notice.title }}</h1>
+        <div class="notice-info">
+          <span>작성자: {{ formatEmployeeLabel(writer.id) }}</span>
+          <span>등록일자: {{ formatDate(notice.created_at) }}</span>
+        </div>
+        <div class="notice-box" v-html="notice.content"></div>
+
+        <div class="btn-wrap">
+          <button v-if="canEditOrDelete && !notice.is_deleted" class="btn edit-btn" @click="goEditPage">수정</button>
+          <button v-if="canEditOrDelete && !notice.is_deleted" class="btn delete-btn" @click="deleteNotice">삭제</button>
+          <button
+            v-if="!isAdmin && alreadyChecked !== undefined"
+            class="btn check-btn"
+            :disabled="alreadyChecked"
+            @click="confirmCheck"
+          >
+            {{ alreadyChecked ? "✔ 확인 완료" : "✅ 확인하기" }}
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-area">
+        <div class="notice-sidebar">
+          <h3>확인자 목록</h3>
+          <input type="text" v-model="searchKeyword" placeholder="검색" class="search-input" />
+          <ul class="checklist">
+            <li
+              v-for="entry in filteredCheckList"
+              :key="entry.employee_id"
+              :class="{
+                checked: entry.is_checked,
+                currentUser: Number(entry.employee_id) === Number(loginUserId)
+              }"
+            >
+              <span>{{ formatEmployeeLabel(entry.employee_id) }}</span>
+              <span>{{ entry.is_checked ? "✅" : "❌" }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="add-target-wrap">
+          <button class="add-target-btn" @click="openAddTargetModal">+ 대상 추가</button>
+        </div>
       </div>
     </div>
 
-    <div class="notice-sidebar">
-      <h3>확인자 목록</h3>
-      <input type="text" v-model="searchKeyword" placeholder="검색" class="search-input" />
-      <ul class="checklist">
-        <li
-          v-for="entry in filteredCheckList"
-          :key="entry.employee_id"
-          :class="{
-            checked: entry.is_checked,
-            currentUser: Number(entry.employee_id) === Number(loginUserId)
-          }"
-        >
-          <span>{{ formatEmployeeLabel(entry.employee_id) }}</span>
-          <span>{{ entry.is_checked ? "✅" : "❌" }}</span>
-        </li>
-      </ul>
-    </div>
-  </div>
+    <div v-else class="not-allowed">해당 공지에 가입할 수 없습니다.</div>
 
-  <div v-else class="not-allowed">해당 공지에 접근할 수 없습니다.</div>
+    <AddTargetModal
+      v-if="isAddTargetOpen"
+      :departments="departments"
+      :employees="employees"
+      :preselected="preselectedEmployees"
+      :loginUserId="loginUserId"
+      @update:selected="handleTargetUpdate"
+      @close="closeAddTargetModal"
+    />
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import AddTargetModal from '@/components/notice/AddTargetModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 const noticeId = route.params.id;
 const loginUserId = 8;
+
+const isAddTargetOpen = ref(false);
+const openAddTargetModal = () => {
+  isAddTargetOpen.value = true;
+};
+const closeAddTargetModal = () => (isAddTargetOpen.value = false);
+const handleTargetUpdate = async (selectedList) => {
+  const existingIds = checkList.value.map(entry => entry.employee_id);
+  const newIds = selectedList.map(emp => emp.id);
+
+  const toAdd = newIds.filter(id => !existingIds.includes(id));
+  const toRemove = existingIds.filter(id => !newIds.includes(id));
+
+  try {
+    for (const id of toAdd) {
+      await axios.post('http://localhost:3001/employee_notice', {
+        notice_id: noticeId,
+        employee_id: id,
+        is_checked: false
+      });
+    }
+    for (const id of toRemove) {
+      const entry = checkList.value.find(e => e.employee_id === id);
+      if (entry) {
+        await axios.delete(`http://localhost:3001/employee_notice/${entry.id}`);
+      }
+    }
+    await fetchData();
+    closeAddTargetModal();
+  } catch (e) {
+    console.error('❌ 대상자 업데이트 실패:', e);
+  }
+};
 
 const notice = ref(null);
 const writer = ref(null);
@@ -69,14 +120,23 @@ const employees = ref([]);
 const departments = ref([]);
 const checkList = ref([]);
 const searchKeyword = ref("");
+const preselectedEmployees = ref([]);
+
+watchEffect(() => {
+  if (checkList.value.length && employees.value.length) {
+    preselectedEmployees.value = checkList.value
+      .map(entry =>
+        employees.value.find(emp => Number(emp.id) === Number(entry.employee_id))
+      )
+      .filter(Boolean);
+  }
+});
 
 const loginUser = computed(() =>
   employees.value.find(e => Number(e.id) === loginUserId)
 );
 
-const isAdmin = computed(() => {
-  return loginUser.value?.name === '관리자';
-});
+const isAdmin = computed(() => loginUser.value?.name === '관리자');
 
 const canEditOrDelete = computed(() => {
   return Number(writer.value?.id) === loginUserId || isAdmin.value;
@@ -119,7 +179,7 @@ const fetchData = async () => {
     writer.value = employees.value.find(e => Number(e.id) === Number(notice.value.employee_id));
     checkList.value = empNoticeRes.data;
   } catch (e) {
-    console.error("❌ fetchData 실패:", e);
+    console.error('❌ fetchData 실패:', e);
   }
 };
 
@@ -132,7 +192,7 @@ const confirmCheck = async () => {
     });
     entry.is_checked = true;
   } catch (e) {
-    console.error("❌ 확인 PATCH 실패:", e);
+    console.error('❌ 확인 PATCH 실패:', e);
   }
 };
 
@@ -154,7 +214,7 @@ const deleteNotice = async () => {
     alert('삭제되었습니다.');
     router.push('/support/notice');
   } catch (e) {
-    console.error("❌ 삭제 실패:", e);
+    console.error('❌ 삭제 실패:', e);
     alert('삭제 중 오류가 발생했습니다.');
   }
 };
@@ -170,9 +230,11 @@ onMounted(fetchData);
   max-width: 1200px;
   margin: 0 auto;
 }
+
 .notice-content {
   flex: 2;
 }
+
 .notice-sidebar {
   width: 220px;
   background: #f9f9f9;
@@ -182,12 +244,14 @@ onMounted(fetchData);
   max-height: 500px;
   overflow-y: auto;
 }
+
 .notice-title {
   font-size: 1.6rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
   text-align: left;
 }
+
 .notice-info {
   display: flex;
   justify-content: space-between;
@@ -195,6 +259,7 @@ onMounted(fetchData);
   color: #666;
   margin-bottom: 1.5rem;
 }
+
 .notice-box {
   padding: 1.5rem;
   border: 1px solid #ddd;
@@ -204,6 +269,7 @@ onMounted(fetchData);
   line-height: 1.6;
   margin-bottom: 2rem;
 }
+
 .deleted-banner {
   background-color: #fff0f0;
   border: 1px dashed #d11a2a;
@@ -214,7 +280,6 @@ onMounted(fetchData);
   font-size: 0.95rem;
   border-radius: 6px;
 }
-
 .btn-wrap {
   display: flex;
   justify-content: center;
@@ -301,7 +366,6 @@ onMounted(fetchData);
 .checklist li.checked {
   background-color: #eef6ee;
   color: #666;
-  font-style: normal;
 }
 .checklist li.currentUser {
   font-weight: bold;
@@ -313,5 +377,25 @@ onMounted(fetchData);
   font-size: 1.2rem;
   text-align: center;
   color: #a00;
+}
+.add-target-wrap {
+  width: 220px;
+  margin: 1rem auto 0 auto;
+  text-align: center;
+}
+.add-target-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.add-target-btn:hover {
+  background-color: #e0e0e0;
 }
 </style>

@@ -43,7 +43,7 @@
       v-if="openAddModal"
       :employees="employees"
       :departments="departments"
-      :preselected="selectedEmployees || []"
+      :preselected="selectedEmployees"
       :loginUserId="loginUserId"
       @update:selected="updateSelectedEmployees"
       @close="openAddModal = false"
@@ -73,6 +73,7 @@ const selectedEmployees = ref([])
 const openAddModal = ref(false)
 const employees = ref([])
 const departments = ref([])
+const employeeNoticeList = ref([])
 
 const getDeptName = (deptId) => {
   const dept = departments.value.find(d => Number(d.id) === Number(deptId))
@@ -107,9 +108,14 @@ const fetchNotice = async () => {
 
   employees.value = empRes.data
   departments.value = deptRes.data
+  employeeNoticeList.value = empNoticeRes.data
 
-  const selectedIds = empNoticeRes.data.map(e => e.employee_id)
-  selectedEmployees.value = employees.value.filter(emp => selectedIds.includes(emp.id) && emp.id !== loginUserId)
+  const matched = employeeNoticeList.value
+    .map(e => employees.value.find(emp => Number(emp.id) === Number(e.employee_id)))
+    .filter(Boolean)
+    .filter(emp => emp.id !== loginUserId)
+
+  selectedEmployees.value = matched
 }
 
 const submitEdit = async () => {
@@ -119,7 +125,7 @@ const submitEdit = async () => {
       content: content.value,
       employee_id: employeeId.value,
       is_deleted: false,
-      created_at: new Date().toISOString() // ✅ 현재 시간으로 덮어쓰기
+      created_at: new Date().toISOString()
     })
 
     const oldNoticeList = await axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
