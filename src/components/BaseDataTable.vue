@@ -3,12 +3,15 @@
     <!-- 바운더리 바깥 상단 요약 -->
     <div class="table-summary">
       총 {{ rows.length }}건
-      <span class="info-badge" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">
+      <span ref="badgeRef"
+            class="info-badge"
+            @mouseenter="showTooltip = true"
+            @mouseleave="showTooltip = false">
         <span class="i">i</span>
+        <div v-show="showTooltip" class="tooltip tooltip-local">
+          클릭하면<br />오름/내림차순 정렬이 가능합니다.
+        </div>
       </span>
-      <div v-if="showTooltip" class="tooltip">
-        각 컬럼 헤더를 클릭하면<br />오름차순/내림차순 정렬이 가능합니다.
-      </div>
     </div>
 
     <!-- 테이블 박스 -->
@@ -37,7 +40,13 @@
           </tbody>
 
           <tbody v-else-if="sortedRows.length">
-            <tr v-for="(row, rowIndex) in sortedRows" :key="rowIndex" @click="$emit('row-click', row)">
+            <tr
+              v-for="(row, rowIndex) in sortedRows"
+              :key="rowIndex"
+              @click="$emit('row-click', row)"
+              @dblclick="$emit('row-dblclick', row)"
+              :class="{ selected: row.code === selectedCode }"
+            >
               <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
                 {{ row[col.key] || '-' }}
               </td>
@@ -54,11 +63,6 @@
         </table>
       </div>
     </div>
-
-    <!-- 바운더리 바깥 하단 등록 버튼 -->
-    <div class="action-bar">
-      <button class="register-btn" @click="$emit('register-click')">등록</button>
-    </div>
   </div>
 </template>
 
@@ -68,11 +72,13 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   columns: { type: Array, required: true },
   rows: { type: Array, required: true },
-  isLoading: { type: Boolean, default: false }
+  isLoading: { type: Boolean, default: false },
+  selectedCode: { type: String, default: '' }
 })
 
 const sortState = ref({ key: null, order: null })
 const showTooltip = ref(false)
+const badgeRef = ref(null)
 
 function toggleSort(key) {
   if (sortState.value.key !== key) {
@@ -112,6 +118,7 @@ const sortedRows = computed(() => {
   font-weight: 500;
   color: #333;
   margin-bottom: 12px;
+  position: relative;
 }
 
 .info-badge {
@@ -126,8 +133,8 @@ const sortedRows = computed(() => {
   font-size: 12px;
   font-weight: bold;
   cursor: default;
-  position: relative;
   transition: background-color 0.2s;
+  position: relative;
 }
 
 .info-badge:hover {
@@ -135,17 +142,26 @@ const sortedRows = computed(() => {
 }
 
 .tooltip {
-  position: absolute;
-  top: 24px;
-  left: 0;
   padding: 6px 10px;
   background-color: #333;
   color: #fff;
   font-size: 12px;
   border-radius: 4px;
   white-space: nowrap;
-  z-index: 10;
+  z-index: 100;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-local {
+  position: absolute;
+  top: 100%;
+  left: 400%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+}
+
+.selected {
+  background-color: #eef4ff;
 }
 
 .table-wrapper {
@@ -181,6 +197,8 @@ const sortedRows = computed(() => {
   text-align: center;
   vertical-align: middle;
   overflow: visible;
+  cursor: default;
+  user-select: none;
 }
 
 .data-table th {
@@ -225,26 +243,6 @@ const sortedRows = computed(() => {
   font-size: 14px;
   padding: 20px 0;
   font-style: italic;
-}
-
-.action-bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
-.register-btn {
-  background-color: #6c87c1;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.register-btn:hover {
-  background-color: #546ea6;
 }
 
 .skeleton {

@@ -13,9 +13,16 @@
         :columns="columns"
         :rows="rows"
         :isLoading="isLoading"
+        :selectedCode="selectedRowCode"
         @row-click="handleRowClick"
-        @register-click="showUploadModal = true"
+        @row-dblclick="handleRowDblClick"
       />
+    </div>
+
+    <!-- 버튼 영역 -->
+    <div class="action-buttons">
+      <button class="register-btn" @click="showUploadModal = true">등록</button>
+      <button class="replace-btn" @click="openReplaceModal" :disabled="!selectedContract">재업로드</button>
     </div>
 
     <!-- 계약서 등록 모달 -->
@@ -38,6 +45,14 @@
       :contract="selectedContract"
       @close="showDetailModal = false"
     />
+
+    <!-- 계약서 재업로드 모달 -->
+    <ContractReplaceModal
+      :isOpen="showReplaceModal"
+      :contract="selectedContract"
+      @close="handleReplaceModalClose"
+      @replace-success="handleReplaceSuccess"
+    />
   </section>
 </template>
 
@@ -51,6 +66,7 @@ import ContractSearchFields from '@/components/contract/ContractSearchFields.vue
 import ContractUploadModal from '@/views/contract/ContractUploadModal.vue'
 import ContractUploadSuccessModal from '@/components/contract/ContractUploadSuccessModal.vue'
 import ContractDetailModal from '@/components/contract/ContractDetailModal.vue'
+import ContractReplaceModal from '@/views/contract/ContractReplaceModal.vue' 
 
 const searchForm = reactive({
   code: '', minAmount: '', maxAmount: '',
@@ -67,7 +83,9 @@ const isLoading = ref(false)
 const showUploadModal = ref(false)
 const showSuccessModal = ref(false)
 const showDetailModal = ref(false)
+const showReplaceModal = ref(false)
 const selectedContract = ref(null)
+const selectedRowCode = ref(null)
 
 async function handleSearch(data) {
   const authStore = useAuthStore()
@@ -75,9 +93,7 @@ async function handleSearch(data) {
   try {
     isLoading.value = true
     const response = await api.post('/api/query/contract/search', data, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
+      headers: { Authorization: `Bearer ${token}` },
       withCredentials: true
     })
     rows.splice(0, rows.length, ...response.data)
@@ -105,7 +121,28 @@ function goToDetailView() {
 }
 
 function handleRowClick(contract) {
+  selectedRowCode.value = contract.code
   selectedContract.value = contract
+}
+
+function handleRowDblClick(contract) {
+  selectedContract.value = contract
+  showDetailModal.value = true
+}
+
+function openReplaceModal() {
+  if (!selectedContract.value) return
+  showReplaceModal.value = true
+}
+
+function handleReplaceModalClose() {
+  showReplaceModal.value = false
+}
+
+function handleReplaceSuccess(updatedContract) {
+  showReplaceModal.value = false
+  handleSearch({ ...searchForm })
+  selectedContract.value = updatedContract
   showDetailModal.value = true
 }
 
@@ -131,5 +168,25 @@ section {
 .table-wrapper {
   margin-top: 24px;
   overflow-x: auto;
+}
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.register-btn,
+.replace-btn {
+  background-color: #6c87c1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.replace-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>
