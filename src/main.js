@@ -18,11 +18,10 @@ if (!auth.accessToken && localStorage.getItem('access_token')) {
 }
 
 const tryRefreshAndLoadUser = async () => {
-  // 로그인 페이지나 비밀번호 재설정 페이지에서는 인증 로직 실행하지 않음
+
   if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') {
     return
   }
-
   if (auth.accessToken && !auth.userInfo) {
     // accessToken은 있으나 userInfo가 없는 경우 → 마이페이지 호출
     try {
