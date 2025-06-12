@@ -24,7 +24,7 @@ api.interceptors.response.use(
 
       const auth = useAuthStore()
       try {
-        const refreshRes = await rawApi.post('/employee/refresh-token')
+        const refreshRes = await rawApi.post('/auth/refresh-token')
         const newAccessToken = refreshRes.headers['authorization']?.split(' ')[1]
 
         if (newAccessToken) {

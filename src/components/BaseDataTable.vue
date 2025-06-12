@@ -1,57 +1,63 @@
 <template>
-  <div class="table-wrapper">
-    <!-- 상단 요약 -->
-    <div class="table-header">
-      <div class="summary">
-        총 {{ rows.length }}건
-        <span class="info-badge" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">
-          <span class="i">i</span>
-        </span>
-        <div v-if="showTooltip" class="tooltip">
-          각 컬럼 헤더를 클릭하면<br />오름차순/내림차순 정렬이 가능합니다.
-        </div>
+  <div>
+    <!-- 바운더리 바깥 상단 요약 -->
+    <div class="table-summary">
+      총 {{ rows.length }}건
+      <span class="info-badge" @mouseover="showTooltip = true" @mouseleave="showTooltip = false">
+        <span class="i">i</span>
+      </span>
+      <div v-if="showTooltip" class="tooltip">
+        각 컬럼 헤더를 클릭하면<br />오름차순/내림차순 정렬이 가능합니다.
       </div>
     </div>
 
-    <div class="table-scroll">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th v-for="col in columns" :key="col.key" @click="toggleSort(col.key)" class="sortable"
-              :style="{ width: col.width || 'auto' }">
-              <span class="label">{{ col.label }}</span>
-              <span class="sort-icons" v-if="sortState.key === col.key">
-                <span class="arrow up" :class="{ active: sortState.order === 'asc' }">▲</span>
-                <span class="arrow down" :class="{ active: sortState.order === 'desc' }">▼</span>
-              </span>
-            </th>
-          </tr>
-        </thead>
+    <!-- 테이블 박스 -->
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th v-for="col in columns" :key="col.key" @click="toggleSort(col.key)"
+                  class="sortable" :style="{ width: col.width || 'auto' }">
+                <span class="label">{{ col.label }}</span>
+                <span class="sort-icons" v-if="sortState.key === col.key">
+                  <span class="arrow up" :class="{ active: sortState.order === 'asc' }">▲</span>
+                  <span class="arrow down" :class="{ active: sortState.order === 'desc' }">▼</span>
+                </span>
+              </th>
+            </tr>
+          </thead>
 
-        <tbody v-if="isLoading">
-          <tr v-for="n in 10" :key="n">
-            <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
-              <div class="skeleton"></div>
-            </td>
-          </tr>
-        </tbody>
+          <tbody v-if="isLoading">
+            <tr v-for="n in 10" :key="n">
+              <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
+                <div class="skeleton"></div>
+              </td>
+            </tr>
+          </tbody>
 
-        <tbody v-else-if="sortedRows.length">
-          <tr v-for="(row, rowIndex) in sortedRows" :key="rowIndex">
-            <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
-              {{ row[col.key] || '-' }}
-            </td>
-          </tr>
-        </tbody>
+          <tbody v-else-if="sortedRows.length">
+            <tr v-for="(row, rowIndex) in sortedRows" :key="rowIndex" @click="$emit('row-click', row)">
+              <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
+                {{ row[col.key] || '-' }}
+              </td>
+            </tr>
+          </tbody>
 
-        <tbody v-else>
-          <tr>
-            <td :colspan="columns.length" class="empty-msg">
-              조회된 데이터가 없습니다.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <tbody v-else>
+            <tr>
+              <td :colspan="columns.length" class="empty-msg">
+                조회된 데이터가 없습니다.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 바운더리 바깥 하단 등록 버튼 -->
+    <div class="action-bar">
+      <button class="register-btn" @click="$emit('register-click')">등록</button>
     </div>
   </div>
 </template>
@@ -60,7 +66,7 @@
 import { ref, computed } from 'vue'
 
 const props = defineProps({
-  columns: { type: Array, required: true }, // 각 column 객체는 { key, label, width(optional) }
+  columns: { type: Array, required: true },
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false }
 })
@@ -98,33 +104,20 @@ const sortedRows = computed(() => {
 </script>
 
 <style scoped>
-.table-wrapper {
-  overflow-x: auto;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fff;
-  padding: 12px;
-}
-
-.table-header {
+.table-summary {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-}
-
-.summary {
+  gap: 8px;
   font-size: 14px;
   font-weight: 500;
   color: #333;
-  position: relative;
+  margin-bottom: 12px;
 }
 
 .info-badge {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  margin-left: 6px;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -155,6 +148,14 @@ const sortedRows = computed(() => {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  padding: 12px;
+}
+
 .table-scroll {
   max-height: 600px;
   overflow: auto;
@@ -162,7 +163,6 @@ const sortedRows = computed(() => {
 
 .data-table {
   width: max-content;
-  /* 중요: 컬럼 너비에 따라 테이블 확장 */
   border-collapse: collapse;
   font-size: 14px;
   table-layout: fixed;
@@ -184,7 +184,10 @@ const sortedRows = computed(() => {
 }
 
 .data-table th {
-  position: relative;
+  position: sticky;
+  top: 0;
+  background-color: #f9f9f9;
+  z-index: 1;
 }
 
 .label {
@@ -224,6 +227,26 @@ const sortedRows = computed(() => {
   font-style: italic;
 }
 
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.register-btn {
+  background-color: #6c87c1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.register-btn:hover {
+  background-color: #546ea6;
+}
+
 .skeleton {
   height: 14px;
   width: 100%;
@@ -237,7 +260,6 @@ const sortedRows = computed(() => {
   0% {
     background-position: 200% 0;
   }
-
   100% {
     background-position: -200% 0;
   }
