@@ -18,6 +18,9 @@ if (!auth.accessToken && localStorage.getItem('access_token')) {
 }
 
 const tryRefreshAndLoadUser = async () => {
+  if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') {
+    return
+  }
   if (auth.accessToken && !auth.userInfo) {
     // accessToken은 있으나 userInfo가 없는 경우 → 마이페이지 호출
     try {
