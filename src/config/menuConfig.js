@@ -105,9 +105,9 @@ export const menuList = [
         component: () => import("@/views/approval/Approval.vue"),
       },
       {
-        label: "사업 조회",
-        path: "/admin/business",
-        // component: () => import("@/views/admin/BusinessLookupView.vue"),
+        label: "사원 조회",
+        path: "/employee",
+        component: () => import("@/views/employee/EmployeeLayout.vue"),
       },
       {
         label: "알림 관리",
