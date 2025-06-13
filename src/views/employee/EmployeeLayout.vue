@@ -23,7 +23,7 @@
       </div>
       <!-- 3. 중앙 직원 리스트 영역 -->
       <div class="employee-list-area">
-        <!-- 직원 리스트 컴포넌트 자리 -->
+        <EmployeeDepartmentList />
       </div>
       <!-- 4. 우측 직원 상세 정보 영역 -->
       <div class="employee-detail-area">
@@ -36,6 +36,7 @@
 <script setup>
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import EmployeeSearchFields from '@/components/employee/EmployeeSearchFields.vue'
+import EmployeeDepartmentList from '@/components/employee/EmployeeDepartmentList.vue'
 import { reactive, ref, onMounted } from 'vue'
 import api from '@/api/auth'
 import DepartmentTreeNode from '@/components/employee/DepartmentTreeNode.vue'
@@ -89,13 +90,18 @@ function getPathToRoot(node) {
 function handleToggle(node) {
   const path = getPathToRoot(node)
   const idx = openedPath.value.indexOf(node.id)
+  
   if (idx !== -1) {
+    // 현재 노드가 이미 열려있는 경우
     if (idx === openedPath.value.length - 1) {
-      openedPath.value = []
+      // 현재 노드가 마지막 노드인 경우, 현재 노드만 닫음
+      openedPath.value = openedPath.value.slice(0, -1)
     } else {
-      openedPath.value = openedPath.value.slice(0, idx)
+      // 현재 노드가 중간에 있는 경우, 현재 노드까지만 유지
+      openedPath.value = openedPath.value.slice(0, idx + 1)
     }
   } else {
+    // 현재 노드가 닫혀있는 경우, 경로에 추가
     openedPath.value = path
   }
 }
@@ -170,5 +176,9 @@ export default {};
   height: 583px;
   box-sizing: border-box;
   overflow-y: auto;
+}
+.employee-list-area {
+  flex: 1;
+  margin: 0 20px;
 }
 </style>

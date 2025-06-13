@@ -52,10 +52,8 @@ const folderIconSrc = computed(() => {
 })
 
 function handleClick(e) {
+  e.stopPropagation()
   props.onToggle(props.node)
-  if (hasChildren.value) {
-    e.stopPropagation()
-  }
 }
 </script>
 
