@@ -25,15 +25,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useDepartmentStore } from '@/stores/departmentStore'
+
 const props = defineProps({
   node: Object,
   openedPath: Array,
   onToggle: Function
 })
 
+const departmentStore = useDepartmentStore()
 const hasChildren = computed(() => props.node.children && props.node.children.length > 0)
-const isSelected = computed(() => false) // 추후 선택 기능 구현 시 활용
+const isSelected = computed(() => departmentStore.selectedDepartmentId === props.node.id)
 const isOpen = computed(() => props.openedPath && props.openedPath.includes(props.node.id))
 
 // 상위부서만 open된 경우에는 항상 defaultFolder.svg, 하위가 없고 마지막 노드일 때만 openedFolder.svg
@@ -54,6 +57,14 @@ const folderIconSrc = computed(() => {
 function handleClick(e) {
   e.stopPropagation()
   props.onToggle(props.node)
+  
+  // 하위 부서가 없는 경우에만 store에 ID를 저장
+  if (!hasChildren.value) {
+    departmentStore.setSelectedDepartment(props.node.id)
+  } else {
+    // 상위 부서를 클릭한 경우 store의 ID를 null로 설정
+    departmentStore.setSelectedDepartment(null)
+  }
 }
 </script>
 

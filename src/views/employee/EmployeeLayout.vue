@@ -27,7 +27,7 @@
       </div>
       <!-- 4. 우측 직원 상세 정보 영역 -->
       <div class="employee-detail-area">
-        <!-- 직원 상세 정보 컴포넌트 자리 -->
+        <EmployeeDetail />
       </div>
     </div>
   </div>
@@ -37,9 +37,12 @@
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import EmployeeSearchFields from '@/components/employee/EmployeeSearchFields.vue'
 import EmployeeDepartmentList from '@/components/employee/EmployeeDepartmentList.vue'
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/api/auth'
 import DepartmentTreeNode from '@/components/employee/DepartmentTreeNode.vue'
+import { useDepartmentStore } from '@/stores/departmentStore'
+
+const departmentStore = useDepartmentStore()
 
 const searchForm = reactive({
   code: '',
@@ -72,8 +75,15 @@ function buildTree(list, parent = null) {
 }
 
 onMounted(async () => {
-  const res = await api.get('/department/hierarchy')
-  tree.value = buildTree(res.data)
+  try {
+    const res = await api.get('/department/hierarchy')
+    const treeData = buildTree(res.data)
+    tree.value = treeData
+    departmentStore.setDepartmentTree(treeData)
+    console.log('부서 트리 데이터 로드 완료:', treeData)
+  } catch (error) {
+    console.error('부서 트리 데이터 로드 실패:', error)
+  }
 })
 
 function getPathToRoot(node) {
@@ -129,6 +139,11 @@ function handleSearch(filters) {
 function handleReset() {
   // TODO: 초기화 시 추가 동작 필요시 구현
 }
+
+onBeforeUnmount(() => {
+  // 페이지를 벗어날 때 부서 선택 상태 초기화
+  departmentStore.setSelectedDepartment(null)
+})
 </script>
 
 <script>
@@ -177,8 +192,30 @@ export default {};
   box-sizing: border-box;
   overflow-y: auto;
 }
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  height: calc(100vh - 120px);
+}
+.sidebar {
+  width: 349px;
+  flex-shrink: 0;
+}
 .employee-list-area {
   flex: 1;
-  margin: 0 20px;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+.employee-detail-area {
+  width: 400px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1px solid #F6F6F6;
+  padding: 30px;
+  background: #fff;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 </style>
