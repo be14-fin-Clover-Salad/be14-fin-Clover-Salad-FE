@@ -23,11 +23,11 @@
       </div>
       <!-- 3. 중앙 직원 리스트 영역 -->
       <div class="employee-list-area">
-        <EmployeeDepartmentList />
+        <EmployeeDepartmentList @select-employee="handleSelectEmployee" />
       </div>
       <!-- 4. 우측 직원 상세 정보 영역 -->
       <div class="employee-detail-area">
-        <EmployeeDetail />
+        <EmployeeDetail :employee="selectedEmployee" />
       </div>
     </div>
   </div>
@@ -37,12 +37,14 @@
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import EmployeeSearchFields from '@/components/employee/EmployeeSearchFields.vue'
 import EmployeeDepartmentList from '@/components/employee/EmployeeDepartmentList.vue'
+import EmployeeDetail from '@/components/employee/EmployeeDetail.vue'
 import { reactive, ref, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/api/auth'
 import DepartmentTreeNode from '@/components/employee/DepartmentTreeNode.vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
 
 const departmentStore = useDepartmentStore()
+const selectedEmployee = ref(null)
 
 const searchForm = reactive({
   code: '',
@@ -102,16 +104,12 @@ function handleToggle(node) {
   const idx = openedPath.value.indexOf(node.id)
   
   if (idx !== -1) {
-    // 현재 노드가 이미 열려있는 경우
     if (idx === openedPath.value.length - 1) {
-      // 현재 노드가 마지막 노드인 경우, 현재 노드만 닫음
       openedPath.value = openedPath.value.slice(0, -1)
     } else {
-      // 현재 노드가 중간에 있는 경우, 현재 노드까지만 유지
       openedPath.value = openedPath.value.slice(0, idx + 1)
     }
   } else {
-    // 현재 노드가 닫혀있는 경우, 경로에 추가
     openedPath.value = path
   }
 }
@@ -130,18 +128,20 @@ function handleSearch(filters) {
   })
     .then(res => {
       console.log('검색 결과:', res.data)
-      // TODO: 결과를 리스트에 반영
     })
     .catch(err => {
       console.error('검색 오류:', err)
     })
 }
 function handleReset() {
-  // TODO: 초기화 시 추가 동작 필요시 구현
+}
+
+const handleSelectEmployee = (employee) => {
+  console.log('선택된 사원 정보:', employee)
+  selectedEmployee.value = employee
 }
 
 onBeforeUnmount(() => {
-  // 페이지를 벗어날 때 부서 선택 상태 초기화
   departmentStore.setSelectedDepartment(null)
 })
 </script>
@@ -209,13 +209,17 @@ export default {};
   justify-content: center;
 }
 .employee-detail-area {
-  width: 400px;
-  flex-shrink: 0;
+  width: 434px;
+  height: 583px;
+  min-width: 434px;
+  min-height: 583px;
+  max-width: 434px;
+  max-height: 583px;
   border-radius: 5px;
   border: 1px solid #F6F6F6;
-  padding: 30px;
   background: #fff;
   box-sizing: border-box;
+  padding: 30px;
   overflow-y: auto;
 }
 </style>

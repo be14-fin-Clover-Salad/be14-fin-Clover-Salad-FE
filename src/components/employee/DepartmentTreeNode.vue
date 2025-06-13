@@ -39,11 +39,9 @@ const hasChildren = computed(() => props.node.children && props.node.children.le
 const isSelected = computed(() => departmentStore.selectedDepartmentId === props.node.id)
 const isOpen = computed(() => props.openedPath && props.openedPath.includes(props.node.id))
 
-// 상위부서만 open된 경우에는 항상 defaultFolder.svg, 하위가 없고 마지막 노드일 때만 openedFolder.svg
 const folderIconSrc = computed(() => {
   if (!isOpen.value) return '/defaultFolder.svg'
   const idx = props.openedPath ? props.openedPath.indexOf(props.node.id) : -1
-  // 마지막 노드이면서 하위가 없는 경우만 openedFolder.svg
   if (
     props.openedPath &&
     idx === props.openedPath.length - 1 &&
@@ -58,11 +56,9 @@ function handleClick(e) {
   e.stopPropagation()
   props.onToggle(props.node)
   
-  // 하위 부서가 없는 경우에만 store에 ID를 저장
   if (!hasChildren.value) {
     departmentStore.setSelectedDepartment(props.node.id)
   } else {
-    // 상위 부서를 클릭한 경우 store의 ID를 null로 설정
     departmentStore.setSelectedDepartment(null)
   }
 }

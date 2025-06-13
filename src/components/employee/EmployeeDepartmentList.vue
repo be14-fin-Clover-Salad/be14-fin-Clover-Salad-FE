@@ -1,17 +1,15 @@
 <template>
   <div class="employee-dept-list-outer">
     <div class="dept-info-row">
-      <div class="dept-info-box">
-        <template v-if="departmentInfo.hasData">
-          <template v-if="departmentInfo.isUnassigned">
-            <span class="lower-dept">미배정</span>
-          </template>
-          <template v-else>
-            <span class="upper-dept">{{ departmentInfo.upper }}</span> / <span class="lower-dept">{{ departmentInfo.lower }}</span>
-          </template>
+      <div v-if="departmentInfo.hasData" class="dept-info-box">
+        <template v-if="departmentInfo.isUnassigned">
+          <span class="lower-dept">미배정</span>
+        </template>
+        <template v-else>
+          <span class="upper-dept">{{ departmentInfo.upper }}</span> / <span class="lower-dept">{{ departmentInfo.lower }}</span>
         </template>
       </div>
-      <div class="employee-count-box">
+      <div v-if="!loading && !error && employees.length > 0" class="employee-count-box">
         <span class="text">총</span> <span class="count">{{ employees.length }}</span> <span class="text">명</span>
       </div>
     </div>
@@ -33,7 +31,7 @@
         <div v-else-if="employees.length === 0" class="no-data">
           선택된 부서의 직원이 없습니다.
         </div>
-        <div v-else v-for="employee in employees" :key="employee.id" class="employee-card">
+        <div v-else v-for="employee in employees" :key="employee.id" class="employee-card" @click="fetchEmployeeDetail(employee.id)">
           <div class="employee-img-box">
             <img v-if="employee.path" :src="employee.path" alt="직원 사진" class="employee-img" />
             <div v-else class="employee-img">사진</div>
@@ -81,7 +79,6 @@ const departmentInfo = computed(() => {
       return { upper: '', lower: '', isUnassigned: false, hasData: false }
     }
 
-    // 미배정팀인 경우 (상위부서가 없는 경우)
     if (!deptInfo.parent) {
       return {
         upper: '',
@@ -130,6 +127,19 @@ const fetchEmployees = async (departmentId) => {
   }
 }
 
+const emit = defineEmits(['select-employee'])
+
+const fetchEmployeeDetail = async (employeeId) => {
+  try {
+    console.log('요청하는 사원 ID:', employeeId)
+    const response = await axios.get(`http://localhost:8080/employee/detail?employeeId=${employeeId}`)
+    console.log('사원 상세 정보 응답:', response.data)
+    emit('select-employee', response.data)
+  } catch (err) {
+    console.error('사원 상세 정보 요청 에러:', err)
+  }
+}
+
 const isScrolling = ref(false);
 const employeeListRef = ref(null);
 let scrollTimeout = null;
@@ -142,13 +152,12 @@ function handleScroll() {
   }, 1000);
 }
 
-// 선택된 부서가 변경될 때마다 직원 목록을 다시 조회
+
 watch(() => departmentStore.selectedDepartmentId, (newId) => {
   console.log('선택된 부서 ID 변경:', newId)
   if (newId) {
     fetchEmployees(newId)
   }
-  // 상위 부서를 클릭한 경우에는 직원 목록을 초기화하지 않음
 })
 </script>
 
@@ -263,6 +272,7 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   padding: 18px 20px;
   gap: 18px;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .employee-img-box {
