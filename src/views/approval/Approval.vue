@@ -29,13 +29,16 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import ApprovalSearchFields from '@/components/approval/ApprovalSearchFields.vue'
 import ApprovalDetailModal from '@/components/approval/ApprovalDetailModal.vue'
+
+const route = useRoute()
 
 // 검색 폼 초기값
 const searchForm = reactive({
@@ -182,6 +185,23 @@ function handleRefresh() {
     handleSearch(lastSearchData)
   }
 }
+
+// 라우터 쿼리 파라미터 감시
+watch(() => route.query, async (query) => {
+    if (query.showDetail === 'true' && query.approvalId) {
+        try {
+            const response = await api.get(`/approval/${query.approvalId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            })
+            selectedApproval.value = response.data
+            showDetailModal.value = true
+        } catch (error) {
+            console.error('결재 상세 정보를 불러오는데 실패했습니다:', error)
+        }
+    }
+}, { immediate: true })
 </script>
 
 <style lang="scss" scoped>

@@ -101,7 +101,11 @@ import api from '@/api/auth'
 
 const props = defineProps({
   isOpen: Boolean,
-  approval: Object
+  approval: Object,
+  isNotificationView: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const emit = defineEmits(['close', 'refresh'])
@@ -228,6 +232,18 @@ const handleReject = async () => {
     alert('반려 처리 중 오류가 발생했습니다.')
   }
 }
+
+// 모달이 열릴 때 탭 변경 방지
+watch(() => props.isOpen, (newValue) => {
+  if (newValue && props.isNotificationView) {
+    // 알림 페이지에서 모달이 열릴 때는 탭 변경을 하지 않음
+    return
+  }
+  // 기존 탭 변경 로직
+  if (newValue) {
+    // 탭 변경 로직
+  }
+})
 </script>
 
 <style scoped>
