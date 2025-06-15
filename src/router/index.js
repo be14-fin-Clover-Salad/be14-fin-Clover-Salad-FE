@@ -110,8 +110,6 @@ routes.push({
   },
 });
 
-
-
 // 마이페이지 라우트 추가
 routes.push({
   path: "/mypage",
@@ -120,6 +118,17 @@ routes.push({
     title: "내 정보 수정",
     requiresAuth: true,
     basePath: "/mypage",
+  },
+});
+
+// 결재 관리 라우트 직접 추가
+routes.push({
+  path: "/approval",
+  component: () => import("@/views/approval/Approval.vue"),
+  meta: {
+    title: "결재 관리",
+    requiresAuth: true,
+    basePath: "/approval",
   },
 });
 

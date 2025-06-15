@@ -58,8 +58,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/auth'
 import ApprovalDetailModal from '@/components/approval/ApprovalDetailModal.vue'
+import { useNotificationStore } from '@/stores/notification'
 
 const router = useRouter()
+const notificationStore = useNotificationStore()
 const notifications = ref([])
 const currentPage = ref(0)
 const totalPages = ref(1)
@@ -104,12 +106,8 @@ const formatDateTime = (dateTimeString) => {
 
 const handleNotificationClick = async (notification) => {
     try {
-        // 읽음 처리 API 호출
-        await api.patch(`/notification/${notification.id}/read`, null, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            }
-        })
+        // notification store의 markAsRead 함수 사용
+        await notificationStore.markAsRead(notification.id)
         
         // 알림 목록에서 해당 알림의 read 상태 업데이트
         const index = notifications.value.findIndex(n => n.id === notification.id)
@@ -162,6 +160,8 @@ const formatDate = (dateString) => {
 
 onMounted(() => {
     fetchNotifications(0)
+    // 알림 관리 페이지 진입 시 store의 알림 목록도 업데이트
+    notificationStore.fetchNotifications()
 })
 </script>
 

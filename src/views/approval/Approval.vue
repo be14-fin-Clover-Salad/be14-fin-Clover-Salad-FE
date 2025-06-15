@@ -186,11 +186,11 @@ function handleRefresh() {
   }
 }
 
-// 라우터 쿼리 파라미터 감시
-watch(() => route.query, async (query) => {
-    if (query.showDetail === 'true' && query.approvalId) {
+// 라우터 쿼리 파라미터 감시 - approvalId 값 변경을 직접 감시
+watch(() => route.query.approvalId, async (newApprovalId, oldApprovalId) => {
+    if (route.query.showDetail === 'true' && newApprovalId && newApprovalId !== oldApprovalId) {
         try {
-            const response = await api.get(`/approval/${query.approvalId}`, {
+            const response = await api.get(`/approval/${newApprovalId}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 }

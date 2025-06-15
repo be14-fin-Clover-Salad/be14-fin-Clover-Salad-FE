@@ -7,11 +7,14 @@
 
     <div class="right" style="position: relative;">
       <!-- 알림 -->
-      <div class="notification">
-        <img src="/notification.svg" alt="알림" class="icon" />
-        <span class="badge" v-if="user.notifications > 0">
-          {{ user.notifications }}
-        </span>
+      <div class="notification-wrapper">
+        <div class="notification" @click.stop="toggleNotificationDropdown">
+          <img src="/notification.svg" alt="알림" class="icon" />
+          <span class="badge" v-if="notificationStore.unreadCount > 0">
+            {{ notificationStore.unreadCount }}
+          </span>
+        </div>
+        <NotificationDropdown :isOpen="notificationDropdownOpen" />
       </div>
 
       <!-- 프로필 -->
@@ -63,10 +66,13 @@
 import { useRouter } from "vue-router";
 import axios from "@/api/auth";
 import { useAuthStore } from "@/stores/auth";
-import { computed, ref } from "vue";
+import { useNotificationStore } from "@/stores/notification";
+import { computed, ref, watch } from "vue";
+import NotificationDropdown from './notification/NotificationDropdown.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
+const notificationStore = useNotificationStore();
 
 const user = computed(() => {
   return auth.userInfo || {
@@ -74,13 +80,25 @@ const user = computed(() => {
     departmentName: "",
     profilePath: null,
     levelLabel: "",
-    notifications: 0
   };
 });
+
+// user가 변경될 때마다 알림 개수 가져오기
+watch(() => user.value, async (newUser) => {
+  if (newUser && newUser.name) {  // 로그인된 상태일 때만
+    await notificationStore.fetchUnreadCount();
+  }
+}, { immediate: true });  // 컴포넌트 마운트 시에도 실행
 
 const dropdownOpen = ref(false);
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value;
+};
+
+const notificationDropdownOpen = ref(false);
+
+const toggleNotificationDropdown = () => {
+  notificationDropdownOpen.value = !notificationDropdownOpen.value;
 };
 
 const goHome = () => {
@@ -144,28 +162,47 @@ const logout = async () => {
   gap: 15px;
   padding-right: 40px;
 }
+.notification-wrapper {
+  position: relative;
+}
 .notification {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
+
+.notification:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 .notification .icon {
   width: 30px;
   height: 30px;
   display: block;
 }
+
 .notification .badge {
   position: absolute;
-  top: -4px;
-  right: -8px;
-  background-color: #d32f2f;
-  color: white;
+  top: 1px;
+  right: 1px;
+  width: 16px;
+  height: 16px;
+  background-color: #ff3b30;
+  color: #fff;
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 999px;
   font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  z-index: 2;
+  padding: 0;
 }
 .profile {
   display: flex;
