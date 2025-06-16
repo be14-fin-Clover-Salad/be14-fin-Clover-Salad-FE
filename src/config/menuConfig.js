@@ -101,7 +101,7 @@ export const menuList = [
     items: [
       {
         label: "결재 관리",
-        path: "/admin/approval",
+        path: "/approval",
         component: () => import("@/views/approval/Approval.vue"),
       },
       {
@@ -111,8 +111,8 @@ export const menuList = [
       },
       {
         label: "알림 관리",
-        path: "/admin/notifications",
-        // component: () => import("@/views/admin/NotificationManagementView.vue"),
+        path: "/notification/list",
+        component: () => import("@/views/notification/NotificationLayout.vue"),
       },
       {
         label: "로그인 관리",
