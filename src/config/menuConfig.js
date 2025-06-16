@@ -76,8 +76,8 @@ export const menuList = [
     items: [
       {
         label: "상품 관리",
-        path: "/product",
-        // component: () => import("@/views/product/ProductView.vue"),
+        path: "/product/list",
+        component: () => import("@/views/product/ProductList.vue"),
       },
     ],
   },

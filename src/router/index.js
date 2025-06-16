@@ -132,6 +132,46 @@ routes.push({
   },
 });
 
+// 상품 리스트
+routes.push({
+  path: "/product/list",
+  component: () => import("@/views/product/ProductList.vue"),
+  meta: {
+    title: "상품 목록",
+    basePath: "/product/list"
+  }
+});
+
+// 상품 상세 조회
+routes.push({
+  path: "/product/detail/:productId",
+  component: () => import("@/views/product/ProductDetail.vue"),
+  meta: {
+    title: "상품 상세 조회",
+    basePath: "/product/detail"
+  }
+});
+
+// 상품 등록
+routes.push({
+  path: "/product/register",
+  component: () => import("@/views/product/ProductRegister.vue"),
+  meta: {
+    title: "상품 등록",
+    basePath: "/product/register"
+  }
+});
+
+// 상품 수정
+routes.push({
+  path: "/product/update/:productId",
+  component: () => import("@/views/product/ProductUpdate.vue"),
+  meta: {
+    title: "상품 등록",
+    basePath: "/product/update"
+  }
+});
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
