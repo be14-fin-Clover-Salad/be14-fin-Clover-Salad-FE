@@ -2,7 +2,7 @@
   <div v-if="form" class="form-grid">
     <div class="form-item">
       <label>사진</label>
-      <img style="width: 100%" :src="form.imageUrl" :alt="form.name + '의 사진'">
+      <img style="width: 100%" :src="path" :alt="form.name + '의 사진'">
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between">
       <div class="form-item">
@@ -65,6 +65,7 @@ const props = defineProps({
 
 const type = ref("1");
 const calcRentalCost = ref(null);
+const path = ref(props.form.fileUrl + '/' + props.form.fileName);
 
 watch(() => type.value, (newType) => {
   const years = parseInt(newType) || 1;

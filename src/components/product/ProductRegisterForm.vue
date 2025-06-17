@@ -4,7 +4,7 @@
       <label>사진<span class="required">*</span></label>
       <div v-if="imgUploaded" style="display: flex; flex-direction: column; align-items: center;">
         <button @click="showImageUploadModal = true">사진 변경</button>
-        <img style="width: 100%" :src="form.imageUrl" :alt="form.name + '의 사진'">
+        <img style="width: 100%" :src="path" :alt="form.name + '의 사진'">
       </div>
       <div v-else style="display: flex; flex: 1; justify-content: center; align-items: center; border: 1px #000 solid">
         <button @click="showImageUploadModal = true">사진 업로드</button>
@@ -61,6 +61,7 @@
 
   const imgUploaded = ref(true);
   const showImageUploadModal = ref(false);
+  const path = ref("");
 
   const props = defineProps({
     modelValue: {
@@ -86,8 +87,12 @@
   }, { deep: true });
 
 
-  function handleUploadSuccess(imageUrl) {
-    form.imageUrl = imageUrl;
+  function handleUploadSuccess(response) {
+    console.log("handleUploadSuccess", response);
+    props.modelValue.fileUploadId = response.fileUploadId;
+    props.modelValue.fileName = response.fileName;
+    props.modelValue.fileUrl = response.fileUrl;
+    path.value = props.modelValue.fileUrl + '/' + props.modelValue.fileName;
     showImageUploadModal.value = false;
   }
 

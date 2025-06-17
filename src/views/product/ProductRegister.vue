@@ -51,7 +51,9 @@
     originCost: 0,
     rentalCost: 0,
     description: '',
-    imageUrl: ''
+    fileUploadId: '',
+    fileName: '',
+    fileUrl: ''
   });
 
   function validateForm(result) {
@@ -62,11 +64,13 @@
         && result.serialNumber !== ""
         && result.name !== ""
         && result.originCost !== ""
-        && result.rentalCost !== "";
+        && result.rentalCost !== ""
+        && result.fileUploadId !== "";
   }
 
   function onClickRegister() {
     const result = formRef.value.submitForm();
+    console.log(result.form);
     isValid.value = validateForm(result.form);
     showProductRegisterConfirmModal.value = true;
   }
