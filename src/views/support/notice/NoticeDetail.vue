@@ -1,5 +1,5 @@
 <template>
-  <div v-if="notice && writer">
+  <div v-if="notice">
     <div v-if="!notice.is_deleted || isAdmin" class="notice-detail-layout">
       <div class="notice-content">
         <button class="back-btn" @click="goBackToList">
@@ -12,8 +12,8 @@
 
         <h1 class="notice-title">{{ notice.title }}</h1>
         <div class="notice-info">
-          <span>작성자: {{ formatEmployeeLabel(writer.id) }}</span>
-          <span>등록일자: {{ formatDate(notice.created_at) }}</span>
+          <span>작성자: {{ notice.writerName }} {{ notice.writerLevel }}</span>
+          <span>등록일자: {{ formatDate(notice.createdAt) }}</span>
         </div>
         <div class="notice-box" v-html="notice.content"></div>
 
@@ -38,14 +38,14 @@
           <ul class="checklist">
             <li
               v-for="entry in filteredCheckList"
-              :key="entry.employee_id"
+              :key="entry.employeeId"
               :class="{
-                checked: entry.is_checked,
-                currentUser: Number(entry.employee_id) === Number(loginUserId)
+                checked: entry.isChecked,
+                currentUser: Number(entry.employeeId) === Number(loginUserId)
               }"
             >
-              <span>{{ formatEmployeeLabel(entry.employee_id) }}</span>
-              <span>{{ entry.is_checked ? "✅" : "❌" }}</span>
+              <span>{{ entry.employeeName }} {{ entry.employeeLevel }}</span>
+              <span>{{ entry.isChecked ? "✅" : "❌" }}</span>
             </li>
           </ul>
         </div>
@@ -60,9 +60,9 @@
 
     <AddTargetModal
       v-if="isAddTargetOpen"
-      :departments="departments"
-      :employees="employees"
-      :preselected="preselectedEmployees"
+      :departments="[]"
+      :employees="[]"
+      :preselected="[]"
       :loginUserId="loginUserId"
       @update:selected="handleTargetUpdate"
       @close="closeAddTargetModal"
@@ -71,128 +71,113 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watchEffect } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
+import axios from '@/api/auth';
 import AddTargetModal from '@/components/notice/AddTargetModal.vue';
 
 const route = useRoute();
 const router = useRouter();
 const noticeId = route.params.id;
-const loginUserId = 8;
+
+const authStore = useAuthStore();
+const accessToken = computed(() => authStore.accessToken || '');
+
+// 로그인 유저 정보
+const loginUser = ref({});
+const loginUserId = computed(() => authStore.userInfo?.id || null);
+
+const isAdmin = computed(() => {
+  const result =
+    loginUser.value?.roles?.includes('ROLE_ADMIN') ||
+    loginUser.value?.name === '관리자';
+
+  console.log('👑 isAdmin:', result);
+  return result;
+});
 
 const isAddTargetOpen = ref(false);
-const openAddTargetModal = () => {
-  isAddTargetOpen.value = true;
-};
+const openAddTargetModal = () => (isAddTargetOpen.value = true);
 const closeAddTargetModal = () => (isAddTargetOpen.value = false);
-const handleTargetUpdate = async (selectedList) => {
-  const existingIds = checkList.value.map(entry => entry.employee_id);
-  const newIds = selectedList.map(emp => emp.id);
-
-  const toAdd = newIds.filter(id => !existingIds.includes(id));
-  const toRemove = existingIds.filter(id => !newIds.includes(id));
-
-  try {
-    for (const id of toAdd) {
-      await axios.post('http://localhost:3001/employee_notice', {
-        notice_id: noticeId,
-        employee_id: id,
-        is_checked: false
-      });
-    }
-    for (const id of toRemove) {
-      const entry = checkList.value.find(e => e.employee_id === id);
-      if (entry) {
-        await axios.delete(`http://localhost:3001/employee_notice/${entry.id}`);
-      }
-    }
-    await fetchData();
-    closeAddTargetModal();
-  } catch (e) {
-    console.error('❌ 대상자 업데이트 실패:', e);
-  }
-};
 
 const notice = ref(null);
-const writer = ref(null);
-const employees = ref([]);
-const departments = ref([]);
 const checkList = ref([]);
-const searchKeyword = ref("");
-const preselectedEmployees = ref([]);
+const searchKeyword = ref('');
 
-watchEffect(() => {
-  if (checkList.value.length && employees.value.length) {
-    preselectedEmployees.value = checkList.value
-      .map(entry =>
-        employees.value.find(emp => Number(emp.id) === Number(entry.employee_id))
-      )
-      .filter(Boolean);
-  }
-});
-
-const loginUser = computed(() =>
-  employees.value.find(e => Number(e.id) === loginUserId)
+const canEditOrDelete = computed(() =>
+  Number(notice.value?.writerId) === loginUserId.value || isAdmin.value
 );
 
-const isAdmin = computed(() => loginUser.value?.name === '관리자');
-
-const canEditOrDelete = computed(() => {
-  return Number(writer.value?.id) === loginUserId || isAdmin.value;
-});
-
 const formatEmployeeLabel = (id) => {
-  const emp = employees.value.find(e => Number(e.id) === Number(id));
-  const dept = departments.value.find(d => Number(d.id) === Number(emp?.department_id));
-  return emp ? `${emp.name} ${emp.level} (${dept?.name || ''})` : '-';
+  const entry = checkList.value.find(e => Number(e.employeeId) === Number(id));
+  return entry ? `${entry.employeeName} ${entry.employeeLevel || ''}`.trim() : '-';
 };
 
 const alreadyChecked = computed(() => {
-  return checkList.value.find(e => Number(e.employee_id) === loginUserId)?.is_checked;
+  if (!loginUserId.value) return false;
+  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value);
+
+  console.log('🔍 [alreadyChecked] loginUserId:', loginUserId.value);
+  console.log('🔍 [alreadyChecked] entry:', entry);
+
+  return entry ? !!entry.isChecked : false;
 });
 
 const filteredCheckList = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase();
   return checkList.value
     .slice()
-    .sort((a, b) => b.is_checked - a.is_checked)
+    .sort((a, b) => b.isChecked - a.isChecked)
     .filter(entry =>
-      formatEmployeeLabel(entry.employee_id).toLowerCase().includes(keyword)
+      formatEmployeeLabel(entry.employeeId).toLowerCase().includes(keyword)
     );
 });
 
-const formatDate = (dateStr) => dateStr?.split('T')[0];
+const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
 
 const fetchData = async () => {
   try {
-    const [noticeRes, empRes, deptRes, empNoticeRes] = await Promise.all([
-      axios.get(`http://localhost:3001/notices/${noticeId}`),
-      axios.get('http://localhost:3001/employees'),
-      axios.get('http://localhost:3001/departments'),
-      axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
-    ]);
+    const headers = {
+      Authorization: `Bearer ${accessToken.value}`
+    };
 
-    notice.value = noticeRes.data;
-    employees.value = empRes.data;
-    departments.value = deptRes.data;
-    writer.value = employees.value.find(e => Number(e.id) === Number(notice.value.employee_id));
-    checkList.value = empNoticeRes.data;
+    const res = await axios.get(`/support/notice/${noticeId}`, { headers });
+    notice.value = res.data;
+    checkList.value = res.data.checkList;
+
+    console.log('📌 notice:', notice.value);
+    console.log('✅ checkList:', checkList.value);
+    console.log('✅ 로그인 유저 ID:', loginUserId.value);
+    console.log('📋 checkList의 employeeId 목록:', checkList.value.map(e => e.employeeId));
   } catch (e) {
     console.error('❌ fetchData 실패:', e);
   }
 };
 
 const confirmCheck = async () => {
-  const entry = checkList.value.find(e => Number(e.employee_id) === loginUserId);
-  if (!entry || entry.is_checked) return;
+  console.log('🟡 [confirmCheck] 함수 진입');
+
+  if (!loginUserId.value) return;
+
+  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value);
+  if (!entry) {
+    console.log('🔴 [confirmCheck] 로그인 유저가 확인 대상이 아님');
+    return;
+  }
+  if (entry.isChecked) {
+    console.log('🟡 [confirmCheck] 이미 확인 완료된 유저');
+    return;
+  }
+
   try {
-    await axios.patch(`http://localhost:3001/employee_notice/${entry.id}`, {
-      is_checked: true
+    await axios.put(`/support/notice/${noticeId}/check`, {}, {
+      headers: { Authorization: `Bearer ${accessToken.value}` }
     });
-    entry.is_checked = true;
+    entry.isChecked = true;
+    console.log(`✅ [confirmCheck] 확인 완료: ${loginUserId.value}`);
   } catch (e) {
-    console.error('❌ 확인 PATCH 실패:', e);
+    console.error('❌ [confirmCheck] 요청 실패:', e);
   }
 };
 
@@ -207,9 +192,10 @@ const goBackToList = () => {
 const deleteNotice = async () => {
   const confirmed = confirm('정말 삭제하시겠습니까?');
   if (!confirmed) return;
+
   try {
-    await axios.patch(`http://localhost:3001/notices/${notice.value.id}`, {
-      is_deleted: true
+    await axios.patch(`/support/notice/${notice.value.id}/delete`, {}, {
+      headers: { Authorization: `Bearer ${accessToken.value}` }
     });
     alert('삭제되었습니다.');
     router.push('/support/notice');
@@ -219,7 +205,51 @@ const deleteNotice = async () => {
   }
 };
 
-onMounted(fetchData);
+const handleTargetUpdate = async (selectedList) => {
+  const headers = { Authorization: `Bearer ${accessToken.value}` };
+
+  const existingIds = checkList.value.map(entry => entry.employeeId);
+  const newIds = selectedList.map(emp => emp.id);
+
+  const toAdd = newIds.filter(id => !existingIds.includes(id));
+  const toRemove = existingIds.filter(id => !newIds.includes(id));
+
+  try {
+    for (const id of toAdd) {
+      await axios.post(`/support/notice/${noticeId}/target`, { employeeId: id }, { headers });
+    }
+    for (const id of toRemove) {
+      await axios.delete(`/support/notice/${noticeId}/target/${id}`, { headers });
+    }
+    console.log('✅ 대상자 업데이트 완료');
+    await fetchData();
+    closeAddTargetModal();
+  } catch (e) {
+    console.error('❌ 대상자 업데이트 실패:', e);
+  }
+};
+
+onMounted(() => {
+  if (authStore.userInfo?.id > 0) {
+    loginUser.value = authStore.userInfo;
+  } else {
+    console.warn('⚠️ 로그인 유저 정보가 비어 있음:', authStore.userInfo);
+  }
+
+  console.log('✅ [onMounted] loginUserId.value:', loginUserId.value);
+  fetchData();
+});
+
+watch(
+  () => authStore.userInfo,
+  (newVal) => {
+    if (newVal?.id) {
+      loginUser.value = newVal;
+      console.log('🔄 watch로 userInfo 갱신됨:', newVal);
+    }
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
 <style scoped>

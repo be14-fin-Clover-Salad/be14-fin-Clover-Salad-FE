@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-wrapper" v-if="employees.length && notices.length">
+  <div class="notice-wrapper" v-if="notices.length">
     <table class="notice-table">
       <thead>
         <tr>
@@ -14,28 +14,30 @@
           v-for="(notice, index) in pagedNotices"
           :key="notice.id"
           class="notice-row"
-          :class="{ deleted: notice.is_deleted }"
+          :class="{ deleted: notice.isDeleted }"
         >
           <td class="notice-index">
-            <template v-if="getEmployee(notice.employee_id)?.name === '관리자'">🚩</template>
+            <template v-if="notice.writerName === '관리자'">🚩</template>
             <template v-else>{{ calcNoticeNumber(index) }}</template>
           </td>
           <td
             class="notice-title"
             :class="{
-              system: getEmployee(notice.employee_id)?.name === '관리자',
-              read: !isAdmin && notice.is_checked
+              system: notice.writerName === '관리자',
+              read: !isAdmin && notice.isChecked
             }"
           >
             <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
-              <del v-if="isAdmin && notice.is_deleted">
+              <del v-if="isAdmin && notice.isDeleted">
                 <span v-html="formatTitle(notice.title)" />
               </del>
               <span v-else v-html="formatTitle(notice.title)" />
             </router-link>
           </td>
-          <td class="notice-author">{{ getEmployeeDisplayName(notice.employee_id) }}</td>
-          <td class="notice-date">{{ formatDate(notice.created_at) }}</td>
+          <td class="notice-author">
+            {{ notice.writerName }} {{ notice.writerLevel || '' }}
+          </td>
+          <td class="notice-date">{{ formatDate(notice.createdAt) }}</td>
         </tr>
       </tbody>
     </table>
@@ -60,39 +62,42 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
+import { useAuthStore } from '@/stores/auth';
+import axios from '@/api/auth';
 
-const loginUserId = 8;
+const authStore = useAuthStore();
+const loginUser = computed(() => authStore.userInfo || {});
+const accessToken = computed(() => authStore.accessToken || "");
+const isAdmin = computed(() =>
+  loginUser.value?.roles?.includes("ROLE_ADMIN") || loginUser.value?.name === "관리자"
+);
+const canWriteNotice = computed(() =>
+  isAdmin.value || loginUser.value?.level === "팀장"
+);
+
 const router = useRouter();
 const notices = ref([]);
-const employees = ref([]);
 const currentPage = ref(1);
 const pageSize = 15;
 
-const loginUser = computed(() => employees.value.find(emp => Number(emp.id) === loginUserId) || {});
-const isAdmin = computed(() => loginUser.value.name === "관리자");
-const canWriteNotice = computed(() => isAdmin.value || loginUser.value.level === "팀장");
-
+// 공지 필터링
 const adminNoticesAll = computed(() =>
-  notices.value.filter(n => getEmployee(n.employee_id)?.name === '관리자')
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  notices.value.filter(n => n.writerName === '관리자')
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 );
-
 const pinnedAdmins = computed(() => adminNoticesAll.value.slice(0, 5));
 const remainingAdmins = computed(() => adminNoticesAll.value.slice(5));
-
 const normalNotices = computed(() =>
-  notices.value.filter(n => getEmployee(n.employee_id)?.name !== '관리자')
+  notices.value.filter(n => n.writerName !== '관리자')
 );
-
 const mixedNotices = computed(() =>
-  [...normalNotices.value, ...remainingAdmins.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  [...normalNotices.value, ...remainingAdmins.value]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 );
-
 const totalPages = computed(() => {
   const remaining = mixedNotices.value.length - Math.max(0, 15 - pinnedAdmins.value.length);
   return Math.ceil(remaining / pageSize) + 1;
 });
-
 const pagedNotices = computed(() => {
   if (currentPage.value === 1) {
     const remaining = 15 - pinnedAdmins.value.length;
@@ -107,49 +112,26 @@ const calcNoticeNumber = (index) => {
   const offset = (currentPage.value - 1) * pageSize - pinnedAdmins.value.length;
   return mixedNotices.value.length - (offset + index);
 };
-
-const getEmployee = (employee_id) => employees.value.find(emp => Number(emp.id) === Number(employee_id)) || null;
-const getEmployeeDisplayName = (employee_id) => {
-  const emp = getEmployee(employee_id);
-  return emp ? (emp.name === '관리자' ? '관리자' : `${emp.name} ${emp.level || ''}`) : '-';
-};
-
 const formatTitle = (title) => title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
 const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
 const goToWritePage = () => router.push("/support/notice/create");
 
+// 데이터 불러오기
 onMounted(async () => {
-  const [empNoticeRes, noticeRes, employeeRes] = await Promise.all([
-    fetch(`http://localhost:3001/employee_notice?employee_id=${loginUserId}`),
-    fetch("http://localhost:3001/notices"),
-    fetch("http://localhost:3001/employees")
-  ]);
-
-  const empNoticeData = await empNoticeRes.json();
-  const noticeData = await noticeRes.json();
-  const employeeData = await employeeRes.json();
-
-  employees.value = employeeData;
-
-  const allowedNoticeIds = empNoticeData.map(item => Number(item.notice_id));
-  const visibleNotices = isAdmin.value
-    ? noticeData
-    : noticeData.filter(n => allowedNoticeIds.includes(Number(n.id)) && !n.is_deleted);
-
-  const joined = visibleNotices.map(n => {
-    const writer = employeeData.find(e => e.id === n.employee_id);
-    return {
-      ...n,
-      employee_name: writer?.name || "알 수 없음",
-      is_checked: isAdmin.value
-        ? false
-        : empNoticeData.find(e => Number(n.id) === Number(e.notice_id))?.is_checked || false
+  try {
+    const headers = {
+      Authorization: `Bearer ${accessToken.value}`
     };
-  });
-
-  notices.value = joined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const res = await axios.get(`/support/notice`, { headers });
+    const data = res.data || [];
+    console.log("📌 공지 목록 응답:", data);
+    notices.value = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } catch (err) {
+    console.error("📛 공지사항 조회 실패", err);
+  }
 });
 </script>
+
 
 <style>
 .notice-wrapper {
