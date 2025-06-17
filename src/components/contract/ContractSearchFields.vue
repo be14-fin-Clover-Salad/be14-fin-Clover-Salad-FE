@@ -1,12 +1,15 @@
 <template>
   <div class="contract-search-fields">
+    <!-- 기본 노출 -->
     <div class="row">
       <div class="field" v-for="(item, index) in row1" :key="index">
         <label :for="item.key">{{ item.label }}</label>
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
       </div>
     </div>
-    <div class="row">
+
+    <!-- 확장 노출 -->
+    <div class="row" v-if="expanded">
       <div class="field" v-for="(item, index) in row2" :key="index">
         <label :for="item.key">{{ item.label }}</label>
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
@@ -16,7 +19,10 @@
 </template>
 
 <script setup>
-defineProps({ filters: Object })
+const props = defineProps({
+  filters: Object,
+  expanded: Boolean
+})
 
 const row1 = [
   { label: '계약 번호', key: 'code', placeholder: '예: C-20240601' },
