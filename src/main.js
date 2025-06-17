@@ -8,7 +8,9 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import api from '@/api/auth'
 
 const app = createApp(App)
-app.use(createPinia())
+app.use(createPinia({
+  devtools: false
+}))
 app.use(router)
 
 const auth = useAuthStore()
