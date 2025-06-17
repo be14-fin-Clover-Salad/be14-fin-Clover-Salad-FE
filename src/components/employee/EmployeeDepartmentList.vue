@@ -28,10 +28,10 @@
         <div v-else-if="error" class="error">
           {{ error }}
         </div>
-        <div v-else-if="employees.length === 0" class="no-data">
+        <div v-else-if="filteredEmployees.length === 0" class="no-data">
           선택된 부서의 직원이 없습니다.
         </div>
-        <div v-else v-for="employee in employees" :key="employee.id" class="employee-card" @click="fetchEmployeeDetail(employee.id)">
+        <div v-else v-for="employee in filteredEmployees" :key="employee.id" class="employee-card" :class="{ 'selected': employee.id === props.selectedEmployeeId }" @click="fetchEmployeeDetail(employee.id)">
           <div class="employee-img-box">
             <img v-if="employee.path" :src="employee.path" alt="직원 사진" class="employee-img" />
             <div v-else class="employee-img">사진</div>
@@ -67,15 +67,12 @@ const departmentInfo = computed(() => {
   try {
     const deptId = departmentStore.selectedDepartmentId
     if (!deptId || !departmentStore.departmentTree) {
-      console.log('부서 ID 또는 부서 트리가 없습니다:', { deptId, tree: departmentStore.departmentTree })
       return { upper: '', lower: '', isUnassigned: false, hasData: false }
     }
     
     const deptInfo = departmentStore.findParentDepartment(deptId)
-    console.log('찾은 부서 정보:', deptInfo)
     
     if (!deptInfo) {
-      console.log('부서 정보를 찾을 수 없습니다')
       return { upper: '', lower: '', isUnassigned: false, hasData: false }
     }
 
@@ -95,7 +92,6 @@ const departmentInfo = computed(() => {
       hasData: true
     }
   } catch (error) {
-    console.error('부서 정보 처리 중 에러 발생:', error)
     return { upper: '', lower: '', isUnassigned: false, hasData: false }
   }
 })
@@ -110,18 +106,15 @@ const formatPhoneNumber = (phone) => {
   return phone;
 }
 
-const fetchEmployees = async (departmentId) => {
-  loading.value = true
-  error.value = null
+const loadDepartmentEmployees = async (departmentId) => {
+  if (!departmentId) return
   
   try {
-    console.log('요청하는 부서 ID:', departmentId)
+    loading.value = true
     const response = await axios.get(`http://localhost:8080/department/employee?departmentId=${departmentId}`)
-    console.log('API 응답 데이터:', response.data)
     employees.value = response.data
-  } catch (err) {
-    console.error('API 요청 에러:', err)
-    error.value = '직원 목록을 불러오는데 실패했습니다.'
+  } catch (error) {
+    employees.value = []
   } finally {
     loading.value = false
   }
@@ -131,12 +124,10 @@ const emit = defineEmits(['select-employee'])
 
 const fetchEmployeeDetail = async (employeeId) => {
   try {
-    console.log('요청하는 사원 ID:', employeeId)
     const response = await axios.get(`http://localhost:8080/employee/detail?employeeId=${employeeId}`)
-    console.log('사원 상세 정보 응답:', response.data)
     emit('select-employee', response.data)
   } catch (err) {
-    console.error('사원 상세 정보 요청 에러:', err)
+    // 에러 처리
   }
 }
 
@@ -152,22 +143,30 @@ function handleScroll() {
   }, 1000);
 }
 
+const props = defineProps({
+  selectedEmployeeId: {
+    type: [String, Number],
+    default: null
+  }
+})
+
+// 관리자를 제외한 직원 목록
+const filteredEmployees = computed(() => {
+  return employees.value.filter(employee => employee.level !== '관리자')
+})
 
 watch(() => departmentStore.selectedDepartmentId, (newId) => {
-  console.log('선택된 부서 ID 변경:', newId)
   if (newId) {
-    fetchEmployees(newId)
+    loadDepartmentEmployees(newId)
   }
 })
 </script>
 
 <style scoped>
 .employee-dept-list-outer {
-  width: 434px;
+  width: 100%;
   height: 583px;
-  min-width: 434px;
   min-height: 583px;
-  max-width: 434px;
   max-height: 583px;
   border-radius: 5px;
   border: 1px solid #F6F6F6;
@@ -273,11 +272,20 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   gap: 18px;
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.employee-card:hover {
+  background-color: #f8f8f8;
+  border-color: #d5d5d5;
 }
 
 .employee-img-box {
   width: 56px;
   height: 56px;
+  min-width: 56px;
   background: #F5F5F5;
   border-radius: 4px;
   display: flex;
@@ -307,6 +315,7 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   flex-direction: column;
   gap: 7px;
   flex: 1;
+  min-width: 0;
 }
 
 .employee-name-level {
@@ -314,25 +323,40 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   font-weight: 600;
   color: #333;
   margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.employee-name-level .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .employee-name-level .level {
   font-size: 15px;
   font-weight: 400;
   color: #666;
-  margin-left: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .employee-details {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .employee-details p {
   margin: 0;
   font-size: 14px;
   color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .loading, .error, .no-data {
@@ -349,5 +373,70 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.employee-card.selected {
+  background-color: #d5eb97 !important;
+  border-color: #c4d88a !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.employee-card.selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #a3b13c;
+  border-radius: 4px 0 0 4px;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .employee-dept-list-outer {
+    padding: 20px;
+  }
+
+  .employee-card {
+    padding: 12px 15px;
+    gap: 12px;
+  }
+
+  .employee-img-box {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+
+  .employee-name-level {
+    font-size: 14px;
+  }
+
+  .employee-name-level .level {
+    font-size: 13px;
+  }
+
+  .employee-details p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .employee-dept-list-outer {
+    padding: 15px;
+  }
+
+  .employee-card {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .employee-img-box {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
 }
 </style> 
