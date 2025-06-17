@@ -24,14 +24,12 @@
             class="notice-title"
             :class="{
               system: notice.writerName === '관리자',
+              deletedTitle: isAdmin && notice.isDeleted,
               read: !isAdmin && notice.isChecked
             }"
           >
             <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
-              <del v-if="isAdmin && notice.isDeleted">
-                <span v-html="formatTitle(notice.title)" />
-              </del>
-              <span v-else v-html="formatTitle(notice.title)" />
+              <span v-html="formatTitle(notice.title)" />
             </router-link>
           </td>
           <td class="notice-author">
@@ -117,7 +115,6 @@ const formatTitle = (title) => title.replace(/(\[[^\]]+\])/g, "<strong>$1</stron
 const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
 const goToWritePage = () => router.push("/support/notice/create");
 
-// 데이터 불러오기
 onMounted(async () => {
   try {
     const headers = {
@@ -125,9 +122,6 @@ onMounted(async () => {
     };
     const res = await axios.get(`/support/notice`, { headers });
     const data = res.data || [];
-        data.forEach(n => {
-      console.log(`🧾 [${n.id}] title: ${n.title}, isDeleted: ${n.isDeleted}`);
-    });
 
     notices.value = isAdmin.value
       ? data
@@ -181,13 +175,11 @@ onMounted(async () => {
   border-collapse: collapse;
   table-layout: fixed;
 }
-
 thead {
   background-color: #f0f7e4;
   font-size: 15px;
   font-weight: 600;
 }
-
 th,
 td {
   padding: 12px 20px;
@@ -198,17 +190,14 @@ td {
   white-space: nowrap;
   height: 22px;
 }
-
 .notice-index {
   text-align: center;
   width: 60px;
   font-size: 16px;
 }
-
 .notice-title {
   text-align: left;
 }
-
 th.notice-title {
   text-align: center;
 }
@@ -216,7 +205,6 @@ th.notice-title {
   text-align: center;
   width: 260px;
 }
-
 .notice-date {
   text-align: center;
   padding: 0 10px;
@@ -225,7 +213,6 @@ th.notice-title {
 .system {
   color: rgb(255, 66, 89);
   font-weight: bold;
-  font-size: inherit;
 }
 .read {
   color: #aaa;
@@ -233,10 +220,13 @@ th.notice-title {
 .system.read {
   color: rgba(218, 67, 67, 0.5);
   font-weight: normal;
-  font-size: inherit;
 }
 .deleted {
   opacity: 0.5;
+}
+.deletedTitle {
+  color: #aaa;
+  text-decoration: line-through;
 }
 strong {
   font-weight: 600;
@@ -249,9 +239,5 @@ strong {
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
-}
-.notice-link del {
-  color: #e05d5d;
-  text-decoration: line-through;
 }
 </style>

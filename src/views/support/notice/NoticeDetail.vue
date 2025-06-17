@@ -137,7 +137,6 @@ const fetchData = async () => {
   try {
     const headers = { Authorization: `Bearer ${accessToken.value}` }
     const res = await axios.get(`/support/notice/${noticeId}`, { headers })
-    console.log('[공지 상세] 불러온 데이터:', res.data)
     notice.value = {
       ...res.data,
       isDeleted: res.data.isDeleted ?? res.data.is_deleted
