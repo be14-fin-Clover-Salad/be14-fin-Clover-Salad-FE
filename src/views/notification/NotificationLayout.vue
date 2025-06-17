@@ -1,9 +1,28 @@
 <template>
     <div class="notification-container">
         <div class="board-container">
+            <div class="board-header">
+                <button 
+                    v-if="!isDeleteMode" 
+                    @click="enterDeleteMode" 
+                    class="delete-button">
+                    삭제
+                </button>
+                <div v-else class="delete-mode-buttons">
+                    <button @click="confirmDelete" class="confirm-button">확인</button>
+                    <button @click="cancelDelete" class="cancel-button">취소</button>
+                </div>
+            </div>
             <table class="board-table">
                 <thead>
                     <tr>
+                        <th v-if="isDeleteMode" class="col-checkbox">
+                            <input 
+                                type="checkbox" 
+                                :checked="isAllSelected" 
+                                @change="toggleSelectAll"
+                            >
+                        </th>
                         <th class="col-type">구분</th>
                         <th class="col-content">내용</th>
                         <th class="col-date">등록일</th>
@@ -13,8 +32,16 @@
                 <tbody>
                     <tr v-for="notification in notifications" 
                         :key="notification.id"
-                        @click="handleNotificationClick(notification)"
+                        @click="isDeleteMode ? toggleNotificationSelection(notification.id) : handleNotificationClick(notification)"
                         :class="{ 'unread': !notification.read }">
+                        <td v-if="isDeleteMode" class="col-checkbox">
+                            <input 
+                                type="checkbox" 
+                                v-model="selectedNotifications" 
+                                :value="notification.id"
+                                @click.stop
+                            >
+                        </td>
                         <td class="col-type">{{ notification.type }}</td>
                         <td class="col-content">{{ notification.content }}</td>
                         <td class="col-date">{{ formatDate(notification.createdAt) }}</td>
@@ -25,7 +52,7 @@
                         </td>
                     </tr>
                     <tr v-if="notifications.length === 0">
-                        <td colspan="4" class="no-data">등록된 알림이 없습니다.</td>
+                        <td :colspan="isDeleteMode ? 5 : 4" class="no-data">등록된 알림이 없습니다.</td>
                     </tr>
                 </tbody>
             </table>
@@ -50,11 +77,27 @@
             @refresh="handleRefresh"
             :isNotificationView="true"
         />
+
+        <!-- 삭제 확인 모달 -->
+        <div v-if="showDeleteConfirmModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>알림 삭제</h3>
+                </div>
+                <div class="modal-body">
+                    <p>선택한 알림을 삭제하시겠습니까?</p>
+                </div>
+                <div class="modal-footer">
+                    <button @click="executeDelete" class="confirm-button">삭제</button>
+                    <button @click="showDeleteConfirmModal = false" class="cancel-button">취소</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/auth'
 import ApprovalDetailModal from '@/components/approval/ApprovalDetailModal.vue'
@@ -62,11 +105,20 @@ import { useNotificationStore } from '@/stores/notification'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
+
+// 스토어 디버깅
+console.log('Notification Store:', notificationStore)
+console.log('Store Methods:', Object.keys(notificationStore))
+console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
+
 const notifications = ref([])
 const currentPage = ref(0)
 const totalPages = ref(1)
 const showDetailModal = ref(false)
 const selectedApproval = ref(null)
+const isDeleteMode = ref(false)
+const selectedNotifications = ref([])
+const showDeleteConfirmModal = ref(false)
 
 const fetchNotifications = async (page) => {
     try {
@@ -154,6 +206,67 @@ const formatDate = (dateString) => {
         hour: '2-digit',
         minute: '2-digit'
     })
+}
+
+const isAllSelected = computed(() => {
+    return notifications.value.length > 0 && selectedNotifications.value.length === notifications.value.length
+})
+
+const enterDeleteMode = () => {
+    isDeleteMode.value = true
+    selectedNotifications.value = []
+}
+
+const cancelDelete = () => {
+    isDeleteMode.value = false
+    selectedNotifications.value = []
+}
+
+const toggleSelectAll = (event) => {
+    if (event.target.checked) {
+        selectedNotifications.value = notifications.value.map(n => n.id)
+    } else {
+        selectedNotifications.value = []
+    }
+}
+
+const confirmDelete = () => {
+    if (selectedNotifications.value.length === 0) {
+        alert('삭제할 알림을 선택해주세요.')
+        return
+    }
+    showDeleteConfirmModal.value = true
+}
+
+const executeDelete = async () => {
+    try {
+        console.log('삭제 실행 전:', selectedNotifications.value)
+        console.log('Store Methods:', Object.keys(notificationStore))
+        console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
+        
+        if (typeof notificationStore.deleteNotifications !== 'function') {
+            throw new Error('deleteNotifications 함수를 찾을 수 없습니다.')
+        }
+        
+        await notificationStore.deleteNotifications(selectedNotifications.value)
+        showDeleteConfirmModal.value = false
+        isDeleteMode.value = false
+        selectedNotifications.value = []
+        // 목록 새로고침
+        fetchNotifications(currentPage.value)
+    } catch (error) {
+        console.error('알림 삭제 중 오류 발생:', error)
+        alert('알림 삭제에 실패했습니다.')
+    }
+}
+
+const toggleNotificationSelection = (notificationId) => {
+    const index = selectedNotifications.value.indexOf(notificationId)
+    if (index === -1) {
+        selectedNotifications.value.push(notificationId)
+    } else {
+        selectedNotifications.value.splice(index, 1)
+    }
 }
 
 onMounted(() => {
@@ -366,10 +479,13 @@ onMounted(() => {
     padding: 15px 20px;
     border-top: 1px solid #eee;
     text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 
     .confirm-button {
         padding: 8px 20px;
-        background-color: #007bff;
+        background-color: #dc3545;
         color: white;
         border: none;
         border-radius: 4px;
@@ -377,8 +493,81 @@ onMounted(() => {
         font-size: 14px;
 
         &:hover {
-            background-color: #0056b3;
+            background-color: #c82333;
         }
     }
+
+    .cancel-button {
+        padding: 8px 20px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+
+        &:hover {
+            background-color: #5a6268;
+        }
+    }
+}
+
+.board-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.delete-button {
+    padding: 8px 16px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+        background-color: #c82333;
+    }
+}
+
+.delete-mode-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.confirm-button {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+        background-color: #218838;
+    }
+}
+
+.cancel-button {
+    padding: 8px 16px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+        background-color: #5a6268;
+    }
+}
+
+.col-checkbox {
+    width: 40px;
+    text-align: center;
 }
 </style>
