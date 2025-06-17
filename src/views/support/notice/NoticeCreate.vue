@@ -26,7 +26,7 @@
             v-for="user in selectedEmployees"
             :key="user.id"
           >
-            {{ user.name }} {{ user.level }} ({{ getDeptName(user.department_id) }})
+            {{ user.name }} {{ user.level }} ({{ user.departmentName || getDeptName(user.departmentId) }})
             <span @click="removeUser(user)">✕</span>
           </div>
         </div>
@@ -40,12 +40,11 @@
       </div>
     </form>
 
-    <!-- 대상자 추가 모달 -->
     <AddTargetModal
       v-if="openAddModal"
       :employees="employees"
       :departments="departments"
-      :preselected="selectedEmployees || []"
+      :preselected="selectedEmployees"
       :loginUserId="loginUserId"
       @update:selected="updateSelectedEmployees"
       @close="openAddModal = false"
@@ -54,24 +53,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { QuillEditor } from '@vueup/vue-quill'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
 import AddTargetModal from '@/components/notice/AddTargetModal.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const title = ref('')
 const content = ref('')
 const selectedEmployees = ref([])
-
 const openAddModal = ref(false)
 const employees = ref([])
 const departments = ref([])
 
 const router = useRouter()
-// 로그인 한 유저
-const loginUserId = 8
-const loginUser = ref({})
+const authStore = useAuthStore()
+
+const loginUser = computed(() => authStore.userInfo || {})
+const loginUserId = computed(() => loginUser.value?.id ?? loginUser.value?.code ?? null)
 
 const getDeptName = (deptId) => {
   const dept = departments.value.find(d => Number(d.id) === Number(deptId))
@@ -87,60 +87,55 @@ const removeUser = (user) => {
 }
 
 onMounted(async () => {
-  const [empRes, deptRes] = await Promise.all([
-    axios.get('http://localhost:3001/employees'),
-    axios.get('http://localhost:3001/departments')
-  ])
-  employees.value = empRes.data
-  departments.value = deptRes.data
-
-  loginUser.value = employees.value.find(emp => Number(emp.id) === loginUserId)
-
-  if (!loginUser.value || !loginUser.value.id) {
-    alert('로그인 유저 정보를 불러오지 못했습니다.')
+   console.log('🧾 authStore.userInfo:', authStore.userInfo);
+  console.log('🧾 loginUserId:', loginUserId);
+  try {
+    const [empRes, deptRes] = await Promise.all([
+      axios.post('http://localhost:8080/employee/search', {}),
+      axios.get('http://localhost:8080/department/hierarchy')
+    ])
+    employees.value = empRes.data
+    departments.value = deptRes.data
+  } catch (e) {
+    alert('데이터 조회 실패')
+    console.error('❌ 초기 로딩 실패:', e)
   }
 })
 
 const submitNotice = async () => {
-  if (!loginUser.value || !loginUser.value.id) return
+  console.log('🚨 제출 시점 loginUserId:', loginUserId.value);
+  console.log('🚨 선택된 대상자:', selectedEmployees.value);
+
+  if (!loginUserId.value) {
+    alert('로그인 유저 정보 없음')
+    return
+  }
 
   try {
-    const noticeRes = await axios.post('http://localhost:3001/notices', {
+    const employeeIds = selectedEmployees.value.map(emp => emp.id)
+
+    await axios.post('http://localhost:8080/support/notice/create', {
       title: title.value,
       content: content.value,
-      employee_id: loginUser.value.id,
-      created_at: new Date().toISOString()
+      targetEmployeeId: [...employeeIds, loginUserId.value]
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      }
     })
-
-    const noticeId = noticeRes.data.id
-
-    // 대상자 + 작성자 본인까지 등록
-    await Promise.all([
-      ...selectedEmployees.value.map(emp =>
-        axios.post('http://localhost:3001/employee_notice', {
-          notice_id: noticeId,
-          employee_id: emp.id,
-          is_checked: false
-        })
-      ),
-      axios.post('http://localhost:3001/employee_notice', {
-        notice_id: noticeId,
-        employee_id: loginUser.value.id,
-        is_checked: false
-      })
-    ])
 
     alert('공지 등록 완료!')
     router.push('/support/notice')
   } catch (e) {
-    alert('등록 실패!')
-    console.error(e)
+    alert('공지 등록 실패!')
+    console.error('❌ 등록 실패:', e)
   }
 }
 </script>
 
-
 <style scoped>
+/* 그대로 유지 */
 .notice-create-layout {
   max-width: 960px;
   margin: 0 auto;

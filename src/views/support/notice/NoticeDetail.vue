@@ -1,12 +1,12 @@
 <template>
   <div v-if="notice">
-    <div v-if="!notice.is_deleted || isAdmin" class="notice-detail-layout">
+    <div v-if="!notice.isDeleted || isAdmin" class="notice-detail-layout">
       <div class="notice-content">
         <button class="back-btn" @click="goBackToList">
           <span class="arrow"></span>목록
         </button>
 
-        <div v-if="notice.is_deleted" class="deleted-banner">
+        <div v-if="notice.isDeleted" class="deleted-banner">
           🗑 이 공지는 삭제된 상태입니다.
         </div>
 
@@ -18,10 +18,22 @@
         <div class="notice-box" v-html="notice.content"></div>
 
         <div class="btn-wrap">
-          <button v-if="canEditOrDelete && !notice.is_deleted" class="btn edit-btn" @click="goEditPage">수정</button>
-          <button v-if="canEditOrDelete && !notice.is_deleted" class="btn delete-btn" @click="deleteNotice">삭제</button>
           <button
-            v-if="!isAdmin && alreadyChecked !== undefined"
+            v-if="canEditOrDelete && !notice.isDeleted"
+            class="btn edit-btn"
+            @click="goEditPage"
+          >
+            수정
+          </button>
+          <button
+            v-if="canEditOrDelete && !notice.isDeleted"
+            class="btn delete-btn"
+            @click="deleteNotice"
+          >
+            삭제
+          </button>
+          <button
+            v-if="!canEditOrDelete"
             class="btn check-btn"
             :disabled="alreadyChecked"
             @click="confirmCheck"
@@ -60,9 +72,9 @@
 
     <AddTargetModal
       v-if="isAddTargetOpen"
-      :departments="[]"
-      :employees="[]"
-      :preselected="[]"
+      :departments="departments"
+      :employees="employees"
+      :preselected="checkList"
       :loginUserId="loginUserId"
       @update:selected="handleTargetUpdate"
       @close="closeAddTargetModal"
@@ -71,185 +83,145 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import axios from '@/api/auth';
-import AddTargetModal from '@/components/notice/AddTargetModal.vue';
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import axios from '@/api/auth'
+import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 
-const route = useRoute();
-const router = useRouter();
-const noticeId = route.params.id;
+const route = useRoute()
+const router = useRouter()
+const noticeId = route.params.id
 
-const authStore = useAuthStore();
-const accessToken = computed(() => authStore.accessToken || '');
+const authStore = useAuthStore()
+const accessToken = computed(() => authStore.accessToken || '')
+const loginUser = computed(() => authStore.userInfo || {})
+const loginUserId = computed(() => authStore.userInfo?.id || null)
 
-// 로그인 유저 정보
-const loginUser = ref({});
-const loginUserId = computed(() => authStore.userInfo?.id || null);
+const notice = ref(null)
+const checkList = ref([])
+const searchKeyword = ref('')
+const isAddTargetOpen = ref(false)
+const departments = ref([])
+const employees = ref([])
 
-const isAdmin = computed(() => {
-  const result =
-    loginUser.value?.roles?.includes('ROLE_ADMIN') ||
-    loginUser.value?.name === '관리자';
-
-  console.log('👑 isAdmin:', result);
-  return result;
-});
-
-const isAddTargetOpen = ref(false);
-const openAddTargetModal = () => (isAddTargetOpen.value = true);
-const closeAddTargetModal = () => (isAddTargetOpen.value = false);
-
-const notice = ref(null);
-const checkList = ref([]);
-const searchKeyword = ref('');
+const isAdmin = computed(() =>
+  loginUser.value?.roles?.includes('ROLE_ADMIN') || loginUser.value?.name === '관리자'
+)
 
 const canEditOrDelete = computed(() =>
-  Number(notice.value?.writerId) === loginUserId.value || isAdmin.value
-);
-
-const formatEmployeeLabel = (id) => {
-  const entry = checkList.value.find(e => Number(e.employeeId) === Number(id));
-  return entry ? `${entry.employeeName} ${entry.employeeLevel || ''}`.trim() : '-';
-};
+  isAdmin.value || Number(notice.value?.writerId) === loginUserId.value
+)
 
 const alreadyChecked = computed(() => {
-  if (!loginUserId.value) return false;
-  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value);
+  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value)
+  return entry ? !!entry.isChecked : false
+})
 
-  console.log('🔍 [alreadyChecked] loginUserId:', loginUserId.value);
-  console.log('🔍 [alreadyChecked] entry:', entry);
-
-  return entry ? !!entry.isChecked : false;
-});
+const formatEmployeeLabel = id => {
+  const entry = checkList.value.find(e => Number(e.employeeId) === Number(id))
+  return entry ? `${entry.employeeName} ${entry.employeeLevel || ''}`.trim() : '-'
+}
 
 const filteredCheckList = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase();
+  const keyword = searchKeyword.value.trim().toLowerCase()
   return checkList.value
     .slice()
     .sort((a, b) => b.isChecked - a.isChecked)
-    .filter(entry =>
-      formatEmployeeLabel(entry.employeeId).toLowerCase().includes(keyword)
-    );
-});
+    .filter(entry => formatEmployeeLabel(entry.employeeId).toLowerCase().includes(keyword))
+})
 
-const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
+const formatDate = dateStr => dateStr?.split('T')[0] || '-'
 
 const fetchData = async () => {
   try {
-    const headers = {
-      Authorization: `Bearer ${accessToken.value}`
-    };
-
-    const res = await axios.get(`/support/notice/${noticeId}`, { headers });
-    notice.value = res.data;
-    checkList.value = res.data.checkList;
-
-    console.log('📌 notice:', notice.value);
-    console.log('✅ checkList:', checkList.value);
-    console.log('✅ 로그인 유저 ID:', loginUserId.value);
-    console.log('📋 checkList의 employeeId 목록:', checkList.value.map(e => e.employeeId));
+    const headers = { Authorization: `Bearer ${accessToken.value}` }
+    const res = await axios.get(`/support/notice/${noticeId}`, { headers })
+    console.log('[공지 상세] 불러온 데이터:', res.data)
+    notice.value = {
+      ...res.data,
+      isDeleted: res.data.isDeleted ?? res.data.is_deleted
+    }
+    checkList.value = res.data.checkList
   } catch (e) {
-    console.error('❌ fetchData 실패:', e);
+    console.error('❌ 공지 조회 실패:', e)
   }
-};
+}
+
+const fetchTargetData = async () => {
+  try {
+    const headers = { Authorization: `Bearer ${accessToken.value}` }
+    const [deptRes, empRes] = await Promise.all([
+      axios.get('/department/hierarchy', { headers }),
+      axios.post('/employee/search', {}, { headers })
+    ])
+    departments.value = deptRes.data
+    employees.value = empRes.data
+  } catch (e) {
+    console.error('❌ 대상자 조회 실패:', e)
+  }
+}
 
 const confirmCheck = async () => {
-  console.log('🟡 [confirmCheck] 함수 진입');
-
-  if (!loginUserId.value) return;
-
-  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value);
-  if (!entry) {
-    console.log('🔴 [confirmCheck] 로그인 유저가 확인 대상이 아님');
-    return;
-  }
-  if (entry.isChecked) {
-    console.log('🟡 [confirmCheck] 이미 확인 완료된 유저');
-    return;
-  }
+  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value)
+  if (!entry || entry.isChecked) return
 
   try {
     await axios.put(`/support/notice/${noticeId}/check`, {}, {
       headers: { Authorization: `Bearer ${accessToken.value}` }
-    });
-    entry.isChecked = true;
-    console.log(`✅ [confirmCheck] 확인 완료: ${loginUserId.value}`);
+    })
+    entry.isChecked = true
+    checkList.value = [...checkList.value]
   } catch (e) {
-    console.error('❌ [confirmCheck] 요청 실패:', e);
+    console.error('❌ 확인 요청 실패:', e)
   }
-};
-
-const goEditPage = () => {
-  router.push(`/support/notice/edit/${notice.value.id}`);
-};
-
-const goBackToList = () => {
-  router.push('/support/notice');
-};
+}
 
 const deleteNotice = async () => {
-  const confirmed = confirm('정말 삭제하시겠습니까?');
-  if (!confirmed) return;
+  if (!confirm('정말 삭제하시겠습니까?')) return
 
   try {
-    await axios.patch(`/support/notice/${notice.value.id}/delete`, {}, {
+    await axios.delete(`/support/notice/delete/${notice.value.id}`, {
       headers: { Authorization: `Bearer ${accessToken.value}` }
-    });
-    alert('삭제되었습니다.');
-    router.push('/support/notice');
+    })
+    alert('삭제되었습니다.')
+    router.push('/support/notice')
   } catch (e) {
-    console.error('❌ 삭제 실패:', e);
-    alert('삭제 중 오류가 발생했습니다.');
+    alert('삭제 중 오류가 발생했습니다.')
+    console.error('❌ 삭제 실패:', e)
   }
-};
+}
 
 const handleTargetUpdate = async (selectedList) => {
-  const headers = { Authorization: `Bearer ${accessToken.value}` };
-
-  const existingIds = checkList.value.map(entry => entry.employeeId);
-  const newIds = selectedList.map(emp => emp.id);
-
-  const toAdd = newIds.filter(id => !existingIds.includes(id));
-  const toRemove = existingIds.filter(id => !newIds.includes(id));
+  const headers = { Authorization: `Bearer ${accessToken.value}` }
+  const newIds = selectedList.map(emp => emp.id)
 
   try {
-    for (const id of toAdd) {
-      await axios.post(`/support/notice/${noticeId}/target`, { employeeId: id }, { headers });
-    }
-    for (const id of toRemove) {
-      await axios.delete(`/support/notice/${noticeId}/target/${id}`, { headers });
-    }
-    console.log('✅ 대상자 업데이트 완료');
-    await fetchData();
-    closeAddTargetModal();
+    await axios.put(`/support/notice/edit/${noticeId}`, {
+      title: notice.value.title,
+      content: notice.value.content,
+      targetEmployeeId: newIds
+    }, { headers })
+
+    await fetchData()
+    closeAddTargetModal()
   } catch (e) {
-    console.error('❌ 대상자 업데이트 실패:', e);
+    console.error('❌ 대상자 업데이트 실패:', e)
   }
-};
+}
+
+const goEditPage = () => router.push(`/support/notice/edit/${notice.value.id}`)
+const goBackToList = () => router.push('/support/notice')
+
+const openAddTargetModal = async () => {
+  await fetchTargetData()
+  isAddTargetOpen.value = true
+}
+const closeAddTargetModal = () => (isAddTargetOpen.value = false)
 
 onMounted(() => {
-  if (authStore.userInfo?.id > 0) {
-    loginUser.value = authStore.userInfo;
-  } else {
-    console.warn('⚠️ 로그인 유저 정보가 비어 있음:', authStore.userInfo);
-  }
-
-  console.log('✅ [onMounted] loginUserId.value:', loginUserId.value);
-  fetchData();
-});
-
-watch(
-  () => authStore.userInfo,
-  (newVal) => {
-    if (newVal?.id) {
-      loginUser.value = newVal;
-      console.log('🔄 watch로 userInfo 갱신됨:', newVal);
-    }
-  },
-  { immediate: true, deep: true }
-);
+  fetchData()
+})
 </script>
 
 <style scoped>

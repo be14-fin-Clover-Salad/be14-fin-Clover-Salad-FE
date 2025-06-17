@@ -8,20 +8,24 @@
         <!-- 좌측: 부서 트리 -->
         <div class="tree-panel">
           <ul>
-            <li
-              :class="{ selected: selectedDeptId === null }"
-              @click="selectedDeptId = null"
-            >
-              전체
+            <li>
+              <div
+                class="tree-item"
+                :class="{ selected: selectedDeptId === null }"
+                @click="selectedDeptId = null"
+              >
+                <span class="dept-name is-parent">전체</span>
+              </div>
             </li>
-            <li
-              v-for="dept in departments"
-              :key="dept.id"
-              :class="{ selected: isSelectedDept(dept.id) }"
-              @click="selectedDeptId = Number(dept.id)"
-            >
-              {{ dept.name }}
-            </li>
+            <TreeViewItem
+              v-for="root in rootDepartments"
+              :key="root.id"
+              :dept="root"
+              :departments="departments"
+              :selected-dept-id="selectedDeptId"
+              :is-top-level="true"
+              @select="handleDeptSelect"
+            />
           </ul>
         </div>
 
@@ -33,7 +37,6 @@
             placeholder="이름 검색"
             class="search-input"
           />
-
           <div style="margin-bottom: 8px;">
             <label>
               <input
@@ -54,7 +57,7 @@
                   :checked="selectedIds.includes(emp.id)"
                   @change="toggleSelect(emp.id)"
                 />
-                {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.department_id) }})
+                {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.departmentId) }})
               </label>
             </li>
           </ul>
@@ -66,7 +69,7 @@
           <ul>
             <li v-if="selected.length === 0" class="empty-selected">선택된 인원이 없습니다.</li>
             <li v-for="emp in selected" :key="emp.id">
-              {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.department_id) }})
+              {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.departmentId) }})
               <span @click="remove(emp.id)">✕</span>
             </li>
           </ul>
@@ -83,6 +86,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import TreeViewItem from '@/components/common/TreeViewItem.vue'
 
 const props = defineProps({
   departments: Array,
@@ -103,39 +107,58 @@ const selectedDeptId = ref(null)
 const searchKeyword = ref('')
 const selectedIds = ref([])
 
+// ✅ 관리자 ID 대비: 타입 비교 → 문자열 비교
 onMounted(() => {
   selectedIds.value = props.preselected
-    .filter(e => Number(e.id) !== Number(props.loginUserId))
-    .map(e => e.id)
+    .filter(e => String(e.employeeId || e.id) !== String(props.loginUserId))
+    .map(e => e.employeeId || e.id)
 })
 
+const rootDepartments = computed(() =>
+  props.departments.filter(d => d.supDeptId === null)
+)
+
+const handleDeptSelect = (deptId) => {
+  selectedDeptId.value = deptId
+}
+
+const collectDeptIds = (id, depts) => {
+  const children = depts.filter(d => d.supDeptId === id)
+  return [id, ...children.flatMap(child => collectDeptIds(child.id, depts))]
+}
+
 const getDeptName = (deptId) => {
-  const dept = props.departments.find(d => Number(d.id) === Number(deptId))
+  const dept = props.departments.find(d => String(d.id) === String(deptId))
   return dept ? dept.name : ''
 }
 
 const selectedDeptName = computed(() => {
   if (selectedDeptId.value === null) return '전체'
-  const dept = props.departments.find(d => Number(d.id) === Number(selectedDeptId.value))
+  const dept = props.departments.find(d => String(d.id) === String(selectedDeptId.value))
   return dept ? dept.name : '-'
 })
-
-const isSelectedDept = (id) => Number(selectedDeptId.value) === Number(id)
 
 const selected = computed(() =>
   props.employees
     .filter(emp => emp.level !== '관리자')
-    .filter(emp => Number(emp.id) !== Number(props.loginUserId))
+    .filter(emp => String(emp.id) !== String(props.loginUserId))
     .filter(emp => selectedIds.value.includes(emp.id))
 )
 
-const filteredEmployees = computed(() =>
-  props.employees
+const filteredEmployees = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  const validEmployees = props.employees
     .filter(emp => emp.level !== '관리자')
-    .filter(emp => Number(emp.id) !== Number(props.loginUserId))
-    .filter(emp => selectedDeptId.value === null || Number(emp.department_id) === Number(selectedDeptId.value))
-    .filter(emp => emp.name.toLowerCase().includes(searchKeyword.value.trim().toLowerCase()))
-)
+    .filter(emp => String(emp.id) !== String(props.loginUserId))
+
+  const deptIds = selectedDeptId.value === null
+    ? null
+    : collectDeptIds(selectedDeptId.value, props.departments)
+
+  return validEmployees
+    .filter(emp => !deptIds || deptIds.includes(Number(emp.departmentId)))
+    .filter(emp => emp.name.toLowerCase().includes(keyword))
+})
 
 const toggleSelect = (empId) => {
   if (selectedIds.value.includes(empId)) {
@@ -168,7 +191,7 @@ const close = () => emit('close')
 const confirm = () => {
   const selectedEmps = props.employees
     .filter(emp => emp.level !== '관리자')
-    .filter(emp => Number(emp.id) !== Number(props.loginUserId))
+    .filter(emp => String(emp.id) !== String(props.loginUserId))
     .filter(emp => selectedIds.value.includes(emp.id))
   emit('update:selected', selectedEmps)
   close()
@@ -176,6 +199,40 @@ const confirm = () => {
 </script>
 
 <style scoped>
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.tree-item:hover {
+  background-color: #f0f0f0;
+}
+.tree-item.selected {
+  background-color: #e0f7ef;
+  border-left: 4px solid #00a86b;
+}
+.dept-name {
+  font-size: 1rem;
+  font-weight: 400;
+}
+.dept-name.is-parent {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.tree-panel li {
+  padding: 0;
+  margin-bottom: 4px;
+}
+.tree-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -210,27 +267,10 @@ const confirm = () => {
   height: 400px;
   overflow-y: auto;
 }
-.tree-panel ul,
 .employee-list {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-.tree-panel li {
-  padding: 6px 10px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-.tree-panel li:hover {
-  background-color: #f0f0f0;
-}
-.tree-panel li.selected {
-  background-color: #e0f7ef;
-  border-left: 4px solid #00a86b;
-  font-weight: 600;
-  color: #007a5c;
 }
 .employee-list li label {
   display: block;
