@@ -70,13 +70,11 @@ const selectedApproval = ref(null)
 
 const fetchNotifications = async (page) => {
     try {
-        console.log(`알림 목록 요청 - 페이지: ${page}`)
         const response = await api.get(`/notification/list?page=${page}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             }
         })
-        console.log('알림 목록 응답:', response.data)
         notifications.value = response.data
     } catch (error) {
         console.error('알림 목록을 불러오는데 실패했습니다:', error)
