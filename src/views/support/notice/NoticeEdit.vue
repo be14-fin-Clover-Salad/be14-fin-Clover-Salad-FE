@@ -105,7 +105,6 @@ const fetchNotice = async () => {
     ])
 
     const data = noticeRes.data
-    console.log('📦 불러온 공지 데이터:', data)
 
     if (data.isDeleted) {
       isDeleted.value = true

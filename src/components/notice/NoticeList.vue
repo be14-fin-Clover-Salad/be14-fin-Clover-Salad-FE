@@ -125,7 +125,6 @@ onMounted(async () => {
     };
     const res = await axios.get(`/support/notice`, { headers });
     const data = res.data || [];
-    console.log("📌 공지 목록 응답:", data);
         data.forEach(n => {
       console.log(`🧾 [${n.id}] title: ${n.title}, isDeleted: ${n.isDeleted}`);
     });
