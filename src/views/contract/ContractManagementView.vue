@@ -30,7 +30,11 @@
       @close="showSuccessModal = false" />
 
     <!-- 상세 보기 모달 -->
-    <ContractDetailModal :isOpen="showDetailModal" :contract="selectedContract" @close="showDetailModal = false" />
+    <!-- <ContractDetailModal :isOpen="showDetailModal" :contract="selectedContract" @close="showDetailModal = false" /> -->
+    <ContractDetailModal v-if="selectedContract" :isOpen="showDetailModal" :contractId="selectedContract?.id"
+      @close="showDetailModal = false" />
+  
+
 
     <!-- 계약서 재업로드 모달 -->
     <ContractReplaceModal :isOpen="showReplaceModal" :contract="selectedContract" @close="handleReplaceModalClose"
@@ -104,7 +108,7 @@ function goToDetailView() {
 }
 
 function handleRowClick(contract) {
-  selectedRowCode.value = contract.code
+  selectedRowCode.value = contract.id
   selectedContract.value = contract
 }
 
@@ -142,6 +146,8 @@ const columns = [
   { label: '상품 명', key: 'productNames', width: '200px' },
   { label: '비고', key: 'etc', width: '150px' }
 ]
+
+
 </script>
 
 <style scoped>
