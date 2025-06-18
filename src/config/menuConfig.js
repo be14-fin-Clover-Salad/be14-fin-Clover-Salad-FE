@@ -47,7 +47,7 @@ export const menuList = [
       {
         label: "계약서 양식 관리",
         path: "/contract/template",
-        // component: () => import("@/views/contract/ContractTemplateView.vue"),
+        component: () => import("@/views/contractTemplate/ContractTemplateView.vue"),
       },
     ],
   },
@@ -76,8 +76,8 @@ export const menuList = [
     items: [
       {
         label: "상품 관리",
-        path: "/product",
-        // component: () => import("@/views/product/ProductView.vue"),
+        path: "/product/list",
+        component: () => import("@/views/product/ProductList.vue"),
       },
     ],
   },

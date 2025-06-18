@@ -21,6 +21,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, '/api'),
       },
+      '/notification/subscribe': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true,
+        rewrite: path => path.replace(/^\/notification/, '/notification')
+      },
     },
   },
 })
