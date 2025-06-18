@@ -1,32 +1,44 @@
 <template>
-  <div v-if="notice && writer">
-    <div v-if="!notice.is_deleted || isAdmin" class="notice-detail-layout">
+  <div v-if="notice">
+    <div v-if="!notice.isDeleted || isAdmin" class="notice-detail-layout">
       <div class="notice-content">
         <button class="back-btn" @click="goBackToList">
           <span class="arrow"></span>목록
         </button>
 
-        <div v-if="notice.is_deleted" class="deleted-banner">
+        <div v-if="notice.isDeleted" class="deleted-banner">
           🗑 이 공지는 삭제된 상태입니다.
         </div>
 
         <h1 class="notice-title">{{ notice.title }}</h1>
         <div class="notice-info">
-          <span>작성자: {{ formatEmployeeLabel(writer.id) }}</span>
-          <span>등록일자: {{ formatDate(notice.created_at) }}</span>
+          <span>작성자: {{ notice.writerName }} {{ notice.writerLevel }}</span>
+          <span>등록일자: {{ formatDate(notice.createdAt) }}</span>
         </div>
         <div class="notice-box" v-html="notice.content"></div>
 
         <div class="btn-wrap">
-          <button v-if="canEditOrDelete && !notice.is_deleted" class="btn edit-btn" @click="goEditPage">수정</button>
-          <button v-if="canEditOrDelete && !notice.is_deleted" class="btn delete-btn" @click="deleteNotice">삭제</button>
           <button
-            v-if="!isAdmin && alreadyChecked !== undefined"
+            v-if="canEditOrDelete && !notice.isDeleted"
+            class="btn edit-btn"
+            @click="goEditPage"
+          >
+            수정
+          </button>
+          <button
+            v-if="canEditOrDelete && !notice.isDeleted"
+            class="btn delete-btn"
+            @click="deleteNotice"
+          >
+            삭제
+          </button>
+          <button
+            v-if="!canEditOrDelete"
             class="btn check-btn"
             :disabled="alreadyChecked"
             @click="confirmCheck"
           >
-            {{ alreadyChecked ? "✔ 확인 완료" : "✅ 확인하기" }}
+            {{ alreadyChecked ? "✔ 확인 완료" : "확인하기" }}
           </button>
         </div>
       </div>
@@ -38,14 +50,14 @@
           <ul class="checklist">
             <li
               v-for="entry in filteredCheckList"
-              :key="entry.employee_id"
+              :key="entry.employeeId"
               :class="{
-                checked: entry.is_checked,
-                currentUser: Number(entry.employee_id) === Number(loginUserId)
+                checked: entry.isChecked,
+                currentUser: Number(entry.employeeId) === Number(loginUserId)
               }"
             >
-              <span>{{ formatEmployeeLabel(entry.employee_id) }}</span>
-              <span>{{ entry.is_checked ? "✅" : "❌" }}</span>
+              <span>{{ entry.employeeName }} {{ entry.employeeLevel }}</span>
+              <span>{{ entry.isChecked ? "✅" : "❌" }}</span>
             </li>
           </ul>
         </div>
@@ -62,7 +74,7 @@
       v-if="isAddTargetOpen"
       :departments="departments"
       :employees="employees"
-      :preselected="preselectedEmployees"
+      :preselected="checkList"
       :loginUserId="loginUserId"
       @update:selected="handleTargetUpdate"
       @close="closeAddTargetModal"
@@ -71,155 +83,144 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watchEffect } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
-import AddTargetModal from '@/components/notice/AddTargetModal.vue';
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import axios from '@/api/auth'
+import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 
-const route = useRoute();
-const router = useRouter();
-const noticeId = route.params.id;
-const loginUserId = 8;
+const route = useRoute()
+const router = useRouter()
+const noticeId = route.params.id
 
-const isAddTargetOpen = ref(false);
-const openAddTargetModal = () => {
-  isAddTargetOpen.value = true;
-};
-const closeAddTargetModal = () => (isAddTargetOpen.value = false);
-const handleTargetUpdate = async (selectedList) => {
-  const existingIds = checkList.value.map(entry => entry.employee_id);
-  const newIds = selectedList.map(emp => emp.id);
+const authStore = useAuthStore()
+const accessToken = computed(() => authStore.accessToken || '')
+const loginUser = computed(() => authStore.userInfo || {})
+const loginUserId = computed(() => authStore.userInfo?.id || null)
 
-  const toAdd = newIds.filter(id => !existingIds.includes(id));
-  const toRemove = existingIds.filter(id => !newIds.includes(id));
+const notice = ref(null)
+const checkList = ref([])
+const searchKeyword = ref('')
+const isAddTargetOpen = ref(false)
+const departments = ref([])
+const employees = ref([])
 
-  try {
-    for (const id of toAdd) {
-      await axios.post('http://localhost:3001/employee_notice', {
-        notice_id: noticeId,
-        employee_id: id,
-        is_checked: false
-      });
-    }
-    for (const id of toRemove) {
-      const entry = checkList.value.find(e => e.employee_id === id);
-      if (entry) {
-        await axios.delete(`http://localhost:3001/employee_notice/${entry.id}`);
-      }
-    }
-    await fetchData();
-    closeAddTargetModal();
-  } catch (e) {
-    console.error('❌ 대상자 업데이트 실패:', e);
-  }
-};
+const isAdmin = computed(() =>
+  loginUser.value?.roles?.includes('ROLE_ADMIN') || loginUser.value?.name === '관리자'
+)
 
-const notice = ref(null);
-const writer = ref(null);
-const employees = ref([]);
-const departments = ref([]);
-const checkList = ref([]);
-const searchKeyword = ref("");
-const preselectedEmployees = ref([]);
-
-watchEffect(() => {
-  if (checkList.value.length && employees.value.length) {
-    preselectedEmployees.value = checkList.value
-      .map(entry =>
-        employees.value.find(emp => Number(emp.id) === Number(entry.employee_id))
-      )
-      .filter(Boolean);
-  }
-});
-
-const loginUser = computed(() =>
-  employees.value.find(e => Number(e.id) === loginUserId)
-);
-
-const isAdmin = computed(() => loginUser.value?.name === '관리자');
-
-const canEditOrDelete = computed(() => {
-  return Number(writer.value?.id) === loginUserId || isAdmin.value;
-});
-
-const formatEmployeeLabel = (id) => {
-  const emp = employees.value.find(e => Number(e.id) === Number(id));
-  const dept = departments.value.find(d => Number(d.id) === Number(emp?.department_id));
-  return emp ? `${emp.name} ${emp.level} (${dept?.name || ''})` : '-';
-};
+const canEditOrDelete = computed(() =>
+  isAdmin.value || Number(notice.value?.writerId) === loginUserId.value
+)
 
 const alreadyChecked = computed(() => {
-  return checkList.value.find(e => Number(e.employee_id) === loginUserId)?.is_checked;
-});
+  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value)
+  return entry ? !!entry.isChecked : false
+})
+
+const formatEmployeeLabel = id => {
+  const entry = checkList.value.find(e => Number(e.employeeId) === Number(id))
+  return entry ? `${entry.employeeName} ${entry.employeeLevel || ''}`.trim() : '-'
+}
 
 const filteredCheckList = computed(() => {
-  const keyword = searchKeyword.value.trim().toLowerCase();
+  const keyword = searchKeyword.value.trim().toLowerCase()
   return checkList.value
     .slice()
-    .sort((a, b) => b.is_checked - a.is_checked)
-    .filter(entry =>
-      formatEmployeeLabel(entry.employee_id).toLowerCase().includes(keyword)
-    );
-});
+    .sort((a, b) => b.isChecked - a.isChecked)
+    .filter(entry => formatEmployeeLabel(entry.employeeId).toLowerCase().includes(keyword))
+})
 
-const formatDate = (dateStr) => dateStr?.split('T')[0];
+const formatDate = dateStr => dateStr?.split('T')[0] || '-'
 
 const fetchData = async () => {
   try {
-    const [noticeRes, empRes, deptRes, empNoticeRes] = await Promise.all([
-      axios.get(`http://localhost:3001/notices/${noticeId}`),
-      axios.get('http://localhost:3001/employees'),
-      axios.get('http://localhost:3001/departments'),
-      axios.get(`http://localhost:3001/employee_notice?notice_id=${noticeId}`)
-    ]);
-
-    notice.value = noticeRes.data;
-    employees.value = empRes.data;
-    departments.value = deptRes.data;
-    writer.value = employees.value.find(e => Number(e.id) === Number(notice.value.employee_id));
-    checkList.value = empNoticeRes.data;
+    const headers = { Authorization: `Bearer ${accessToken.value}` }
+    const res = await axios.get(`/support/notice/${noticeId}`, { headers })
+    notice.value = {
+      ...res.data,
+      isDeleted: res.data.isDeleted ?? res.data.is_deleted
+    }
+    checkList.value = res.data.checkList
   } catch (e) {
-    console.error('❌ fetchData 실패:', e);
+    console.error('❌ 공지 조회 실패:', e)
   }
-};
+}
+
+const fetchTargetData = async () => {
+  try {
+    const headers = { Authorization: `Bearer ${accessToken.value}` }
+    const [deptRes, empRes] = await Promise.all([
+      axios.get('/department/hierarchy', { headers }),
+      axios.post('/employee/search', {}, { headers })
+    ])
+    departments.value = deptRes.data
+    employees.value = empRes.data
+  } catch (e) {
+    console.error('❌ 대상자 조회 실패:', e)
+  }
+}
 
 const confirmCheck = async () => {
-  const entry = checkList.value.find(e => Number(e.employee_id) === loginUserId);
-  if (!entry || entry.is_checked) return;
+  const entry = checkList.value.find(e => Number(e.employeeId) === loginUserId.value)
+  if (!entry || entry.isChecked) return
+
   try {
-    await axios.patch(`http://localhost:3001/employee_notice/${entry.id}`, {
-      is_checked: true
-    });
-    entry.is_checked = true;
+    await axios.put(`/support/notice/${noticeId}/check`, {}, {
+      headers: { Authorization: `Bearer ${accessToken.value}` }
+    })
+    entry.isChecked = true
+    checkList.value = [...checkList.value]
   } catch (e) {
-    console.error('❌ 확인 PATCH 실패:', e);
+    console.error('❌ 확인 요청 실패:', e)
   }
-};
-
-const goEditPage = () => {
-  router.push(`/support/notice/edit/${notice.value.id}`);
-};
-
-const goBackToList = () => {
-  router.push('/support/notice');
-};
+}
 
 const deleteNotice = async () => {
-  const confirmed = confirm('정말 삭제하시겠습니까?');
-  if (!confirmed) return;
-  try {
-    await axios.patch(`http://localhost:3001/notices/${notice.value.id}`, {
-      is_deleted: true
-    });
-    alert('삭제되었습니다.');
-    router.push('/support/notice');
-  } catch (e) {
-    console.error('❌ 삭제 실패:', e);
-    alert('삭제 중 오류가 발생했습니다.');
-  }
-};
+  if (!confirm('정말 삭제하시겠습니까?')) return
 
-onMounted(fetchData);
+  try {
+    await axios.delete(`/support/notice/delete/${notice.value.id}`, {
+      headers: { Authorization: `Bearer ${accessToken.value}` }
+    })
+    alert('삭제되었습니다.')
+    router.push('/support/notice')
+  } catch (e) {
+    alert('삭제 중 오류가 발생했습니다.')
+    console.error('❌ 삭제 실패:', e)
+  }
+}
+
+const handleTargetUpdate = async (selectedList) => {
+  const headers = { Authorization: `Bearer ${accessToken.value}` }
+  const newIds = selectedList.map(emp => emp.id)
+
+  try {
+    await axios.put(`/support/notice/edit/${noticeId}`, {
+      title: notice.value.title,
+      content: notice.value.content,
+      targetEmployeeId: newIds
+    }, { headers })
+
+    await fetchData()
+    closeAddTargetModal()
+  } catch (e) {
+    console.error('❌ 대상자 업데이트 실패:', e)
+  }
+}
+
+const goEditPage = () => router.push(`/support/notice/edit/${notice.value.id}`)
+const goBackToList = () => router.push('/support/notice')
+
+const openAddTargetModal = async () => {
+  await fetchTargetData()
+  isAddTargetOpen.value = true
+}
+const closeAddTargetModal = () => (isAddTargetOpen.value = false)
+
+onMounted(() => {
+  fetchData()
+})
 </script>
 
 <style scoped>

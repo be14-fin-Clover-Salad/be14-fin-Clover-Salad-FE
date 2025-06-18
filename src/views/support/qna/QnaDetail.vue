@@ -1,42 +1,41 @@
 <template>
-  <div class="qna-detail-layout" v-if="qna && employees.length">
+  <div class="qna-detail-layout" v-if="qna">
     <div class="qna-content">
-      <!-- 목록 버튼 -->
       <button class="back-btn" @click="goBackToList">
         <span class="arrow"></span>목록
       </button>
 
-      <!-- 삭제 안내 배너 -->
-      <div v-if="qna.is_deleted" class="deleted-banner">
+      <div v-if="qna.isDeleted" class="deleted-banner">
         🗑 삭제된 게시글입니다.
       </div>
 
-      <!-- 제목 -->
       <div v-if="isWriter && isEditing">
         <input v-model="editTitle" class="edit-title" />
       </div>
       <h1 v-else class="qna-title">{{ qna.title }}</h1>
 
-      <!-- 작성 정보 -->
       <div class="qna-info">
-        <span>작성자: {{ getEmployeeDisplayName(qna.employee_id) }}</span>
-        <span>등록일자: {{ formatDate(qna.created_at) }}</span>
+        <span>
+          작성자:
+          <template v-if="qna.writerName">{{ qna.writerName }}</template>
+          <template v-if="qna.writerLevel"> {{ qna.writerLevel }}</template>
+          <template v-if="qna.departmentName"> ({{ qna.departmentName }})</template>
+        </span>
+        <span>등록일자: {{ formatDate(qna.createdAt) }}</span>
         <span>
           상태:
-          <span :class="['status-badge', qna.status === '대기' ? 'waiting' : 'done']">
-            {{ qna.status }}
+          <span :class="['status-badge', qna.answerStatus === '대기' ? 'waiting' : 'done']">
+            {{ qna.answerStatus }}
           </span>
         </span>
       </div>
 
-      <!-- 본문 -->
       <div v-if="isWriter && isEditing">
         <textarea v-model="editContent" class="edit-content" rows="8" />
       </div>
       <div v-else class="qna-box">{{ qna.content }}</div>
 
-      <!-- 작성자 수정 버튼 -->
-      <div v-if="!qna.is_deleted && isWriter && !qna.answer_content" class="edit-btn-wrap">
+      <div v-if="!qna.isDeleted && isWriter && !qna.answerContent" class="edit-btn-wrap">
         <div class="btn-wrap-between">
           <div class="left-buttons">
             <button v-if="!isEditing" class="btn edit-btn" @click="startEdit">수정하기</button>
@@ -47,28 +46,24 @@
         </div>
       </div>
 
-      <!-- 답변 영역 -->
-      <div class="qna-answer" v-if="qna.answer_content || isAdmin">
+      <div class="qna-answer" v-if="qna.answerContent || isAdmin">
         <h3>답변</h3>
-
-        <div v-if="qna.answer_content && !isEditingAnswer" class="answer-box">
-          {{ qna.answer_content }}
+        <div v-if="qna.answerContent && !isEditingAnswer" class="answer-box">
+          {{ qna.answerContent }}
         </div>
-
-        <div v-if="!qna.is_deleted && isAdmin && (isEditingAnswer || !qna.answer_content)" class="qna-answer-form">
+        <div v-if="!qna.isDeleted && isAdmin && (isEditingAnswer || !qna.answerContent)" class="qna-answer-form">
           <textarea v-model="answerContent" rows="6" placeholder="답변 내용을 입력하세요." />
           <div class="btn-wrap-between">
             <div class="left-buttons">
               <button class="btn answer-btn" @click="submitAnswer">
-                {{ qna.answer_content ? '수정' : '등록' }}
+                {{ qna.answerContent ? '수정' : '등록' }}
               </button>
-              <button v-if="qna.answer_content" class="btn cancel-btn" @click="cancelAnswerEdit">취소</button>
+              <button v-if="qna.answerContent" class="btn cancel-btn" @click="cancelAnswerEdit">취소</button>
             </div>
             <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
         </div>
-
-        <div v-if="!qna.is_deleted && (isAdmin || isWriter) && qna.answer_content && !isEditingAnswer" class="edit-btn-wrap">
+        <div v-if="!qna.isDeleted && (isAdmin || isWriter) && qna.answerContent && !isEditingAnswer" class="edit-btn-wrap">
           <div class="btn-wrap-between">
             <div class="left-buttons">
               <button v-if="isAdmin" class="btn edit-btn" @click="startAnswerEdit">수정하기</button>
@@ -84,46 +79,46 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import axios from '@/api/auth'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
+const accessToken = authStore.accessToken
+const loginUserId = authStore.userId
+
 const qnaId = Number(route.params.id)
 
 const qna = ref(null)
-const employees = ref([])
 const answerContent = ref('')
 const editTitle = ref('')
 const editContent = ref('')
 const isEditing = ref(false)
 const isEditingAnswer = ref(false)
 
-const loginUserId = 8
-
-const loginUser = computed(() =>
-  employees.value.find(emp => Number(emp.id) === loginUserId) || {}
+const userInfo = computed(() => authStore.userInfo || null)
+const isAdmin = computed(() =>
+  userInfo.value?.roles?.includes('ROLE_ADMIN') ||
+  userInfo.value?.name === '관리자'
 )
-
-const isAdmin = computed(() => loginUser.value.name === '관리자')
-const isWriter = computed(() => qna.value && Number(qna.value.employee_id) === loginUserId)
+const isWriter = computed(() => qna.value && Number(qna.value.writerId) === Number(loginUserId))
 
 const fetchQna = async () => {
-  const [qnaRes, empRes] = await Promise.all([
-    fetch(`http://localhost:3001/qnas/${qnaId}`),
-    fetch(`http://localhost:3001/employees`)
-  ])
-  qna.value = await qnaRes.json()
-  employees.value = await empRes.json()
-  answerContent.value = qna.value?.answer_content || ''
-  editTitle.value = qna.value?.title || ''
-  editContent.value = qna.value?.content || ''
+  try {
+    const { data } = await axios.get(`/support/qna/${qnaId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    qna.value = data
+    answerContent.value = data?.answerContent || ''
+    editTitle.value = data?.title || ''
+    editContent.value = data?.content || ''
+  } catch (e) {
+    console.error('QNA 상세 데이터 조회 실패:', e)
+  }
 }
 
 onMounted(fetchQna)
-
-const getEmployeeDisplayName = (id) => {
-  const emp = employees.value.find(e => Number(e.id) === Number(id))
-  return emp?.name === '관리자' ? '관리자' : `${emp?.name || '-'} ${emp?.level || ''}`
-}
 
 const formatDate = (str) => str?.split('T')[0] || '-'
 const goBackToList = () => router.push('/support/qna')
@@ -136,14 +131,11 @@ const submitEdit = async () => {
     alert('제목과 내용을 모두 입력해주세요.');
     return;
   }
-
-  await fetch(`http://localhost:3001/qnas/${qnaId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      title: editTitle.value,
-      content: editContent.value
-    })
+  await axios.patch(`/support/qna/${qnaId}`, {
+    title: editTitle.value,
+    content: editContent.value
+  }, {
+    headers: { Authorization: `Bearer ${accessToken}` }
   })
   alert('문의사항이 수정되었습니다.')
   isEditing.value = false
@@ -158,32 +150,43 @@ const submitAnswer = async () => {
     alert('답변 내용을 입력해주세요.')
     return
   }
-
-  await fetch(`http://localhost:3001/qnas/${qnaId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      answer_content: answerContent.value,
-      status: '완료'
-    })
-  })
-
-  alert(qna.value.answer_content ? '답변이 수정되었습니다.' : '답변이 등록되었습니다.')
-  await fetchQna()
-  isEditingAnswer.value = false
+  try {
+    if (!qna.value.answerContent) {
+      await axios.post(`/support/qna/${qnaId}/answer`, {
+        answerContent: answerContent.value,
+        status: '완료'
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+      alert('답변이 등록되었습니다.')
+    } else {
+      await axios.put(`/support/qna/${qnaId}/answer`, {
+        answerContent: answerContent.value
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+      alert('답변이 수정되었습니다.')
+    }
+    await fetchQna()
+    isEditingAnswer.value = false
+  } catch (e) {
+    console.error(e)
+    alert('답변 등록/수정에 실패했습니다.')
+  }
 }
 
 const deleteQna = async () => {
   if (!confirm('정말로 삭제하시겠습니까?')) return
-
-  await fetch(`http://localhost:3001/qnas/${qnaId}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ is_deleted: true })
-  })
-
-  alert('게시글이 삭제되었습니다.')
-  router.push('/support/qna')
+  try {
+    await axios.delete(`/support/qna/delete/${qnaId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    alert('게시글이 삭제되었습니다.')
+    router.push('/support/qna')
+  } catch (e) {
+    console.error(e)
+    alert('삭제에 실패했습니다.')
+  }
 }
 </script>
 

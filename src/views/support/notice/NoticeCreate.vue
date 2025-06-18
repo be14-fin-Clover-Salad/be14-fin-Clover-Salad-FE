@@ -21,14 +21,27 @@
       <div class="form-group">
         <label>공지 대상자</label>
         <div class="selected-list">
-          <div
-            class="selected-item"
-            v-for="user in selectedEmployees"
-            :key="user.id"
-          >
-            {{ user.name }} {{ user.level }} ({{ getDeptName(user.department_id) }})
-            <span @click="removeUser(user)">✕</span>
-          </div>
+          <template v-if="selectedEmployees.length">
+            <div
+              class="selected-item"
+              v-for="user in visibleEmployees"
+              :key="user.id"
+            >
+              {{ user.name }} {{ user.level }} ({{ user.departmentName || getDeptName(user.departmentId) }})
+              <span @click="removeUser(user)">✕</span>
+            </div>
+            <button
+              v-if="selectedEmployees.length > maxVisible"
+              class="show-more-btn"
+              type="button"
+              @click="showAll = !showAll"
+            >
+              {{ showAll ? '접기' : `+${selectedEmployees.length - maxVisible} 더보기` }}
+            </button>
+          </template>
+          <template v-else>
+            <div style="font-size: 0.9rem; color: #999;">선택된 대상자가 없습니다.</div>
+          </template>
         </div>
         <button type="button" class="add-btn" @click="openAddModal = true">
           대상 추가
@@ -40,12 +53,11 @@
       </div>
     </form>
 
-    <!-- 대상자 추가 모달 -->
     <AddTargetModal
       v-if="openAddModal"
       :employees="employees"
       :departments="departments"
-      :preselected="selectedEmployees || []"
+      :preselected="selectedEmployees"
       :loginUserId="loginUserId"
       @update:selected="updateSelectedEmployees"
       @close="openAddModal = false"
@@ -55,23 +67,32 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { QuillEditor } from '@vueup/vue-quill'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
 import AddTargetModal from '@/components/notice/AddTargetModal.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const title = ref('')
 const content = ref('')
 const selectedEmployees = ref([])
-
 const openAddModal = ref(false)
 const employees = ref([])
 const departments = ref([])
 
 const router = useRouter()
-// 로그인 한 유저
-const loginUserId = 8
-const loginUser = ref({})
+const authStore = useAuthStore()
+
+const loginUser = computed(() => authStore.userInfo || {})
+const loginUserId = computed(() => loginUser.value?.id ?? loginUser.value?.code ?? null)
+
+const maxVisible = 20
+const showAll = ref(false)
+const visibleEmployees = computed(() => {
+  if (showAll.value || selectedEmployees.value.length <= maxVisible)
+    return selectedEmployees.value
+  return selectedEmployees.value.slice(0, maxVisible)
+})
 
 const getDeptName = (deptId) => {
   const dept = departments.value.find(d => Number(d.id) === Number(deptId))
@@ -80,65 +101,58 @@ const getDeptName = (deptId) => {
 
 const updateSelectedEmployees = (list) => {
   selectedEmployees.value = list
+  if (selectedEmployees.value.length <= maxVisible) showAll.value = false
 }
 
 const removeUser = (user) => {
   selectedEmployees.value = selectedEmployees.value.filter(u => u.id !== user.id)
+  if (selectedEmployees.value.length <= maxVisible) showAll.value = false
 }
 
 onMounted(async () => {
-  const [empRes, deptRes] = await Promise.all([
-    axios.get('http://localhost:3001/employees'),
-    axios.get('http://localhost:3001/departments')
-  ])
-  employees.value = empRes.data
-  departments.value = deptRes.data
-
-  loginUser.value = employees.value.find(emp => Number(emp.id) === loginUserId)
-
-  if (!loginUser.value || !loginUser.value.id) {
-    alert('로그인 유저 정보를 불러오지 못했습니다.')
+  try {
+    const headers = {
+      'Authorization': `Bearer ${authStore.accessToken}`
+    }
+    const [empRes, deptRes] = await Promise.all([
+      axios.post('http://localhost:8080/employee/search', {}, { headers }),
+      axios.get('http://localhost:8080/department/hierarchy', { headers })
+    ])
+    employees.value = empRes.data
+    departments.value = deptRes.data
+  } catch (e) {
+    alert('데이터 조회 실패')
+    console.error('❌ 초기 로딩 실패:', e)
   }
 })
 
 const submitNotice = async () => {
-  if (!loginUser.value || !loginUser.value.id) return
+  if (!loginUserId.value) {
+    alert('로그인 유저 정보 없음')
+    return
+  }
 
   try {
-    const noticeRes = await axios.post('http://localhost:3001/notices', {
+    const employeeIds = selectedEmployees.value.map(emp => emp.id)
+    await axios.post('http://localhost:8080/support/notice/create', {
       title: title.value,
       content: content.value,
-      employee_id: loginUser.value.id,
-      created_at: new Date().toISOString()
+      targetEmployeeId: [...employeeIds, loginUserId.value]
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      }
     })
-
-    const noticeId = noticeRes.data.id
-
-    // 대상자 + 작성자 본인까지 등록
-    await Promise.all([
-      ...selectedEmployees.value.map(emp =>
-        axios.post('http://localhost:3001/employee_notice', {
-          notice_id: noticeId,
-          employee_id: emp.id,
-          is_checked: false
-        })
-      ),
-      axios.post('http://localhost:3001/employee_notice', {
-        notice_id: noticeId,
-        employee_id: loginUser.value.id,
-        is_checked: false
-      })
-    ])
 
     alert('공지 등록 완료!')
     router.push('/support/notice')
   } catch (e) {
-    alert('등록 실패!')
-    console.error(e)
+    alert('공지 등록 실패!')
+    console.error('❌ 등록 실패:', e)
   }
 }
 </script>
-
 
 <style scoped>
 .notice-create-layout {
@@ -195,6 +209,8 @@ input[type='text'] {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  align-items: flex-start;
+  position: relative;
 }
 .selected-item {
   background: #f5f5f5;
@@ -211,6 +227,24 @@ input[type='text'] {
   color: red;
   cursor: pointer;
   font-weight: bold;
+}
+.show-more-btn {
+  background: #f2fbf2;
+  color: #00a86b;
+  font-weight: 600;
+  border: 1px solid #a5d6b2;
+  border-radius: 999px;
+  font-size: 0.93rem;
+  padding: 0.34rem 1.1rem;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  margin-top: 0.16rem;
+  height: 2.1rem;
+  transition: background 0.16s, color 0.16s;
+}
+.show-more-btn:hover {
+  background: #e1f6ea;
+  color: #007744;
 }
 .add-btn {
   border: 1px solid #999;
