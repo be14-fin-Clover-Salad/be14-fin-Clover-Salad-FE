@@ -1,56 +1,62 @@
 <template>
-  <div class="layout">
-    <!-- 사이드바 -->
-    <Sidebar />
+  <div class="layout-wrapper">
+    <HeaderBar />
 
-    <!-- 메인 영역 -->
-    <div class="main">
-      <!-- 헤더 -->
-      <Header />
+    <div class="body-wrapper">
+      <Sidebar />
 
-      <!-- 상단 탭 -->
-      <Tabs />
-
-      <!-- 페이지 콘텐츠 -->
-      <main class="content">
-        <h1>고객 관리</h1>
-        <!-- 실제 콘텐츠는 각 페이지마다 바뀔 수 있음 -->
-      </main>
+      <div class="main-content">
+        <TopTabs />
+        <div class="breadcrumb-wrapper">
+          <Breadcrumb />
+        </div>
+        <main class="view-area">
+          <router-view />
+        </main>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import Sidebar from "@/components/Sidebar.vue";
-import Header from "@/components/Header.vue";
-import Tabs from "@/components/Tabs.vue";
+import HeaderBar from "@/components/Header.vue";
+import TopTabs from "@/components/TopTabs.vue";
+import Breadcrumb from "@/components/Breadcrumb.vue";
 </script>
 
 <style scoped>
-.layout {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  font-family: "Pretendard", sans-serif;
-}
-
-.main {
-  flex: 1;
+.layout-wrapper {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.content {
+.body-wrapper {
+  display: flex;
   flex: 1;
-  padding: 32px 24px;
-  background-color: #ffffff;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-.content h1 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2f2f2f;
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.breadcrumb-wrapper {
+  padding: 16px 32px;
+  background-color: #fdfdfd;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.view-area {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+  background-color: #fff;
 }
 </style>

@@ -15,145 +15,25 @@ const activate = (submenu) => {
 
 <template>
   <aside class="sidebar">
-    <div class="logo">salad</div>
+    <div class="logo-wrap">
+      <img src="/public/logo.png" alt="logo" class="logo-img" />
+    </div>
     <nav>
       <ul>
-        <li>
-          <div @click="toggleMenu('dashboard')" class="menu-title">
-            대시보드
+        <li v-for="group in menuList" :key="group.group">
+          <div
+            @click="toggle(group.group)"
+            :class="['menu-title', openMenu === group.group && 'active']"
+          >
+            <span class="menu-label">{{ group.group }}</span>
           </div>
-          <ul v-if="openMenu === 'dashboard'" class="submenu">
+          <ul class="submenu" v-show="openMenu === group.group">
             <li
-              :class="{ active: activeSubmenu === '사원별 실적 조회' }"
-              @click="activate('사원별 실적 조회')"
+              v-for="item in group.items"
+              :key="item.path"
+              @click="navigate(item.label, item.path)"
             >
-              사원별 실적 조회
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '상품별 매출 조회' }"
-              @click="activate('상품별 매출 조회')"
-            >
-              상품별 매출 조회
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '영업부 매출 조회' }"
-              @click="activate('영업부 매출 조회')"
-            >
-              영업부 매출 조회
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <div @click="toggleMenu('performance')" class="menu-title">실적</div>
-          <ul v-if="openMenu === 'performance'" class="submenu">
-            <li
-              :class="{ active: activeSubmenu === '개인 실적 목표' }"
-              @click="activate('개인 실적 목표')"
-            >
-              개인 실적 목표
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '팀 실적 목표' }"
-              @click="activate('팀 실적 목표')"
-            >
-              팀 실적 목표
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '매출 관리' }"
-              @click="activate('매출 관리')"
-            >
-              매출 관리
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <div @click="toggleMenu('contract')" class="menu-title">계약</div>
-          <ul v-if="openMenu === 'contract'" class="submenu">
-            <li
-              :class="{ active: activeSubmenu === '계약 관리' }"
-              @click="activate('계약 관리')"
-            >
-              계약 관리
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '계약서 관리' }"
-              @click="activate('계약서 관리')"
-            >
-              계약서 관리
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <div @click="toggleMenu('customer')" class="menu-title">고객</div>
-          <ul v-if="openMenu === 'customer'" class="submenu">
-            <li
-              :class="{ active: activeSubmenu === '기존 고객' }"
-              @click="activate('기존 고객')"
-            >
-              기존 고객
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '잠재 고객' }"
-              @click="activate('잠재 고객')"
-            >
-              잠재 고객
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '상담 관리' }"
-              @click="activate('상담 관리')"
-            >
-              상담 관리
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <div @click="toggleMenu('product')" class="menu-title">상품</div>
-          <ul v-if="openMenu === 'product'" class="submenu">
-            <li
-              :class="{ active: activeSubmenu === '상품 관리' }"
-              @click="activate('상품 관리')"
-            >
-              상품 관리
-            </li>
-          </ul>
-        </li>
-
-        <li>
-          <div @click="toggleMenu('admin')" class="menu-title">관리</div>
-          <ul v-if="openMenu === 'admin'" class="submenu">
-            <li
-              :class="{ active: activeSubmenu === '결제 관리' }"
-              @click="activate('결제 관리')"
-            >
-              결제 관리
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '사원 조회' }"
-              @click="activate('사원 조회')"
-            >
-              사원 조회
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '계약서 양식 관리' }"
-              @click="activate('계약서 양식 관리')"
-            >
-              계약서 양식 관리
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '알림 관리' }"
-              @click="activate('알림 관리')"
-            >
-              알림 관리
-            </li>
-            <li
-              :class="{ active: activeSubmenu === '로그 관리' }"
-              @click="activate('로그 관리')"
-            >
-              로그 관리
+              {{ item.label }}
             </li>
           </ul>
         </li>
@@ -162,52 +42,96 @@ const activate = (submenu) => {
   </aside>
 </template>
 
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { menuList } from "@/config/menuConfig";
+import { useTabStore } from "@/stores/tabStore";
+
+const openMenu = ref(null);
+const router = useRouter();
+const tabStore = useTabStore();
+
+const toggle = (menu) => {
+  openMenu.value = openMenu.value === menu ? null : menu;
+};
+
+const navigate = (label, path) => {
+  tabStore.addTab({ title: label, path });
+  router.push(path);
+};
+</script>
+
 <style scoped>
 .sidebar {
   width: 240px;
+  flex-shrink: 0;
   background-color: #f9f9f9;
   padding: 24px 20px;
   border-right: 1px solid #e0e0e0;
-}
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 32px;
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
 }
 ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
+
+.logo-wrap {
+  width: 100%;
+  height: 100px; /* 고정 높이 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logo-img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
 .menu-title {
-  font-size: 14px;
-  padding: 12px;
-  cursor: pointer;
-  color: #2f2f2f;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 14px;
+  margin-top: 14px;
+  color: #1f1f1f;
   border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  user-select: none;
 }
 .menu-title:hover {
-  background-color: #eff9e3;
-  font-weight: 500;
+  background-color: #f2f2f2;
+}
+.menu-title.active {
+  background-color: #d5eb97;
+  color: #1c1c1c;
 }
 .submenu {
-  padding-left: 12px;
-  padding-bottom: 8px;
+  margin-top: 6px;
+  padding-left: 18px;
+  border-left: 2px solid #d5eb97;
+  margin-bottom: 12px;
+  cursor: pointer;
+  user-select: none;
 }
 .submenu li {
-  font-size: 13px;
-  color: #444;
-  padding: 12px;
-  border-top: 1px solid #eee;
-  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 8px 12px;
+  color: #333;
   border-radius: 4px;
+  transition: background-color 0.2s;
 }
 .submenu li:hover {
-  background-color: #f5f5f5;
-}
-.submenu li.active {
-  background-color: #d5eb97;
-  font-weight: bold;
-  color: #2f2f2f;
+  background-color: #f0f6ea;
 }
 </style>

@@ -1,15 +1,27 @@
 <template>
-  <DefaultLayout />
+  <component :is="layoutComponent">
+    <router-view />
+  </component>
 </template>
 
 <script setup>
-import DefaultLayout from "./layouts/DefaultLayout.vue";
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import DefaultLayout from './layouts/DefaultLayout.vue'
+
+const route = useRoute()
+
+const layoutComponent = computed(() => {
+  return route.meta.layout === 'none' ? 'div' : DefaultLayout
+})
 </script>
 
 <style>
-/* 전역 스타일 정의 가능 */
-body {
+html,
+body,
+#app {
   margin: 0;
-  background-color: #f9f9f9;
+  padding: 0;
+  height: 100%;
 }
 </style>
