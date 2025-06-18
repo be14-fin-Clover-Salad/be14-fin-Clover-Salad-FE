@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed, defineEmits } from 'vue'
 import api from '@/api/auth'
 
 const props = defineProps({
@@ -22,6 +22,8 @@ const loading = ref(true)
 const error = ref(false)
 const teamNames = ref([])
 const teamAmounts = ref([])
+
+const emit = defineEmits(['totalAmount'])
 
 const chartTitle = computed(() => {
   if (props.periodType === 'month') {
@@ -72,6 +74,11 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 watch(() => [props.year, props.periodType, props.periodValue], fetchData)
+
+watch(teamAmounts, (newVal) => {
+  const total = newVal.reduce((sum, v) => sum + v, 0)
+  emit('totalAmount', total)
+})
 
 const barOption = computed(() => ({
   tooltip: { trigger: 'axis' },

@@ -30,7 +30,10 @@
         </div>
       </div>
       <div class="condition-graph">
-        <div class="condition-title">{{ conditionGraphTitle }}</div>
+        <div class="condition-title">
+          <span>{{ conditionGraphTitle }}</span>
+          <span class="total-amount">{{ formatCurrency(totalTeamAmount) }}</span>
+        </div>
         <v-chart :option="donutOption" autoresize style="height:320px;" />
       </div>
     </div>
@@ -39,7 +42,7 @@
         <YearlySalesLineChart :year="filterYear" :periodType="filterPeriodType" />
       </div>
       <div class="sales-by-teams">
-        <TeamSalesBarChart :year="filterYear" :periodType="filterPeriodType" :periodValue="filterPeriodValue" :teamColors="teamColors" />
+        <TeamSalesBarChart :year="filterYear" :periodType="filterPeriodType" :periodValue="filterPeriodValue" :teamColors="teamColors" @totalAmount="handleTotalAmount" />
       </div>
     </div>
   </div>
@@ -174,6 +177,11 @@ function formatCurrency(val) {
   if (val >= 1e8) return (val / 1e8).toFixed(1) + '억원'
   if (val >= 1e4) return (val / 1e4).toFixed(1) + '만원'
   return val.toLocaleString() + '원'
+}
+
+const totalTeamAmount = ref(0)
+function handleTotalAmount(val) {
+  totalTeamAmount.value = val
 }
 </script>
 
@@ -406,5 +414,14 @@ function formatCurrency(val) {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.total-amount {
+  font-size: 18px;
+  font-weight: 500;
+  color: #858585;
+  margin-left: 1.5em;
 }
 </style>
