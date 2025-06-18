@@ -15,7 +15,7 @@
       :isOpen="showProductRegisterCancelModal"
       :type="type"
       @close="showProductRegisterCancelModal = false"
-      @cancel="router.push('/product/list');"
+      @cancel="cancelUpdate"
     />
   </section>
 </template>
@@ -71,8 +71,12 @@
       console.error('상품 수정 실패:', error);
     } finally {
       isLoading.value = false
-      await router.push('/product/list');
+      await router.push(`/product/detail/${productId.value}`);
     }
+  }
+
+  function cancelUpdate() {
+    router.push(`/product/detail/${productId.value}`);
   }
 </script>
 
