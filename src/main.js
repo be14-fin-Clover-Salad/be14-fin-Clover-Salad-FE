@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notification'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import api from '@/api/auth'
 
@@ -14,7 +15,6 @@ app.use(router)
 
 const auth = useAuthStore()
 
-// localStorage에서 토큰 복구
 if (!auth.accessToken && localStorage.getItem('access_token')) {
   auth.setAccessToken(localStorage.getItem('access_token'))
 }
@@ -23,9 +23,9 @@ const tryRefreshAndLoadUser = async () => {
 
   if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') {
     return
-  }
+  } 
+
   if (auth.accessToken && !auth.userInfo) {
-    // accessToken은 있으나 userInfo가 없는 경우 → 마이페이지 호출
     try {
       const res = await api.get('/employee/mypage', {
         headers: {
@@ -40,7 +40,6 @@ const tryRefreshAndLoadUser = async () => {
       auth.clearToken()
     }
   } else if (!auth.accessToken) {
-    // accessToken도 없는 경우 → refreshToken으로 재발급
     try {
       const res = await api.post('/auth/refresh-token', null, {
         withCredentials: true
@@ -68,5 +67,9 @@ const tryRefreshAndLoadUser = async () => {
 
 app.mount('#app')
 
-// 인증 로직 활성화
-tryRefreshAndLoadUser()
+tryRefreshAndLoadUser().then(() => {
+  if (auth.userInfo) {
+    const notificationStore = useNotificationStore()
+    notificationStore.setupSse()
+  }
+})
