@@ -1,23 +1,19 @@
 <template>
   <div class="qna-detail-layout" v-if="qna">
     <div class="qna-content">
-      <!-- 목록 버튼 -->
       <button class="back-btn" @click="goBackToList">
         <span class="arrow"></span>목록
       </button>
 
-      <!-- 삭제 안내 배너 -->
       <div v-if="qna.isDeleted" class="deleted-banner">
         🗑 삭제된 게시글입니다.
       </div>
 
-      <!-- 제목 -->
       <div v-if="isWriter && isEditing">
         <input v-model="editTitle" class="edit-title" />
       </div>
       <h1 v-else class="qna-title">{{ qna.title }}</h1>
 
-      <!-- 작성 정보 -->
       <div class="qna-info">
         <span>
           작성자:
@@ -34,13 +30,11 @@
         </span>
       </div>
 
-      <!-- 본문 -->
       <div v-if="isWriter && isEditing">
         <textarea v-model="editContent" class="edit-content" rows="8" />
       </div>
       <div v-else class="qna-box">{{ qna.content }}</div>
 
-      <!-- 작성자 수정 버튼 -->
       <div v-if="!qna.isDeleted && isWriter && !qna.answerContent" class="edit-btn-wrap">
         <div class="btn-wrap-between">
           <div class="left-buttons">
@@ -52,7 +46,6 @@
         </div>
       </div>
 
-      <!-- 답변 영역 -->
       <div class="qna-answer" v-if="qna.answerContent || isAdmin">
         <h3>답변</h3>
         <div v-if="qna.answerContent && !isEditingAnswer" class="answer-box">
@@ -159,7 +152,6 @@ const submitAnswer = async () => {
   }
   try {
     if (!qna.value.answerContent) {
-      // 답변 최초 등록(POST)
       await axios.post(`/support/qna/${qnaId}/answer`, {
         answerContent: answerContent.value,
         status: '완료'
@@ -168,7 +160,6 @@ const submitAnswer = async () => {
       })
       alert('답변이 등록되었습니다.')
     } else {
-      // 답변 수정(PUT)
       await axios.put(`/support/qna/${qnaId}/answer`, {
         answerContent: answerContent.value
       }, {
@@ -187,7 +178,6 @@ const submitAnswer = async () => {
 const deleteQna = async () => {
   if (!confirm('정말로 삭제하시겠습니까?')) return
   try {
-    // DELETE 방식으로 변경
     await axios.delete(`/support/qna/delete/${qnaId}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
@@ -201,7 +191,6 @@ const deleteQna = async () => {
 </script>
 
 <style scoped>
-/* 기존 스타일 유지 */
 .qna-detail-layout {
   display: flex;
   justify-content: center;

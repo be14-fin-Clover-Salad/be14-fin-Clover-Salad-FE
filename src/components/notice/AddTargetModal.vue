@@ -5,7 +5,6 @@
       <p class="selected-dept-label">현재 선택된 부서: {{ selectedDeptName }}</p>
 
       <div class="modal-body">
-        <!-- 좌측: 부서 트리 -->
         <div class="tree-panel">
           <ul>
             <li>
@@ -28,8 +27,6 @@
             />
           </ul>
         </div>
-
-        <!-- 중앙: 직원 목록 -->
         <div class="employee-panel">
           <input
             type="text"
@@ -62,15 +59,17 @@
             </li>
           </ul>
         </div>
-
-        <!-- 우측: 선택된 대상자 -->
         <div class="selected-panel">
-          <h4>받는 사람 <span class="count">{{ selected.length }}</span></h4>
+          <h4>
+            받는 사람 <span class="count">{{ selected.length }}</span>
+          </h4>
           <ul>
             <li v-if="selected.length === 0" class="empty-selected">선택된 인원이 없습니다.</li>
             <li v-for="emp in selected" :key="emp.id">
-              {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.departmentId) }})
-              <span @click="remove(emp.id)">✕</span>
+              <span class="emp-info">
+                {{ emp.name }} {{ emp.level }} ({{ getDeptName(emp.departmentId) }})
+              </span>
+              <span class="emp-remove" @click="remove(emp.id)">❌</span>
             </li>
           </ul>
         </div>
@@ -107,7 +106,6 @@ const selectedDeptId = ref(null)
 const searchKeyword = ref('')
 const selectedIds = ref([])
 
-// ✅ 관리자 ID 대비: 타입 비교 → 문자열 비교
 onMounted(() => {
   selectedIds.value = props.preselected
     .filter(e => String(e.employeeId || e.id) !== String(props.loginUserId))
@@ -314,10 +312,54 @@ const confirm = () => {
   background-color: #00a86b;
   color: white;
 }
-.selected-panel span {
-  margin-left: 8px;
-  color: red;
+
+.selected-panel h4 {
+  margin: 0 0 1rem 0;
+  padding: 0;
+  font-size: 1.09rem;
+  font-weight: 700;
+  color: #222;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+.selected-panel .count {
+  font-weight: bold;
+  font-size: 1.05rem;
+  margin-left: 3px;
+  margin-bottom: 1px;
+}
+.selected-panel ul {
+  padding-left: 0;
+  margin-top: 0.1rem;
+}
+.selected-panel ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0 2.5px 0;
+  font-size: 1rem;
+  gap: 0;
+}
+.selected-panel .emp-info {
+  flex: 1;
+  text-align: left;
+  word-break: keep-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 0;
+  padding-left: 0.5px;
+}
+.selected-panel .emp-remove {
+  color: #e53935;
   cursor: pointer;
+  font-size: 1.14rem;
+  padding: 2px 11px 2px 10px;
+  border-radius: 50%;
+  line-height: 1;
+  transition: background 0.13s, color 0.13s, transform 0.13s;
+  margin-left: 8px;
 }
 .empty-selected {
   color: #888;

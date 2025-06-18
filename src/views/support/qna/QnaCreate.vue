@@ -43,7 +43,6 @@ const submitQna = async () => {
   isSubmitting.value = true
 
   try {
-    // 백엔드에 맞춰 employeeId 없이 title, content만 전송!
     const res = await axios.post(
       '/support/qna/create',
       {
@@ -55,7 +54,6 @@ const submitQna = async () => {
       }
     )
     alert('문의사항이 등록되었습니다.')
-    // 백엔드가 등록된 id를 반환하는 경우 상세페이지로 이동
     if (res.data?.id) {
       router.push(`/support/qna/${res.data.id}`)
     } else {

@@ -21,14 +21,27 @@
       <div class="form-group">
         <label>공지 대상자</label>
         <div class="selected-list">
-          <div
-            class="selected-item"
-            v-for="user in selectedEmployees"
-            :key="user.id"
-          >
-            {{ user.name }} {{ user.level }} ({{ user.departmentName || getDeptName(user.departmentId) }})
-            <span @click="removeUser(user)">✕</span>
-          </div>
+          <template v-if="selectedEmployees.length">
+            <div
+              class="selected-item"
+              v-for="user in visibleEmployees"
+              :key="user.id"
+            >
+              {{ user.name }} {{ user.level }} ({{ user.departmentName || getDeptName(user.departmentId) }})
+              <span @click="removeUser(user)">✕</span>
+            </div>
+            <button
+              v-if="selectedEmployees.length > maxVisible"
+              class="show-more-btn"
+              type="button"
+              @click="showAll = !showAll"
+            >
+              {{ showAll ? '접기' : `+${selectedEmployees.length - maxVisible} 더보기` }}
+            </button>
+          </template>
+          <template v-else>
+            <div style="font-size: 0.9rem; color: #999;">선택된 대상자가 없습니다.</div>
+          </template>
         </div>
         <button type="button" class="add-btn" @click="openAddModal = true">
           대상 추가
@@ -53,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { QuillEditor } from '@vueup/vue-quill'
 import axios from 'axios'
@@ -73,6 +86,14 @@ const authStore = useAuthStore()
 const loginUser = computed(() => authStore.userInfo || {})
 const loginUserId = computed(() => loginUser.value?.id ?? loginUser.value?.code ?? null)
 
+const maxVisible = 20
+const showAll = ref(false)
+const visibleEmployees = computed(() => {
+  if (showAll.value || selectedEmployees.value.length <= maxVisible)
+    return selectedEmployees.value
+  return selectedEmployees.value.slice(0, maxVisible)
+})
+
 const getDeptName = (deptId) => {
   const dept = departments.value.find(d => Number(d.id) === Number(deptId))
   return dept ? dept.name : ''
@@ -80,19 +101,22 @@ const getDeptName = (deptId) => {
 
 const updateSelectedEmployees = (list) => {
   selectedEmployees.value = list
+  if (selectedEmployees.value.length <= maxVisible) showAll.value = false
 }
 
 const removeUser = (user) => {
   selectedEmployees.value = selectedEmployees.value.filter(u => u.id !== user.id)
+  if (selectedEmployees.value.length <= maxVisible) showAll.value = false
 }
 
 onMounted(async () => {
-   console.log('🧾 authStore.userInfo:', authStore.userInfo);
-  console.log('🧾 loginUserId:', loginUserId);
   try {
+    const headers = {
+      'Authorization': `Bearer ${authStore.accessToken}`
+    }
     const [empRes, deptRes] = await Promise.all([
-      axios.post('http://localhost:8080/employee/search', {}),
-      axios.get('http://localhost:8080/department/hierarchy')
+      axios.post('http://localhost:8080/employee/search', {}, { headers }),
+      axios.get('http://localhost:8080/department/hierarchy', { headers })
     ])
     employees.value = empRes.data
     departments.value = deptRes.data
@@ -103,9 +127,6 @@ onMounted(async () => {
 })
 
 const submitNotice = async () => {
-  console.log('🚨 제출 시점 loginUserId:', loginUserId.value);
-  console.log('🚨 선택된 대상자:', selectedEmployees.value);
-
   if (!loginUserId.value) {
     alert('로그인 유저 정보 없음')
     return
@@ -113,7 +134,6 @@ const submitNotice = async () => {
 
   try {
     const employeeIds = selectedEmployees.value.map(emp => emp.id)
-
     await axios.post('http://localhost:8080/support/notice/create', {
       title: title.value,
       content: content.value,
@@ -135,7 +155,6 @@ const submitNotice = async () => {
 </script>
 
 <style scoped>
-/* 그대로 유지 */
 .notice-create-layout {
   max-width: 960px;
   margin: 0 auto;
@@ -190,6 +209,8 @@ input[type='text'] {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  align-items: flex-start;
+  position: relative;
 }
 .selected-item {
   background: #f5f5f5;
@@ -206,6 +227,24 @@ input[type='text'] {
   color: red;
   cursor: pointer;
   font-weight: bold;
+}
+.show-more-btn {
+  background: #f2fbf2;
+  color: #00a86b;
+  font-weight: 600;
+  border: 1px solid #a5d6b2;
+  border-radius: 999px;
+  font-size: 0.93rem;
+  padding: 0.34rem 1.1rem;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  margin-top: 0.16rem;
+  height: 2.1rem;
+  transition: background 0.16s, color 0.16s;
+}
+.show-more-btn:hover {
+  background: #e1f6ea;
+  color: #007744;
 }
 .add-btn {
   border: 1px solid #999;

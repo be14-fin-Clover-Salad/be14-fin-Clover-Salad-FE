@@ -17,7 +17,7 @@
           :class="{ deleted: notice.isDeleted }"
         >
           <td class="notice-index">
-            <template v-if="notice.writerName === '관리자'">🚩</template>
+            <template v-if="isPinnedAdmin(notice)">🚩</template>
             <template v-else>{{ calcNoticeNumber(index) }}</template>
           </td>
           <td
@@ -114,6 +114,10 @@ const calcNoticeNumber = (index) => {
 const formatTitle = (title) => title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
 const formatDate = (dateStr) => dateStr?.split('T')[0] || '-';
 const goToWritePage = () => router.push("/support/notice/create");
+
+const isPinnedAdmin = (notice) => {
+  return pinnedAdmins.value.some(n => n.id === notice.id);
+};
 
 onMounted(async () => {
   try {

@@ -22,10 +22,22 @@
         <label>공지 대상자</label>
         <div class="selected-list">
           <template v-if="selectedEmployees.length">
-            <div class="selected-item" v-for="user in selectedEmployees" :key="user.id">
+            <div
+              class="selected-item"
+              v-for="user in visibleEmployees"
+              :key="user.id"
+            >
               {{ user.name }} {{ user.level }} ({{ user.departmentName || getDeptName(user.departmentId || user.department_id) }})
               <span v-if="user.id !== loginUserId" @click="removeUser(user)">✕</span>
             </div>
+            <button
+              v-if="selectedEmployees.length > maxVisible"
+              class="show-more-btn"
+              type="button"
+              @click="showAll = !showAll"
+            >
+              {{ showAll ? '접기' : `+${selectedEmployees.length - maxVisible} 더보기` }}
+            </button>
           </template>
           <template v-else>
             <div style="font-size: 0.9rem; color: #999;">선택된 대상자가 없습니다.</div>
@@ -53,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { QuillEditor } from '@vueup/vue-quill'
 import axios from '@/api/auth';
@@ -78,7 +90,14 @@ const openAddModal = ref(false)
 const employees = ref([])
 const departments = ref([])
 
-// ✅ 부서명 안전 비교
+const maxVisible = 20
+const showAll = ref(false)
+const visibleEmployees = computed(() => {
+  if (showAll.value || selectedEmployees.value.length <= maxVisible)
+    return selectedEmployees.value
+  return selectedEmployees.value.slice(0, maxVisible)
+})
+
 const getDeptName = (deptId) => {
   const dept = departments.value.find(d => String(d.id) === String(deptId))
   return dept ? dept.name : ''
@@ -86,10 +105,12 @@ const getDeptName = (deptId) => {
 
 const updateSelectedEmployees = (list) => {
   selectedEmployees.value = list
+  if (selectedEmployees.value.length <= maxVisible) showAll.value = false
 }
 
 const removeUser = (user) => {
   selectedEmployees.value = selectedEmployees.value.filter(u => u.id !== user.id)
+  if (selectedEmployees.value.length <= maxVisible) showAll.value = false
 }
 
 const fetchNotice = async () => {
@@ -211,6 +232,8 @@ input[type='text'] {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  align-items: flex-start;
+  position: relative;
 }
 .selected-item {
   background: #f5f5f5;
@@ -227,6 +250,24 @@ input[type='text'] {
   color: red;
   cursor: pointer;
   font-weight: bold;
+}
+.show-more-btn {
+  background: #f2fbf2;
+  color: #00a86b;
+  font-weight: 600;
+  border: 1px solid #a5d6b2;
+  border-radius: 999px;
+  font-size: 0.93rem;
+  padding: 0.34rem 1.1rem;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  margin-top: 0.16rem;
+  height: 2.1rem;
+  transition: background 0.16s, color 0.16s;
+}
+.show-more-btn:hover {
+  background: #e1f6ea;
+  color: #007744;
 }
 .add-btn {
   border: 1px solid #999;

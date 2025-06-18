@@ -38,7 +38,7 @@
             :disabled="alreadyChecked"
             @click="confirmCheck"
           >
-            {{ alreadyChecked ? "✔ 확인 완료" : "✅ 확인하기" }}
+            {{ alreadyChecked ? "✔ 확인 완료" : "확인하기" }}
           </button>
         </div>
       </div>
