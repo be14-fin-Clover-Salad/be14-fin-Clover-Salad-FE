@@ -148,7 +148,7 @@ routes.push({
   component: () => import("@/views/product/ProductDetail.vue"),
   meta: {
     title: "상품 상세 조회",
-    basePath: "/product/detail"
+    basePath: "/product/list"
   }
 });
 
@@ -158,7 +158,7 @@ routes.push({
   component: () => import("@/views/product/ProductRegister.vue"),
   meta: {
     title: "상품 등록",
-    basePath: "/product/register"
+    basePath: "/product/list"
   }
 });
 
@@ -168,7 +168,7 @@ routes.push({
   component: () => import("@/views/product/ProductUpdate.vue"),
   meta: {
     title: "상품 등록",
-    basePath: "/product/update"
+    basePath: "/product/list"
   }
 });
 
