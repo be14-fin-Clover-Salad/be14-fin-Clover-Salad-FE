@@ -1,22 +1,18 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
-      <template #fields="{ filters }">
-        <ContractSearchFields :filters="filters" />
+    <SearchFilterShell :initial="searchForm" :expanded="isExpanded" @search="handleSearch" @reset="handleReset"
+      @toggle-expand="isExpanded = !isExpanded">
+      <template #fields="{ filters, expanded }">
+        <ContractSearchFields :filters="filters" :expanded="expanded" />
       </template>
     </SearchFilterShell>
 
+
     <!-- 테이블 -->
     <div class="table-wrapper">
-      <BaseDataTable
-        :columns="columns"
-        :rows="rows"
-        :isLoading="isLoading"
-        :selectedCode="selectedRowCode"
-        @row-click="handleRowClick"
-        @row-dblclick="handleRowDblClick"
-      />
+      <BaseDataTable :columns="columns" :rows="rows" :isLoading="isLoading" :selectedCode="selectedRowCode"
+        @row-click="handleRowClick" @row-dblclick="handleRowDblClick" />
     </div>
 
     <!-- 버튼 영역 -->
@@ -26,33 +22,23 @@
     </div>
 
     <!-- 계약서 등록 모달 -->
-    <ContractUploadModal
-      :isOpen="showUploadModal"
-      @close="showUploadModal = false"
-      @upload-success="handleUploadSuccess"
-    />
+    <ContractUploadModal :isOpen="showUploadModal" @close="showUploadModal = false"
+      @upload-success="handleUploadSuccess" />
 
     <!-- 업로드 완료 안내 모달 -->
-    <ContractUploadSuccessModal
-      :isOpen="showSuccessModal"
-      @confirm="goToDetailView"
-      @close="showSuccessModal = false"
-    />
+    <ContractUploadSuccessModal :isOpen="showSuccessModal" @confirm="goToDetailView"
+      @close="showSuccessModal = false" />
 
     <!-- 상세 보기 모달 -->
-    <ContractDetailModal
-      :isOpen="showDetailModal"
-      :contract="selectedContract"
-      @close="showDetailModal = false"
-    />
+    <!-- <ContractDetailModal :isOpen="showDetailModal" :contract="selectedContract" @close="showDetailModal = false" /> -->
+    <ContractDetailModal v-if="selectedContract" :isOpen="showDetailModal" :contractId="selectedContract?.id"
+      @close="showDetailModal = false" />
+  
+
 
     <!-- 계약서 재업로드 모달 -->
-    <ContractReplaceModal
-      :isOpen="showReplaceModal"
-      :contract="selectedContract"
-      @close="handleReplaceModalClose"
-      @replace-success="handleReplaceSuccess"
-    />
+    <ContractReplaceModal :isOpen="showReplaceModal" :contract="selectedContract" @close="handleReplaceModalClose"
+      @replace-success="handleReplaceSuccess" />
   </section>
 </template>
 
@@ -66,7 +52,7 @@ import ContractSearchFields from '@/components/contract/ContractSearchFields.vue
 import ContractUploadModal from '@/views/contract/ContractUploadModal.vue'
 import ContractUploadSuccessModal from '@/components/contract/ContractUploadSuccessModal.vue'
 import ContractDetailModal from '@/components/contract/ContractDetailModal.vue'
-import ContractReplaceModal from '@/views/contract/ContractReplaceModal.vue' 
+import ContractReplaceModal from '@/views/contract/ContractReplaceModal.vue'
 
 const searchForm = reactive({
   code: '', minAmount: '', maxAmount: '',
@@ -86,6 +72,7 @@ const showDetailModal = ref(false)
 const showReplaceModal = ref(false)
 const selectedContract = ref(null)
 const selectedRowCode = ref(null)
+const isExpanded = ref(false)
 
 async function handleSearch(data) {
   const authStore = useAuthStore()
@@ -121,7 +108,7 @@ function goToDetailView() {
 }
 
 function handleRowClick(contract) {
-  selectedRowCode.value = contract.code
+  selectedRowCode.value = contract.id
   selectedContract.value = contract
 }
 
@@ -159,22 +146,27 @@ const columns = [
   { label: '상품 명', key: 'productNames', width: '200px' },
   { label: '비고', key: 'etc', width: '150px' }
 ]
+
+
 </script>
 
 <style scoped>
 section {
   padding: 20px;
 }
+
 .table-wrapper {
   margin-top: 24px;
   overflow-x: auto;
 }
+
 .action-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 16px;
 }
+
 .register-btn,
 .replace-btn {
   background-color: #6c87c1;
@@ -185,6 +177,7 @@ section {
   font-size: 14px;
   cursor: pointer;
 }
+
 .replace-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;

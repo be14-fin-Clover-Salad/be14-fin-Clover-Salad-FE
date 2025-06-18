@@ -1,25 +1,53 @@
 <template>
   <div class="contract-search-fields">
+    <!-- 기본 노출 -->
     <div class="row">
       <div class="field" v-for="(item, index) in row1" :key="index">
         <label :for="item.key">{{ item.label }}</label>
-        <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
+
+        <!-- 계약 상태만 select로 분기 -->
+        <div v-if="item.key === 'status'" class="select-wrapper">
+          <select v-model="filters[item.key]">
+            <option value="">전체</option>
+            <option value="결재전">결재 전</option>
+            <option value="반려">반려됨</option>
+            <option value="결재중">결재 중</option>
+            <option value="계약만료">계약 만료</option>
+            <option value="중도해지">중도 해지</option>
+            <option value="계약무효">계약 무효</option>
+          </select>
+        </div>
+        <input
+          v-else
+          v-model="filters[item.key]"
+          :placeholder="item.placeholder"
+          :type="item.type || 'text'"
+        />
       </div>
     </div>
-    <div class="row">
+
+    <!-- 확장 노출 -->
+    <div class="row" v-if="expanded">
       <div class="field" v-for="(item, index) in row2" :key="index">
         <label :for="item.key">{{ item.label }}</label>
-        <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
+        <input
+          v-model="filters[item.key]"
+          :placeholder="item.placeholder"
+          :type="item.type || 'text'"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({ filters: Object })
+const props = defineProps({
+  filters: Object,
+  expanded: Boolean
+})
 
 const row1 = [
-  { label: '계약 번호', key: 'code', placeholder: '예: C-20240601' },
+  { label: '계약 번호', key: 'code', placeholder: '예: C-YYmm-1234' },
   { label: '렌탈 비용 (최소)', key: 'minAmount', placeholder: '예: 30000' },
   { label: '렌탈 비용 (최대)', key: 'maxAmount', placeholder: '예: 100000' },
   { label: '계약 상태', key: 'status', placeholder: '예: 계약 중' },
@@ -70,10 +98,37 @@ const row2 = [
   color: #333;
 }
 
-.field input {
+.field input,
+.field select {
   padding: 4px 8px;
   font-size: 13px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: white;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  vertical-align: middle;
+  line-height: 1.5;        
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: '▾';
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #444;
+  font-size: 12px;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding-right: 24px; /* space for arrow */
 }
 </style>

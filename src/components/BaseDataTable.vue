@@ -45,7 +45,7 @@
               :key="rowIndex"
               @click="$emit('row-click', row)"
               @dblclick="$emit('row-dblclick', row)"
-              :class="{ selected: row.code === selectedCode }"
+              :class="{ selected: row.id === selectedCode }"
             >
               <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
                 {{ row[col.key] || '-' }}
@@ -73,7 +73,7 @@ const props = defineProps({
   columns: { type: Array, required: true },
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
-  selectedCode: { type: String, default: '' }
+  selectedCode: { type: Number, default: null }
 })
 
 const sortState = ref({ key: null, order: null })
