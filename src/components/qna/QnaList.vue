@@ -9,7 +9,7 @@
         </select>
       </div>
       <div class="qna-actions" v-if="!isAdmin">
-        <button @click="goToCreatePage">문의하기</button>
+        <button class="ask-btn" @click="goToCreatePage">문의하기</button>
       </div>
     </div>
 
@@ -27,9 +27,10 @@
         <tr
           v-for="(qna, index) in paginatedQnas"
           :key="qna.id"
+          class="qna-row"
           :class="{ deleted: isAdmin && qna.is_deleted }"
         >
-          <td class="qna-index">{{ (currentPage - 1) * pageSize + index + 1 }}</td>
+          <td class="qna-index">{{ calcQnaNumber(index) }}</td>
           <td class="qna-title">
             <router-link :to="`/support/qna/${qna.id}`" class="qna-link">
               <template v-if="isAdmin && qna.is_deleted">
@@ -41,129 +42,173 @@
             </router-link>
           </td>
           <td class="qna-status">
-            <span :class="['status-badge', qna.status === '대기' ? 'waiting' : 'done']">
-              {{ qna.status }}
+            <span :class="['status-badge', qna.answerStatus === '대기' ? 'waiting' : 'done']">
+              {{ qna.answerStatus }}
             </span>
           </td>
-          <td class="qna-author">{{ getEmployeeDisplayName(qna.employee_id) }}</td>
-          <td class="qna-date">{{ formatDate(qna.created_at) }}</td>
+          <td class="qna-author">
+            {{ getEmployeeDisplayName(qna.writerId) }}
+          </td>
+          <td class="qna-date">{{ formatDate(qna.createdAt) }}</td>
         </tr>
       </tbody>
     </table>
 
-    <Pagination
-      :total="filteredQnas.length"
-      :pageSize="pageSize"
-      :currentPage="currentPage"
-      @update:currentPage="currentPage = $event"
-    />
+    <div class="qna-bottom-actions">
+      <Pagination
+        :total="filteredQnas.length"
+        :pageSize="pageSize"
+        :currentPage="currentPage"
+        @update:currentPage="currentPage = $event"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import Pagination from '@/components/common/Pagination.vue'
+import axios from '@/api/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const loginUser = computed(() => authStore.userInfo || null)
+const loginUserId = computed(() => authStore.userInfo?.id || null)
+const accessToken = computed(() => authStore.accessToken || '')
+const isAdmin = computed(() =>
+  loginUser.value?.roles?.includes('ROLE_ADMIN') || loginUser.value?.name === '관리자'
+)
+
 const qnas = ref([])
 const employees = ref([])
 const selectedStatus = ref('')
 const currentPage = ref(1)
 const pageSize = 5
-const loginUserId = 8
 
-const loginUser = computed(() =>
-  employees.value.find(emp => Number(emp.id) === Number(loginUserId)) || {}
-)
+async function fetchQnaList() {
+  if (!loginUserId.value) return
+  try {
+    const [empRes, qnaRes] = await Promise.all([
+      axios.post('/employee/search', {}, {
+        headers: { Authorization: `Bearer ${accessToken.value}` }
+      }),
+      axios.get(
+        isAdmin.value
+          ? '/support/qna'
+          : `/support/qna?employeeId=${loginUserId.value}`,
+        { headers: { Authorization: `Bearer ${accessToken.value}` } }
+      )
+    ])
+    employees.value = empRes.data
+    qnas.value = qnaRes.data
 
-const isAdmin = computed(() => loginUser.value.name === '관리자')
+    // console.log('직원 전체 정보', employees.value)
+  } catch (err) {
+    console.error('QnA API 오류:', err)
+  }
+}
 
-onMounted(async () => {
-  const [qnaRes, empRes] = await Promise.all([
-    fetch('http://localhost:3001/qnas'),
-    fetch('http://localhost:3001/employees')
-  ])
-  const qnaData = await qnaRes.json()
-  const empData = await empRes.json()
-  employees.value = empData
-
-  qnas.value = isAdmin.value
-    ? qnaData
-    : qnaData.filter(q => Number(q.employee_id) === Number(loginUserId) && !q.is_deleted)
-})
+watch(loginUserId, (newId) => {
+  if (newId) fetchQnaList()
+}, { immediate: true })
 
 const filteredQnas = computed(() => {
   const base = selectedStatus.value
-    ? qnas.value.filter(q => q.status === selectedStatus.value)
+    ? qnas.value.filter(q => q.answerStatus === selectedStatus.value)
     : qnas.value
-  return [...base].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  return [...base].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 })
+
+const calcQnaNumber = (index) => {
+  return filteredQnas.value.length - ((currentPage.value - 1) * pageSize + index)
+}
 
 const paginatedQnas = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   return filteredQnas.value.slice(start, start + pageSize)
 })
 
-const formatDate = (str) => str?.split('T')[0] || '-'
-
-const goToCreatePage = () => {
-  router.push('/support/qna/create')
-}
-
-const getEmployee = (id) => {
-  return employees.value.find(e => Number(e.id) === Number(id)) || null
-}
-
 const getEmployeeDisplayName = (id) => {
-  const emp = getEmployee(id)
-  return emp?.name === '관리자' ? '관리자' : `${emp?.name || '-'} ${emp?.level || ''}`
+  const emp = employees.value.find(e => Number(e.id) === Number(id))
+  if (!emp) return '-'
+  let result = emp.name || ''
+  if (emp.level) result += ' ' + emp.level
+  if (emp.departmentName) result += ' (' + emp.departmentName + ')'
+  return result
 }
 
-const formatTitle = (title) => {
-  return title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong>')
-}
+const formatDate = (str) => str?.split('T')[0] || '-'
+const goToCreatePage = () => router.push('/support/qna/create')
+const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong>')
 </script>
 
 <style scoped>
 .qna-wrapper {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: #222;
 }
 .top-area {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  justify-content: flex-start;
+  align-items: center;
   margin-bottom: 14px;
+  gap: 16px;
+}
+.filter-area {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
 }
 .filter-area select {
   padding: 8px 12px;
   min-width: 120px;
-  font-size: 14px;
+  font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  height: 38px;        
+  background: #fafcf5;
+  vertical-align: middle;
+  box-sizing: border-box;
 }
-.qna-actions button {
-  background-color: #e7f3d9;
-  color: #222;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 1px solid #b8dca6;
-  border-radius: 6px;
+
+/* 문의하기 버튼 스타일 */
+.qna-actions .ask-btn {
+  background: linear-gradient(90deg, #8bc34a 0%, #43a047 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 11px 32px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px 0 rgba(80, 120, 80, 0.07);
+  transition: background 0.18s, box-shadow 0.16s, transform 0.13s;
+  outline: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  letter-spacing: 0.5px;
+  margin-left: 22px;
 }
-.qna-actions button:hover {
-  background-color: #d1e9c2;
+.qna-actions .ask-btn:hover {
+  background: linear-gradient(90deg, #3a6b1d 0%, #66bb6a 100%);
+  color: #fff;
+  box-shadow: 0 3px 14px 0 rgba(76, 175, 80, 0.18);
+  transform: translateY(-1px) scale(1.03);
+}
+
+.qna-bottom-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 .qna-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0;
+  table-layout: fixed;
 }
 .qna-table thead {
   background-color: #f0f7e4;
@@ -174,13 +219,15 @@ const formatTitle = (title) => {
   padding: 12px 20px;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 38px;
 }
 .qna-index {
   text-align: center;
   width: 60px;
-}
-.qna-title {
-  text-align: left;
+  font-size: 16px;
 }
 .qna-status {
   text-align: center;
@@ -188,7 +235,7 @@ const formatTitle = (title) => {
 }
 .qna-author {
   text-align: center;
-  width: 180px;
+  width: 220px;
 }
 .qna-date {
   text-align: center;
@@ -205,7 +252,7 @@ const formatTitle = (title) => {
 .status-badge {
   padding: 0.2rem 0.7rem;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: bold;
   display: inline-block;
 }
