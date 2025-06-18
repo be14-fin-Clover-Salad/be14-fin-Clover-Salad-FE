@@ -30,6 +30,7 @@ const handleFileChange = async (e) => {
   formData.append('file', file)
 
   try {
+    console.log(formData);
     // 아직 api 없음
     const response = await api.post('/api/product/upload', formData, {
       headers: {

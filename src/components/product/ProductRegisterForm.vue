@@ -1,10 +1,10 @@
 <template>
   <div v-if="form" class="form-grid">
     <div class="form-item">
-      <label>사진</label>
+      <label>사진<span class="required">*</span></label>
       <div v-if="imgUploaded" style="display: flex; flex-direction: column; align-items: center;">
         <button @click="showImageUploadModal = true">사진 변경</button>
-        <img style="width: 100%" :src="form.imageUrl" :alt="form.name + '의 사진'">
+        <img style="width: 100%" :src="path" :alt="form.name + '의 사진'">
       </div>
       <div v-else style="display: flex; flex: 1; justify-content: center; align-items: center; border: 1px #000 solid">
         <button @click="showImageUploadModal = true">사진 업로드</button>
@@ -12,33 +12,33 @@
     </div>
     <div style="display: flex; flex-direction: column; justify-content: space-between">
       <div class="form-item">
-        <label>상품 코드</label>
+        <label>상품 코드<span class="required">*</span></label>
         <input type="text" v-model="form.productCode"/>
       </div>
       <div style="display: flex; flex-direction: row; justify-content: space-between">
         <div class="form-item">
-          <label>제조사</label>
+          <label>제조사<span class="required">*</span></label>
           <input type="text" v-model="form.company"/>
         </div>
         <div class="form-item">
-          <label>카테고리</label>
+          <label>카테고리<span class="required">*</span></label>
           <input type="text" v-model="form.category"/>
         </div>
         <div class="form-item">
-          <label>모델명</label>
+          <label>모델명<span class="required">*</span></label>
           <input type="text" v-model="form.serialNumber"/>
         </div>
       </div>
       <div class="form-item">
-        <label>상품명</label>
+        <label>상품명<span class="required">*</span></label>
         <input type="text" v-model="form.name"/>
       </div>
       <div class="form-item">
-        <label>상품 원가</label>
+        <label>상품 원가<span class="required">*</span></label>
         <input type="number" v-model="form.originCost"/>
       </div>
       <div class="form-item">
-        <label>렌탈료</label>
+        <label>렌탈료<span class="required">*</span></label>
         <input type="number" v-model="form.rentalCost"/>
       </div>
     </div>
@@ -61,6 +61,7 @@
 
   const imgUploaded = ref(true);
   const showImageUploadModal = ref(false);
+  const path = ref("");
 
   const props = defineProps({
     modelValue: {
@@ -86,8 +87,12 @@
   }, { deep: true });
 
 
-  function handleUploadSuccess(imageUrl) {
-    form.imageUrl = imageUrl;
+  function handleUploadSuccess(response) {
+    console.log("handleUploadSuccess", response);
+    props.modelValue.fileUploadId = response.fileUploadId;
+    props.modelValue.fileName = response.fileName;
+    props.modelValue.fileUrl = response.fileUrl;
+    path.value = props.modelValue.fileUrl + '/' + props.modelValue.fileName;
     showImageUploadModal.value = false;
   }
 
@@ -135,5 +140,11 @@
 
 .full-width {
   grid-column: span 4;
+}
+
+.required {
+  color: #d32f2f;
+  font-size: 18px;
+  margin-left: 6px;
 }
 </style>

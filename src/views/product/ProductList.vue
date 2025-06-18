@@ -93,6 +93,12 @@
 <style scoped>
   section {
     padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  ::v-deep(.data-table) {
+    width: 100%;
+    table-layout: auto;
   }
   .action-buttons {
     display: flex;

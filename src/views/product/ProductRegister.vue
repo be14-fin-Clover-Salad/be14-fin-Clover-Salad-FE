@@ -3,7 +3,7 @@
     <div class="section-header">
       <h2 class="section-title">상품 등록</h2>
       <div class="section-actions">
-        <button class="button primary" @click="registerProduct">등록</button>
+        <button class="button primary" @click="onClickRegister">등록</button>
         <button class="button danger" @click="showProductRegisterCancelModal = true">취소</button>
       </div>
     </div>
@@ -17,12 +17,19 @@
       @close="showProductRegisterCancelModal = false"
       @cancel="router.push('/product/list');"
     />
+    <ProductRegisterConfirmModal
+      :isOpen="showProductRegisterConfirmModal"
+      :isValid="isValid"
+      @close="showProductRegisterConfirmModal = false"
+      @confirm="registerProduct"
+    />
   </section>
 </template>
 
 <script setup>
   import ProductRegisterForm from "@/components/product/ProductRegisterForm.vue";
   import ProductRegisterCancelModal from "@/components/product/ProductRegisterCancelModal.vue";
+  import ProductRegisterConfirmModal from "@/components/product/ProductRegisterConfirmModal.vue";
   import { ref } from 'vue';
   import { useRouter } from 'vue-router';
   import api from "@/api/auth.js";
@@ -32,6 +39,8 @@
   const isLoading = ref(false);
   const formRef = ref(null);
   const showProductRegisterCancelModal = ref(false);
+  const showProductRegisterConfirmModal = ref(false);
+  const isValid = ref(false);
 
   const form = ref({
     productCode: '',
@@ -42,8 +51,29 @@
     originCost: 0,
     rentalCost: 0,
     description: '',
-    imageUrl: ''
+    fileUploadId: '',
+    fileName: '',
+    fileUrl: ''
   });
+
+  function validateForm(result) {
+    return result.imageUrl !== ""
+        && result.productCode !== ""
+        && result.company !== ""
+        && result.category !== ""
+        && result.serialNumber !== ""
+        && result.name !== ""
+        && result.originCost !== ""
+        && result.rentalCost !== ""
+        && result.fileUploadId !== "";
+  }
+
+  function onClickRegister() {
+    const result = formRef.value.submitForm();
+    console.log(result.form);
+    isValid.value = validateForm(result.form);
+    showProductRegisterConfirmModal.value = true;
+  }
 
   async function registerProduct() {
     try {

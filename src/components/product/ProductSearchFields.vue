@@ -18,10 +18,10 @@ const row = [
   { label: '상품명', key: 'name', placeholder: '청소기 1호' },
   { label: '모델명', key: 'serialNumber', placeholder: 'SN20240001' },
   { label: '제조사', key: 'company', placeholder: '삼성' },
-  { label: '원가(시작)', key: 'originCostStart', placeholder: '150000' },
-  { label: '원가(끝)', key: 'originCostEnd', placeholder: '200000' },
-  { label: '월 렌탈료(시작)', key: 'rentalCostStart', placeholder: '13000' },
-  { label: '월 렌탈료(끝)', key: 'rentalCostEnd', placeholder: '18000' }
+  { label: '원가(시작)', key: 'originCostStart', placeholder: '150000', type: 'number' },
+  { label: '원가(끝)', key: 'originCostEnd', placeholder: '200000', type: 'number' },
+  { label: '월 렌탈료(시작)', key: 'rentalCostStart', placeholder: '13000', type: 'number' },
+  { label: '월 렌탈료(끝)', key: 'rentalCostEnd', placeholder: '18000', type: 'number' }
 ]
 </script>
 
