@@ -136,6 +136,11 @@ section {
   padding: 20px;
 }
 
+::v-deep(.data-table) {
+    width: 100%;
+    table-layout: auto;
+  }
+
 .table-wrapper {
   margin-top: 24px;
   overflow-x: auto;
