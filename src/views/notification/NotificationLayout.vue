@@ -128,6 +128,7 @@ const fetchNotifications = async (page) => {
             }
         })
         notifications.value = response.data
+        notificationStore.unreadCount = response.data.filter(n => !n.read).length
     } catch (error) {
         console.error('알림 목록을 불러오는데 실패했습니다:', error)
         console.error('에러 상세:', error.response?.data || error.message)

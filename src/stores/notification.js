@@ -26,11 +26,8 @@ export const useNotificationStore = defineStore('notification', () => {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       })
-      notifications.value = response.data.map(notification => ({
-        ...notification,
-        read: false
-      }))
-      unreadCount.value = notifications.value.length
+      notifications.value = response.data
+      unreadCount.value = response.data.filter(n => !n.read).length
     } catch (error) {
       console.error('알림 목록을 가져오는데 실패했습니다:', error)
     }
@@ -38,13 +35,67 @@ export const useNotificationStore = defineStore('notification', () => {
 
   async function markAsRead(notificationId) {
     try {
+      await api.patch(`/notification/${notificationId}/read`, null, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
       const index = notifications.value.findIndex(n => n.id === notificationId)
-      if (index !== -1) {
+      if (index !== -1 && !notifications.value[index].read) {
         notifications.value[index].read = true
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }
     } catch (error) {
       console.error('알림 읽음 처리 중 오류 발생:', error)
+    }
+  }
+
+  const setupSse = async () => {
+    if (typeof window === 'undefined') return
+  
+    const accessToken = localStorage.getItem('access_token')
+    if (!accessToken) {
+      console.warn('[SSE] 토큰 없음 - SSE 연결 불가')
+      return
+    }
+  
+    try {
+      console.log('[SSE] 구독 토큰 요청')
+      
+      // 1️⃣ 토큰 먼저 받아오기
+      const response = await api.get('/notification/subscribe-token', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+      const subscribeToken = response.data
+      console.log('[SSE] 구독 토큰 수신:', subscribeToken)
+  
+      // 2️⃣ 해당 토큰으로 SSE 연결
+      const eventSource = new EventSource(`/notification/subscribe?token=${subscribeToken}`)
+  
+      eventSource.onopen = () => {
+        console.log('[SSE] 연결 성공')
+      }
+  
+      eventSource.addEventListener('notification', (event) => {
+        console.log('[SSE] 알림 수신:', event.data)
+        const data = JSON.parse(event.data)
+  
+        const exists = notifications.value.find(n => n.id === data.id)
+        if (!exists) {
+          notifications.value.unshift({ ...data, read: false })
+          unreadCount.value++
+        }
+      })
+  
+      eventSource.onerror = (err) => {
+        console.warn('[SSE] 오류 발생. 연결 종료됨:', err)
+        eventSource.close()
+      }
+  
+    } catch (err) {
+      console.error('[SSE] 구독 토큰 발급 또는 연결 실패:', err)
     }
   }
 
@@ -78,6 +129,7 @@ export const useNotificationStore = defineStore('notification', () => {
     fetchUnreadCount,
     fetchNotifications,
     markAsRead,
+    setupSse,
     deleteNotifications
   }
 }) 
