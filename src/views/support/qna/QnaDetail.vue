@@ -157,24 +157,46 @@ const submitAnswer = async () => {
     alert('답변 내용을 입력해주세요.')
     return
   }
-  await axios.patch(`/support/qna/${qnaId}/answer`, {
-    answerContent: answerContent.value,
-    status: '완료'
-  }, {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  })
-  alert(qna.value.answerContent ? '답변이 수정되었습니다.' : '답변이 등록되었습니다.')
-  await fetchQna()
-  isEditingAnswer.value = false
+  try {
+    if (!qna.value.answerContent) {
+      // 답변 최초 등록(POST)
+      await axios.post(`/support/qna/${qnaId}/answer`, {
+        answerContent: answerContent.value,
+        status: '완료'
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+      alert('답변이 등록되었습니다.')
+    } else {
+      // 답변 수정(PUT)
+      await axios.put(`/support/qna/${qnaId}/answer`, {
+        answerContent: answerContent.value
+      }, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+      alert('답변이 수정되었습니다.')
+    }
+    await fetchQna()
+    isEditingAnswer.value = false
+  } catch (e) {
+    console.error(e)
+    alert('답변 등록/수정에 실패했습니다.')
+  }
 }
 
 const deleteQna = async () => {
   if (!confirm('정말로 삭제하시겠습니까?')) return
-  await axios.patch(`/support/qna/${qnaId}/delete`, {}, {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  })
-  alert('게시글이 삭제되었습니다.')
-  router.push('/support/qna')
+  try {
+    // DELETE 방식으로 변경
+    await axios.delete(`/support/qna/delete/${qnaId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
+    alert('게시글이 삭제되었습니다.')
+    router.push('/support/qna')
+  } catch (e) {
+    console.error(e)
+    alert('삭제에 실패했습니다.')
+  }
 }
 </script>
 

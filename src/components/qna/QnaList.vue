@@ -104,7 +104,6 @@ async function fetchQnaList() {
     employees.value = empRes.data
     qnas.value = qnaRes.data
 
-    // console.log('직원 전체 정보', employees.value)
   } catch (err) {
     console.error('QnA API 오류:', err)
   }
@@ -154,7 +153,7 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
 }
 .top-area {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 14px;
   gap: 16px;
@@ -170,33 +169,37 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
   font-size: 15px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  height: 38px;        
+  height: 38px;
   background: #fafcf5;
   vertical-align: middle;
   box-sizing: border-box;
 }
 
-/* 문의하기 버튼 스타일 */
 .qna-actions .ask-btn {
-  background: linear-gradient(90deg, #8bc34a 0%, #43a047 100%);
+  background: #86b649;
   color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  padding: 11px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 9px 28px;
   border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px 0 rgba(80, 120, 80, 0.07);
+  border-radius: 7px;
+  box-shadow: 0 1px 6px 0 rgba(80, 120, 80, 0.05);
   transition: background 0.18s, box-shadow 0.16s, transform 0.13s;
   outline: none;
   cursor: pointer;
-  letter-spacing: 0.5px;
-  margin-left: 22px;
+  letter-spacing: 0.1px;
+  height: 40px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0;
 }
 .qna-actions .ask-btn:hover {
-  background: linear-gradient(90deg, #3a6b1d 0%, #66bb6a 100%);
+  background: #419e35;
   color: #fff;
-  box-shadow: 0 3px 14px 0 rgba(76, 175, 80, 0.18);
-  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 2px 8px 0 rgba(76, 175, 80, 0.15);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .qna-bottom-actions {
