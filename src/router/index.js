@@ -194,16 +194,7 @@ router.beforeEach(async (to, from, next) => {
         next('/login')
       }
     } else {
-      try {
-        // 페이지가 변경될 때마다 사용자 정보를 가져옴
-        if (to.path !== from.path) {
-          await authStore.fetchUserInfo()
-        }
-        next()
-      } catch (error) {
-        console.error('사용자 정보를 가져오는데 실패했습니다:', error)
-        next('/login')
-      }
+      next()
     }
   } else {
     if (to.path === '/login' && authStore.accessToken) {

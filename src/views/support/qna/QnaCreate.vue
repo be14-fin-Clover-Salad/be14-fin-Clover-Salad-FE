@@ -1,18 +1,15 @@
 <template>
   <div class="qna-create-layout">
     <h2>문의사항 작성</h2>
-
     <form @submit.prevent="submitQna">
       <div class="form-group">
         <label for="title">제목</label>
         <input type="text" id="title" v-model="title" required />
       </div>
-
       <div class="form-group">
         <label for="content">내용</label>
         <textarea id="content" v-model="content" rows="8" required></textarea>
       </div>
-
       <div class="btn-wrap">
         <button type="submit" class="btn submit-btn" :disabled="isSubmitting">
           {{ isSubmitting ? '등록 중...' : '등록' }}
@@ -26,12 +23,16 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import axios from '@/api/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const accessToken = authStore.accessToken
+
 const title = ref('')
 const content = ref('')
 const isSubmitting = ref(false)
-const loginUserId = 8 // 로그인된 사용자 ID
 
 const submitQna = async () => {
   if (!title.value.trim() || !content.value.trim()) {
@@ -41,27 +42,23 @@ const submitQna = async () => {
 
   isSubmitting.value = true
 
-  const newQna = {
-    title: title.value.trim(),
-    content: content.value.trim(),
-    employee_id: loginUserId,
-    status: '대기',
-    answer_content: '',
-    created_at: new Date().toISOString(),
-    is_deleted: false
-  }
-
   try {
-    const res = await fetch('http://localhost:3001/qnas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newQna)
-    })
-
-    const savedQna = await res.json()
-
+    const res = await axios.post(
+      '/support/qna/create',
+      {
+        title: title.value.trim(),
+        content: content.value.trim()
+      },
+      {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }
+    )
     alert('문의사항이 등록되었습니다.')
-    router.push(`/support/qna/${savedQna.id}`)
+    if (res.data?.id) {
+      router.push(`/support/qna/${res.data.id}`)
+    } else {
+      router.push('/support/qna')
+    }
   } catch (error) {
     console.error(error)
     alert('등록에 실패했습니다.')
