@@ -5,8 +5,23 @@
       <div class="field" v-for="(item, index) in row1" :key="index">
         <label :for="item.key">{{ item.label }}</label>
 
-        <!-- 계약 상태만 select로 분기 -->
-        <div v-if="item.key === 'status'" class="select-wrapper">
+        <!-- 렌탈 비용은 range 처리 -->
+        <div v-if="item.key === 'rentalAmountRange'" class="range-inputs">
+          <input
+            v-model="filters.minAmount"
+            placeholder="최소 금액"
+            type="number"
+          />
+          <span class="tilde">~</span>
+          <input
+            v-model="filters.maxAmount"
+            placeholder="최대 금액"
+            type="number"
+          />
+        </div>
+
+        <!-- 계약 상태는 select -->
+        <div v-else-if="item.key === 'status'" class="select-wrapper">
           <select v-model="filters[item.key]">
             <option value="">전체</option>
             <option value="결재전">결재 전</option>
@@ -17,6 +32,8 @@
             <option value="계약무효">계약 무효</option>
           </select>
         </div>
+
+        <!-- 일반 입력 필드 -->
         <input
           v-else
           v-model="filters[item.key]"
@@ -48,9 +65,8 @@ const props = defineProps({
 
 const row1 = [
   { label: '계약 번호', key: 'code', placeholder: '예: C-YYmm-1234' },
-  { label: '렌탈 비용 (최소)', key: 'minAmount', placeholder: '예: 30000' },
-  { label: '렌탈 비용 (최대)', key: 'maxAmount', placeholder: '예: 100000' },
-  { label: '계약 상태', key: 'status', placeholder: '예: 계약 중' },
+  { label: '렌탈 비용', key: 'rentalAmountRange' },
+  { label: '계약 상태', key: 'status' },
   { label: '고객 명', key: 'customerName', placeholder: '예: 고성연' },
   { label: '담당 영업사원', key: 'employeeName', placeholder: '예: 홍길동' },
   { label: '상품 명', key: 'productName', placeholder: '예: TV 외 3개' }
@@ -129,6 +145,21 @@ const row2 = [
 
 .select-wrapper select {
   width: 100%;
-  padding-right: 24px; /* space for arrow */
+  padding-right: 24px;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.range-inputs input {
+  flex: 1;
+}
+
+.tilde {
+  font-size: 14px;
+  color: #444;
 }
 </style>

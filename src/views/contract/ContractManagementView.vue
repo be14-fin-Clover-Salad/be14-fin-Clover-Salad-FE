@@ -1,18 +1,28 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell :initial="searchForm" :expanded="isExpanded" @search="handleSearch" @reset="handleReset"
-      @toggle-expand="isExpanded = !isExpanded">
+    <SearchFilterShell
+      :initial="searchForm"
+      :expanded="isExpanded"
+      @search="handleSearch"
+      @reset="handleReset"
+      @toggle-expand="isExpanded = !isExpanded"
+    >
       <template #fields="{ filters, expanded }">
         <ContractSearchFields :filters="filters" :expanded="expanded" />
       </template>
     </SearchFilterShell>
 
-
     <!-- 테이블 -->
     <div class="table-wrapper">
-      <BaseDataTable :columns="columns" :rows="rows" :isLoading="isLoading" :selectedCode="selectedRowCode"
-        @row-click="handleRowClick" @row-dblclick="handleRowDblClick" />
+      <BaseDataTable
+        :columns="columns"
+        :rows="rows"
+        :isLoading="isLoading"
+        :selectedCode="selectedRowCode"
+        @row-click="handleRowClick"
+        @row-dblclick="handleRowDblClick"
+      />
     </div>
 
     <!-- 버튼 영역 -->
@@ -22,23 +32,34 @@
     </div>
 
     <!-- 계약서 등록 모달 -->
-    <ContractUploadModal :isOpen="showUploadModal" @close="showUploadModal = false"
-      @upload-success="handleUploadSuccess" />
+    <ContractUploadModal
+      :isOpen="showUploadModal"
+      @close="showUploadModal = false"
+      @upload-success="handleUploadSuccess"
+    />
 
     <!-- 업로드 완료 안내 모달 -->
-    <ContractUploadSuccessModal :isOpen="showSuccessModal" @confirm="goToDetailView"
-      @close="showSuccessModal = false" />
+    <ContractUploadSuccessModal
+      :isOpen="showSuccessModal"
+      @confirm="goToDetailView"
+      @close="showSuccessModal = false"
+    />
 
     <!-- 상세 보기 모달 -->
-    <!-- <ContractDetailModal :isOpen="showDetailModal" :contract="selectedContract" @close="showDetailModal = false" /> -->
-    <ContractDetailModal v-if="selectedContract" :isOpen="showDetailModal" :contractId="selectedContract?.id"
-      @close="showDetailModal = false" />
-  
-
+    <ContractDetailModal
+      v-if="selectedContract"
+      :isOpen="showDetailModal"
+      :contractId="selectedContract?.id"
+      @close="showDetailModal = false"
+    />
 
     <!-- 계약서 재업로드 모달 -->
-    <ContractReplaceModal :isOpen="showReplaceModal" :contract="selectedContract" @close="handleReplaceModalClose"
-      @replace-success="handleReplaceSuccess" />
+    <ContractReplaceModal
+      :isOpen="showReplaceModal"
+      :contract="selectedContract"
+      @close="handleReplaceModalClose"
+      @replace-success="handleReplaceSuccess"
+    />
   </section>
 </template>
 
@@ -128,9 +149,8 @@ function handleReplaceModalClose() {
 
 function handleReplaceSuccess(updatedContract) {
   showReplaceModal.value = false
-  handleSearch({ ...searchForm })
   selectedContract.value = updatedContract
-  showDetailModal.value = true
+  showSuccessModal.value = true
 }
 
 const columns = [
@@ -146,8 +166,6 @@ const columns = [
   { label: '상품 명', key: 'productNames', width: '200px' },
   { label: '비고', key: 'etc', width: '150px' }
 ]
-
-
 </script>
 
 <style scoped>
