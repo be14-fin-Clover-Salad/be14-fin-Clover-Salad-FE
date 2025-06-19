@@ -27,6 +27,13 @@
       <button v-if="userRole === 'admin'" type="button" class="delete-btn" @click="handleDelete">삭제</button>
     </div>
 
+    <!-- 매출 등록 모달 -->
+    <RegisterSales 
+      v-if="showRegisterModal" 
+      @close="closeRegisterModal" 
+      @success="handleRegisterSuccess" 
+    />
+
     <!-- 삭제 확인 모달 -->
     <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
       <div class="modal-content" @click.stop>
@@ -54,6 +61,7 @@ import axios from 'axios'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import SalesSearchFields from '@/components/sales/SalesSearchFields.vue'
+import RegisterSales from '@/views/sales/RegisterSales.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -153,13 +161,7 @@ function handleReset() {
 
 function handleRegister() {
   console.log('등록 버튼 클릭')
-  console.log('라우터 객체:', router)
-  try {
-    router.push('/sales/register')
-    console.log('라우터 push 완료')
-  } catch (error) {
-    console.error('라우터 push 에러:', error)
-  }
+  showRegisterModal.value = true
 }
 
 function handleDelete() {
@@ -214,6 +216,17 @@ async function confirmDelete() {
   }
 }
 
+function closeRegisterModal() {
+  console.log('등록 모달 닫기')
+  showRegisterModal.value = false
+}
+
+function handleRegisterSuccess(data) {
+  console.log('매출 등록 성공:', data)
+  // 등록 성공 후 테이블 새로고침
+  handleSearch(searchForm)
+}
+
 const columns = [
   { label: '번호', key: 'index' },
   { label: '매출 날짜', key: 'salesDate' },
@@ -234,6 +247,9 @@ const isDeleteMode = ref(false)
 const selectedRowIndex = ref(null)
 const selectedRow = ref(null)
 const showDeleteModal = ref(false)
+
+// 매출 등록 모달 관련 상태
+const showRegisterModal = ref(false)
 
 // 금액 포맷팅 함수
 function formatCurrency(amount) {
