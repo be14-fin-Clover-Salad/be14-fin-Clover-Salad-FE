@@ -73,6 +73,7 @@ tryRefreshAndLoadUser().then(() => {
   if (auth.userInfo) {
     const notificationStore = useNotificationStore()
     notificationStore.setupSse()
-  }})
+  }
+  app.mount('#app')
+})
   
-app.mount('#app')
