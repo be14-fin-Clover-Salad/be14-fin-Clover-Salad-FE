@@ -15,8 +15,8 @@ export const menuList = [
       },
       {
         label: "영업부 매출 조회",
-        path: "/dashboard/department",
-        // component: () => import("@/views/dashboard/DepartmentSalesView.vue"),
+        path: "/sales-dashboard",
+        component: () => import("@/views/salesDashboard/SalesDashboardLayout.vue"),
       },
     ],
   },

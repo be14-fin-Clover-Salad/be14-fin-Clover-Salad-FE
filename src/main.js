@@ -6,8 +6,11 @@ import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import api from '@/api/auth'
+import VueECharts from 'vue-echarts'
+import * as echarts from 'echarts'
 
 const app = createApp(App)
+app.component('v-chart', VueECharts)
 app.use(createPinia({
   devtools: false
 }))
