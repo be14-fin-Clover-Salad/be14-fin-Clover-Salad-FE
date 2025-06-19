@@ -149,7 +149,7 @@
 </template>
 
 <script>
-import axios from '@/api/auth';
+import api from '@/api/auth';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
@@ -221,7 +221,7 @@ export default {
     async fetchUserInfo() {
       try {
         const auth = useAuthStore();
-        const response = await axios.get('/employee/mypage', {
+        const response = await api.get('/employee/mypage', {
           headers: {
             Authorization: `Bearer ${auth.accessToken}`
           },
@@ -239,7 +239,7 @@ export default {
 
       try {
         const auth = useAuthStore();
-        const response = await axios.post('/employee/password-change', {
+        const response = await api.post('/employee/password-change', {
           currentPassword: this.passwordForm.currentPassword,
           newPassword: this.passwordForm.newPassword
         }, {
@@ -289,7 +289,7 @@ export default {
           data: this.tempUserInfo
         });
 
-        const response = await axios.patch('/employee/mypage', this.tempUserInfo, {
+        const response = await api.patch('/employee/mypage', this.tempUserInfo, {
           headers: {
             Authorization: `Bearer ${auth.accessToken}`
           }
@@ -355,7 +355,7 @@ export default {
             data: { path: this.profileUrl }
           });
 
-          const response = await axios.patch('/employee/mypage/profile-path', {
+          const response = await api.patch('/employee/mypage/profile-path', {
             path: this.profileUrl
           }, {
             headers: {

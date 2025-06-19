@@ -18,10 +18,6 @@ app.use(router)
 
 const auth = useAuthStore()
 
-if (!auth.accessToken && localStorage.getItem('access_token')) {
-  auth.setAccessToken(localStorage.getItem('access_token'))
-}
-
 const tryRefreshAndLoadUser = async () => {
 
   if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') {

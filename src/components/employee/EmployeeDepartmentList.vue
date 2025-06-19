@@ -54,9 +54,9 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { useDepartmentStore } from '@/stores/departmentStore'
-import axios from 'axios'
+import api from '@/api/auth'
 
 const departmentStore = useDepartmentStore()
 const employees = ref([])
@@ -106,17 +106,12 @@ const formatPhoneNumber = (phone) => {
   return phone;
 }
 
-const loadDepartmentEmployees = async (departmentId) => {
-  if (!departmentId) return
-  
+const fetchEmployees = async (departmentId) => {
   try {
-    loading.value = true
-    const response = await axios.get(`http://localhost:8080/department/employee?departmentId=${departmentId}`)
+    const response = await api.get(`/department/employee?departmentId=${departmentId}`)
     employees.value = response.data
   } catch (error) {
-    employees.value = []
-  } finally {
-    loading.value = false
+    console.error('부서 직원 조회 실패:', error)
   }
 }
 
@@ -124,10 +119,10 @@ const emit = defineEmits(['select-employee'])
 
 const fetchEmployeeDetail = async (employeeId) => {
   try {
-    const response = await axios.get(`http://localhost:8080/employee/detail?employeeId=${employeeId}`)
+    const response = await api.get(`/employee/detail?employeeId=${employeeId}`)
     emit('select-employee', response.data)
-  } catch (err) {
-    // 에러 처리
+  } catch (error) {
+    console.error('직원 상세 조회 실패:', error)
   }
 }
 
@@ -157,7 +152,7 @@ const filteredEmployees = computed(() => {
 
 watch(() => departmentStore.selectedDepartmentId, (newId) => {
   if (newId) {
-    loadDepartmentEmployees(newId)
+    fetchEmployees(newId)
   }
 })
 </script>

@@ -69,9 +69,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { QuillEditor } from '@vueup/vue-quill'
-import axios from 'axios'
-import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 import { useAuthStore } from '@/stores/auth'
+import api from '@/api/auth'
+import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 
 const title = ref('')
 const content = ref('')
@@ -110,46 +110,47 @@ const removeUser = (user) => {
 }
 
 onMounted(async () => {
+  const headers = {
+    Authorization: `Bearer ${authStore.accessToken}`
+  }
+
   try {
-    const headers = {
-      'Authorization': `Bearer ${authStore.accessToken}`
-    }
     const [empRes, deptRes] = await Promise.all([
-      axios.post('http://localhost:8080/employee/search', {}, { headers }),
-      axios.get('http://localhost:8080/department/hierarchy', { headers })
+      api.post('/employee/search', {}, { headers }),
+      api.get('/department/hierarchy', { headers })
     ])
     employees.value = empRes.data
     departments.value = deptRes.data
-  } catch (e) {
-    alert('데이터 조회 실패')
-    console.error('❌ 초기 로딩 실패:', e)
+  } catch (error) {
+    console.error('데이터 로드 실패:', error)
   }
 })
 
 const submitNotice = async () => {
-  if (!loginUserId.value) {
-    alert('로그인 유저 정보 없음')
+  if (!title.value.trim() || !content.value.trim()) {
+    alert('제목과 내용을 모두 입력해주세요.')
     return
   }
 
-  try {
-    const employeeIds = selectedEmployees.value.map(emp => emp.id)
-    await axios.post('http://localhost:8080/support/notice/create', {
-      title: title.value,
-      content: content.value,
-      targetEmployeeId: [...employeeIds, loginUserId.value]
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authStore.accessToken}`
-      }
-    })
+  isSubmitting.value = true
 
-    alert('공지 등록 완료!')
+  try {
+    await api.post('/support/notice/create', {
+      title: title.value.trim(),
+      content: content.value.trim(),
+      targetDepartments: selectedDepartments.value,
+      targetEmployees: selectedEmployees.value
+    }, {
+      headers: { Authorization: `Bearer ${authStore.accessToken}` }
+    })
+    
+    alert('공지사항이 등록되었습니다.')
     router.push('/support/notice')
-  } catch (e) {
-    alert('공지 등록 실패!')
-    console.error('❌ 등록 실패:', e)
+  } catch (error) {
+    console.error(error)
+    alert('등록에 실패했습니다.')
+  } finally {
+    isSubmitting.value = false
   }
 }
 </script>

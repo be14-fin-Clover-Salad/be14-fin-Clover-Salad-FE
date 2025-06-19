@@ -1,5 +1,5 @@
 <template>
-  <header class="header" v-if="user">
+  <header class="header" v-if="auth.accessToken">
     <!-- 로고 -->
     <div class="left" @click="goHome">
       <img src="/logo_text.svg" alt="logo" class="logo" />
@@ -26,23 +26,23 @@
             alt="프로필"
           />
           <div v-else class="fallback-avatar">
-            {{ user.name?.charAt(0) }}
+            {{ user.name?.charAt(0) || '?' }}
           </div>
         </div>
         <div class="info">
-          <div class="team">{{ user.departmentName }}</div>
-          <div class="name">{{ user.name }} {{ user.levelLabel }}</div>
+          <div class="team">{{ user.departmentName || '로딩 중...' }}</div>
+          <div class="name">{{ user.name || '사용자' }} {{ user.levelLabel || '' }}</div>
           <!-- 드롭다운 메뉴 (토글) -->
           <div class="dropdown-menu" v-if="dropdownOpen">
             <div class="dropdown-arrow"></div>
             <div class="dropdown-header">
               <div class="dropdown-header-left">
                 <img v-if="user.profilePath" :src="user.profilePath" alt="프로필" class="dropdown-avatar" />
-                <div v-else class="dropdown-fallback-avatar">{{ user.name?.charAt(0) }}</div>
+                <div v-else class="dropdown-fallback-avatar">{{ user.name?.charAt(0) || '?' }}</div>
               </div>
               <div class="dropdown-header-right">
-                <div class="dropdown-team">{{ user.departmentName }}</div>
-                <div class="dropdown-employee">{{ user.name }} {{ user.levelLabel }}</div>
+                <div class="dropdown-team">{{ user.departmentName || '로딩 중...' }}</div>
+                <div class="dropdown-employee">{{ user.name || '사용자' }} {{ user.levelLabel || '' }}</div>
               </div>
             </div>
             <div class="dropdown-divider"></div>
@@ -90,6 +90,41 @@ watch(() => user.value, async (newUser) => {
   }
 }, { immediate: true });  // 컴포넌트 마운트 시에도 실행
 
+// 사용자 정보가 유실된 경우 자동 복구
+watch(() => user.value, async (newUser, oldUser) => {
+  // 토큰은 있지만 사용자 정보가 없는 경우 (유실된 경우)
+  if (auth.accessToken && (!newUser || !newUser.name)) {
+    console.warn('[Header] 사용자 정보가 유실됨, 복구 시도 중...')
+    try {
+      await auth.recoverUserInfo()
+      console.log('[Header] 사용자 정보 복구 성공')
+    } catch (error) {
+      console.error('[Header] 사용자 정보 복구 실패:', error)
+      // 복구 실패 시 토큰도 클리어
+      auth.clearToken()
+      router.push('/login')
+    }
+  }
+}, { immediate: true })
+
+// 추가: 컴포넌트 마운트 시 사용자 정보 확인 및 복구
+const checkAndRecoverUserInfo = async () => {
+  if (auth.accessToken && !auth.userInfo) {
+    console.log('[Header] 컴포넌트 마운트 시 사용자 정보 복구 시도...')
+    try {
+      await auth.recoverUserInfo()
+      console.log('[Header] 컴포넌트 마운트 시 사용자 정보 복구 성공')
+    } catch (error) {
+      console.error('[Header] 컴포넌트 마운트 시 사용자 정보 복구 실패:', error)
+      auth.clearToken()
+      router.push('/login')
+    }
+  }
+}
+
+// 컴포넌트 마운트 시 실행
+checkAndRecoverUserInfo()
+
 const dropdownOpen = ref(false);
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value;
@@ -135,6 +170,19 @@ const logout = async () => {
     router.push("/login");
   }
 };
+
+// 테스트용: 사용자 정보 유실 시뮬레이션
+const simulateUserInfoLoss = () => {
+  console.log('🧪 [테스트] 사용자 정보 유실 시뮬레이션 시작')
+  console.log('유실 전 토큰:', auth.accessToken)
+  console.log('유실 전 사용자 정보:', auth.userInfo)
+  
+  auth.simulateUserInfoLoss()
+  
+  console.log('유실 후 토큰:', auth.accessToken)
+  console.log('유실 후 사용자 정보:', auth.userInfo)
+  console.log('🧪 [테스트] 복구 로직이 자동으로 실행될 것입니다...')
+}
 </script>
 
 <style scoped>

@@ -86,7 +86,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import axios from '@/api/auth'
+import { QuillEditor } from '@vueup/vue-quill'
+import api from '@/api/auth'
 import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 
 const route = useRoute()
@@ -136,7 +137,7 @@ const formatDate = dateStr => dateStr?.split('T')[0] || '-'
 const fetchData = async () => {
   try {
     const headers = { Authorization: `Bearer ${accessToken.value}` }
-    const res = await axios.get(`/support/notice/${noticeId}`, { headers })
+    const res = await api.get(`/support/notice/${noticeId}`, { headers })
     notice.value = {
       ...res.data,
       isDeleted: res.data.isDeleted ?? res.data.is_deleted
@@ -151,8 +152,8 @@ const fetchTargetData = async () => {
   try {
     const headers = { Authorization: `Bearer ${accessToken.value}` }
     const [deptRes, empRes] = await Promise.all([
-      axios.get('/department/hierarchy', { headers }),
-      axios.post('/employee/search', {}, { headers })
+      api.get('/department/hierarchy', { headers }),
+      api.post('/employee/search', {}, { headers })
     ])
     departments.value = deptRes.data
     employees.value = empRes.data
@@ -166,7 +167,7 @@ const confirmCheck = async () => {
   if (!entry || entry.isChecked) return
 
   try {
-    await axios.put(`/support/notice/${noticeId}/check`, {}, {
+    await api.put(`/support/notice/${noticeId}/check`, {}, {
       headers: { Authorization: `Bearer ${accessToken.value}` }
     })
     entry.isChecked = true
@@ -177,17 +178,17 @@ const confirmCheck = async () => {
 }
 
 const deleteNotice = async () => {
-  if (!confirm('정말 삭제하시겠습니까?')) return
-
+  if (!confirm('정말로 삭제하시겠습니까?')) return
+  
   try {
-    await axios.delete(`/support/notice/delete/${notice.value.id}`, {
+    await api.delete(`/support/notice/delete/${notice.value.id}`, {
       headers: { Authorization: `Bearer ${accessToken.value}` }
     })
-    alert('삭제되었습니다.')
+    alert('공지사항이 삭제되었습니다.')
     router.push('/support/notice')
-  } catch (e) {
-    alert('삭제 중 오류가 발생했습니다.')
-    console.error('❌ 삭제 실패:', e)
+  } catch (error) {
+    console.error('삭제 실패:', error)
+    alert('삭제에 실패했습니다.')
   }
 }
 
@@ -196,7 +197,7 @@ const handleTargetUpdate = async (selectedList) => {
   const newIds = selectedList.map(emp => emp.id)
 
   try {
-    await axios.put(`/support/notice/edit/${noticeId}`, {
+    await api.put(`/support/notice/edit/${noticeId}`, {
       title: notice.value.title,
       content: notice.value.content,
       targetEmployeeId: newIds
@@ -218,9 +219,72 @@ const openAddTargetModal = async () => {
 }
 const closeAddTargetModal = () => (isAddTargetOpen.value = false)
 
-onMounted(() => {
-  fetchData()
+onMounted(async () => {
+  const authStore = useAuthStore()
+  const headers = {
+    Authorization: `Bearer ${authStore.accessToken}`
+  }
+
+  try {
+    const res = await api.get(`/support/notice/${noticeId}`, { headers })
+    notice.value = res.data
+    editTitle.value = res.data.title
+    editContent.value = res.data.content
+  } catch (error) {
+    console.error('공지사항 조회 실패:', error)
+    alert('공지사항을 불러오는데 실패했습니다.')
+  }
+
+  try {
+    const [deptRes, empRes] = await Promise.all([
+      api.get('/department/hierarchy', { headers }),
+      api.post('/employee/search', {}, { headers })
+    ])
+    departments.value = deptRes.data
+    employees.value = empRes.data
+  } catch (error) {
+    console.error('부서/직원 데이터 로드 실패:', error)
+  }
 })
+
+const markAsRead = async () => {
+  try {
+    await api.put(`/support/notice/${noticeId}/check`, {}, {
+      headers: { Authorization: `Bearer ${authStore.accessToken}` }
+    })
+  } catch (error) {
+    console.error('읽음 처리 실패:', error)
+  }
+}
+
+const submitEdit = async () => {
+  if (!editTitle.value.trim() || !editContent.value.trim()) {
+    alert('제목과 내용을 모두 입력해주세요.')
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    await api.put(`/support/notice/edit/${noticeId}`, {
+      title: editTitle.value.trim(),
+      content: editContent.value.trim(),
+      targetDepartments: selectedDepartments.value,
+      targetEmployees: selectedEmployees.value
+    }, {
+      headers: { Authorization: `Bearer ${authStore.accessToken}` }
+    })
+    
+    alert('공지사항이 수정되었습니다.')
+    isEditing.value = false
+    await fetchNotice()
+  } catch (error) {
+    console.error('수정 실패:', error)
+    alert('수정에 실패했습니다.')
+  } finally {
+    isSubmitting.value = false
+  }
+}
 </script>
 
 <style scoped>

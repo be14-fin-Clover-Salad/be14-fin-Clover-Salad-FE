@@ -57,7 +57,6 @@ import { reactive, ref, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/api/auth'
 import DepartmentTreeNode from '@/components/employee/DepartmentTreeNode.vue'
 import { useDepartmentStore } from '@/stores/departmentStore'
-import axios from 'axios'
 
 const departmentStore = useDepartmentStore()
 const selectedEmployee = ref(null)

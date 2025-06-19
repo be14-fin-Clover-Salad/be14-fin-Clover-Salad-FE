@@ -61,7 +61,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import Pagination from "@/components/common/Pagination.vue";
 import { useAuthStore } from '@/stores/auth';
-import axios from '@/api/auth';
+import api from '@/api/auth';
 
 const authStore = useAuthStore();
 const loginUser = computed(() => authStore.userInfo || null);
@@ -124,7 +124,7 @@ onMounted(async () => {
     const headers = {
       Authorization: `Bearer ${accessToken.value}`
     };
-    const res = await axios.get(`/support/notice`, { headers });
+    const res = await api.get(`/support/notice`, { headers });
     const data = res.data || [];
 
     notices.value = isAdmin.value
