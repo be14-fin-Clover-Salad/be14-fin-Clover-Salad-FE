@@ -2,84 +2,37 @@
   <section>
     <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
       <template #fields="{ filters }">
-        <div class="sales-search-fields">
-          <div class="row-first">
-            <div class="field">
-              <label>부서명</label>
-              <input v-model="filters.department" type="text" placeholder="예: 영업부" />
-            </div>
-            <div class="field">
-              <label>직원명</label>
-              <input v-model="filters.employeeName" type="text" placeholder="예: 김영업" />
-            </div>
-            <div class="field">
-              <label>계약 코드</label>
-              <input v-model="filters.contractCode" type="text" placeholder="예: C-20240101" />
-            </div>
-          </div>
-          <div class="row-second">
-            <div class="field">
-              <label>매출 날짜 (시작)</label>
-              <input v-model="filters.startDate" type="date" min="0001-01-01" max="9999-12-31" />
-            </div>
-            <div class="field">
-              <label>매출 날짜 (종료)</label>
-              <input v-model="filters.endDate" type="date" min="0001-01-01" max="9999-12-31" />
-            </div>
-            <div class="field">
-              <label>최소 금액</label>
-              <input v-model="filters.minAmount" type="number" placeholder="예: 1000000" />
-            </div>
-            <div class="field">
-              <label>최대 금액</label>
-              <input v-model="filters.maxAmount" type="number" placeholder="예: 10000000" />
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #leftActions>
-        <button v-if="userRole === 'admin'" type="button" class="register-btn" @click="handleRegister">등록</button>
-        <button v-if="userRole === 'admin'" type="button" class="delete-btn" @click="handleDelete">삭제</button>
+        <SalesSearchFields :filters="filters" />
       </template>
     </SearchFilterShell>
 
     <div class="table-wrapper">
       <div v-if="isDeleteMode" class="delete-mode-notice">
-        <span>🗑️ 삭제 모드: 삭제할 행을 클릭하세요</span>
+        <span>삭제할 행을 클릭하세요</span>
         <button type="button" class="cancel-delete-btn" @click="cancelDeleteMode">취소</button>
       </div>
       
-      <div v-if="rows.length > 0" class="custom-table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th v-for="col in columns" :key="col.key">
-                {{ col.label }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-              v-for="(row, rowIndex) in rows" 
-              :key="rowIndex"
-              :class="{ 
-                'selected-for-delete': selectedRowIndex === rowIndex,
-                'clickable': isDeleteMode 
-              }"
-              @click="handleRowClick(rowIndex, row)"
-            >
-              <td v-for="col in columns" :key="col.key">
-                {{ row[col.key] || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <div v-else class="no-data-message">
-        검색 결과가 없습니다.
-      </div>
+      <BaseDataTable
+        :columns="columns"
+        :rows="rows"
+        :isLoading="isLoading"
+        :selectedCode="selectedRowIndex"
+        @row-click="handleRowClick"
+      />
     </div>
+
+    <!-- 등록/삭제 버튼 -->
+    <div class="action-buttons">
+      <button v-if="userRole === 'admin'" type="button" class="register-btn" @click="handleRegister">등록</button>
+      <button v-if="userRole === 'admin'" type="button" class="delete-btn" @click="handleDelete">삭제</button>
+    </div>
+
+    <!-- 매출 등록 모달 -->
+    <RegisterSales 
+      v-if="showRegisterModal" 
+      @close="closeRegisterModal" 
+      @success="handleRegisterSuccess" 
+    />
 
     <!-- 삭제 확인 모달 -->
     <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
@@ -107,6 +60,8 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
+import SalesSearchFields from '@/components/sales/SalesSearchFields.vue'
+import RegisterSales from '@/views/sales/RegisterSales.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -131,7 +86,15 @@ function checkUserRole() {
 }
 
 // 컴포넌트 마운트 시 사용자 권한 확인
-onMounted(() => {
+onMounted(async () => {
+  // 사용자 정보가 없으면 먼저 가져오기
+  if (!authStore.userInfo) {
+    try {
+      await authStore.fetchUserInfo()
+    } catch (error) {
+      console.error('사용자 정보를 가져오는데 실패했습니다:', error)
+    }
+  }
   checkUserRole()
 })
 
@@ -160,6 +123,7 @@ async function handleSearch(data) {
   }
   
   try {
+    isLoading.value = true
     const response = await axios.post('http://localhost:8080/sales/search', requestBody)
     console.log('검색 결과:', response.data)
     
@@ -177,6 +141,8 @@ async function handleSearch(data) {
   } catch (error) {
     console.error('검색 API 호출 실패:', error)
     alert('검색 중 오류가 발생했습니다.')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -195,13 +161,7 @@ function handleReset() {
 
 function handleRegister() {
   console.log('등록 버튼 클릭')
-  console.log('라우터 객체:', router)
-  try {
-    router.push('/sales/register')
-    console.log('라우터 push 완료')
-  } catch (error) {
-    console.error('라우터 push 에러:', error)
-  }
+  showRegisterModal.value = true
 }
 
 function handleDelete() {
@@ -217,9 +177,11 @@ function cancelDeleteMode() {
   selectedRow.value = null
 }
 
-function handleRowClick(rowIndex, row) {
+function handleRowClick(row) {
   if (!isDeleteMode.value) return
   
+  // row에서 index를 찾기
+  const rowIndex = rows.value.findIndex(r => r === row)
   selectedRowIndex.value = rowIndex
   selectedRow.value = row
   showDeleteModal.value = true
@@ -254,6 +216,17 @@ async function confirmDelete() {
   }
 }
 
+function closeRegisterModal() {
+  console.log('등록 모달 닫기')
+  showRegisterModal.value = false
+}
+
+function handleRegisterSuccess(data) {
+  console.log('매출 등록 성공:', data)
+  // 등록 성공 후 테이블 새로고침
+  handleSearch(searchForm)
+}
+
 const columns = [
   { label: '번호', key: 'index' },
   { label: '매출 날짜', key: 'salesDate' },
@@ -266,11 +239,17 @@ const columns = [
 // 테이블 데이터 (API 응답으로 업데이트됨)
 const rows = ref([])
 
+// 로딩 상태
+const isLoading = ref(false)
+
 // 삭제 모드 관련 상태
 const isDeleteMode = ref(false)
 const selectedRowIndex = ref(null)
 const selectedRow = ref(null)
 const showDeleteModal = ref(false)
+
+// 매출 등록 모달 관련 상태
+const showRegisterModal = ref(false)
 
 // 금액 포맷팅 함수
 function formatCurrency(amount) {
@@ -352,6 +331,18 @@ section {
 
 .table-wrapper {
   margin-top: 24px;
+  width: 100%;
+  display: block;
+}
+
+.action-buttons {
+  position: fixed;
+  bottom: 20px;
+  left: 280px;
+  display: flex;
+  gap: 12px;
+  z-index: 1000;
+  margin-left: 30px;
 }
 
 .no-data-message {
@@ -365,30 +356,45 @@ section {
 
 /* 삭제 모드 관련 스타일 */
 .delete-mode-notice {
-  background-color: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
-  padding: 12px 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 14px 18px;
   margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #856404;
+  color: #495057;
   font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.delete-mode-notice span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.delete-mode-notice span::before {
+  font-size: 16px;
+  opacity: 0.7;
 }
 
 .cancel-delete-btn {
-  background-color: #6c757d;
+  background: #6c757d;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
 .cancel-delete-btn:hover {
-  background-color: #5a6268;
+  background: #5a6268;
 }
 
 /* 커스텀 테이블 스타일 */
@@ -473,7 +479,6 @@ section {
   padding: 12px;
   border-radius: 4px;
   margin: 16px 0;
-  border-left: 4px solid #FFC6C6;
 }
 
 .selected-row-info p {
@@ -498,20 +503,30 @@ section {
 }
 
 .confirm-delete-btn {
-  background-color: #dc3545;
+  background-color: #4A6741;
   color: white;
 }
 
 .confirm-delete-btn:hover {
-  background-color: #c82333;
+  background-color: #39512F;
 }
 
 .cancel-modal-btn {
-  background-color: #6c757d;
+  background-color: #adb5bd;
   color: white;
 }
 
 .cancel-modal-btn:hover {
-  background-color: #5a6268;
+  background-color: #868e96;
+}
+
+.table-wrapper table {
+  width: 100% !important;
+}
+
+/* SalesView에서만 테이블을 100%로 확장 */
+::v-deep(.data-table) {
+  width: 100%;
+  table-layout: auto;
 }
 </style>

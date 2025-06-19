@@ -1,98 +1,102 @@
 <template>
-  <section>
-    <div class="register-container">
-      <div class="header">
-        <h2>매출 등록</h2>
-        <div class="header-actions">
-          <button class="save-btn" @click="handleSave">저장</button>
-          <button class="cancel-btn" @click="handleCancel">취소</button>
-          <button class="reset-btn" @click="handleReset">초기화</button>
+  <div class="modal-overlay" @click="handleOverlayClick">
+    <div class="modal-container" @click.stop>
+      <div class="modal-header">
+        <h3>매출 등록</h3>
+        <button class="close-btn" @click="handleClose">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-fields">
+          <div class="field">
+            <label>매출 날짜 <span class="required">*</span></label>
+            <input 
+              v-model="registerForm.salesDate" 
+              type="date" 
+              required
+              min="0001-01-01"
+              max="9999-12-31"
+              :class="{ 'error': errors.salesDate }"
+            />
+            <span v-if="errors.salesDate" class="error-message">{{ errors.salesDate }}</span>
+          </div>
+          
+          <div class="field">
+            <label>부서명 <span class="required">*</span></label>
+            <input 
+              v-model="registerForm.department" 
+              type="text" 
+              placeholder="예: 영업부"
+              required
+              :class="{ 'error': errors.department }"
+            />
+            <span v-if="errors.department" class="error-message">{{ errors.department }}</span>
+          </div>
+          
+          <div class="field">
+            <label>직원명 <span class="required">*</span></label>
+            <input 
+              v-model="registerForm.employeeName" 
+              type="text" 
+              placeholder="예: 김영업"
+              required
+              :class="{ 'error': errors.employeeName }"
+            />
+            <span v-if="errors.employeeName" class="error-message">{{ errors.employeeName }}</span>
+          </div>
+          
+          <div class="field">
+            <label>매출 금액 <span class="required">*</span></label>
+            <input 
+              v-model="formattedAmount" 
+              type="text" 
+              placeholder="예: 1,000,000"
+              required
+              @input="handleAmountInput"
+              :class="{ 'error': errors.amount }"
+            />
+            <span v-if="errors.amount" class="error-message">{{ errors.amount }}</span>
+          </div>
+          
+          <div class="field">
+            <label>계약 ID <span class="required">*</span></label>
+            <input 
+              v-model="registerForm.contractId" 
+              type="number" 
+              placeholder="예: 1001"
+              required
+              min="1"
+              :class="{ 'error': errors.contractId }"
+            />
+            <span v-if="errors.contractId" class="error-message">{{ errors.contractId }}</span>
+          </div>
         </div>
       </div>
       
-      <div class="form-container">
-        <div class="form-fields">
-          <div class="field-row">
-            <div class="field">
-              <label>매출 날짜 <span class="required">*</span></label>
-              <input 
-                v-model="registerForm.salesDate" 
-                type="date" 
-                required
-                min="0001-01-01"
-                max="9999-12-31"
-                :class="{ 'error': errors.salesDate }"
-              />
-              <span v-if="errors.salesDate" class="error-message">{{ errors.salesDate }}</span>
-            </div>
-            <div class="field">
-              <label>부서명 <span class="required">*</span></label>
-              <input 
-                v-model="registerForm.department" 
-                type="text" 
-                placeholder="예: 영업부"
-                required
-                :class="{ 'error': errors.department }"
-              />
-              <span v-if="errors.department" class="error-message">{{ errors.department }}</span>
-            </div>
-          </div>
-          
-          <div class="field-row">
-            <div class="field">
-              <label>직원명 <span class="required">*</span></label>
-              <input 
-                v-model="registerForm.employeeName" 
-                type="text" 
-                placeholder="예: 김영업"
-                required
-                :class="{ 'error': errors.employeeName }"
-              />
-              <span v-if="errors.employeeName" class="error-message">{{ errors.employeeName }}</span>
-            </div>
-            <div class="field">
-              <label>매출 금액 <span class="required">*</span></label>
-              <input 
-                v-model="formattedAmount" 
-                type="text" 
-                placeholder="예: 1,000,000"
-                required
-                @input="handleAmountInput"
-                :class="{ 'error': errors.amount }"
-              />
-              <span v-if="errors.amount" class="error-message">{{ errors.amount }}</span>
-            </div>
-          </div>
-          
-          <div class="field-row">
-            <div class="field">
-              <label>계약 ID <span class="required">*</span></label>
-              <input 
-                v-model="registerForm.contractId" 
-                type="number" 
-                placeholder="예: 1001"
-                required
-                min="1"
-                :class="{ 'error': errors.contractId }"
-              />
-              <span v-if="errors.contractId" class="error-message">{{ errors.contractId }}</span>
-            </div>
-            <div class="field">
-              <!-- 빈 공간 -->
-            </div>
-          </div>
+      <div class="modal-footer">
+        <div class="footer-left">
+          <button class="reset-btn" @click="handleReset">초기화</button>
+        </div>
+        <div class="footer-right">
+          <button class="save-btn" @click="handleSave">저장</button>
+          <button class="cancel-btn" @click="handleClose">취소</button>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
+
+// 모달 관련 이벤트
+const emit = defineEmits(['close', 'success'])
 
 // 사용자 권한 관리
 const userRole = ref('')
@@ -100,43 +104,36 @@ const userRole = ref('')
 // 사용자 권한 확인 함수
 function checkUserRole() {
   try {
-    // localStorage에서 사용자 정보 가져오기 (실제 저장 위치에 따라 수정 필요)
-    const userInfo = localStorage.getItem('userInfo')
-    if (userInfo) {
-      const parsedUserInfo = JSON.parse(userInfo)
-      if (parsedUserInfo.levelLabel === '관리자') {
-        userRole.value = 'admin'
-      } else {
-        userRole.value = 'user'
-        // 관리자가 아닌 경우 접근 차단
-        alert('비정상적인 접근입니다.')
-        router.push('/')
-        return
-      }
+    // Pinia 스토어에서 사용자 정보 가져오기
+    if (authStore.userInfo && authStore.userInfo.levelLabel === '관리자') {
+      userRole.value = 'admin'
     } else {
-      // 사용자 정보가 없는 경우도 접근 차단
+      userRole.value = 'user'
+      // 관리자가 아닌 경우 접근 차단
       alert('비정상적인 접근입니다.')
-      router.push('/')
+      handleClose()
+      return
     }
-    
-    // 또는 sessionStorage 사용하는 경우:
-    // const userInfo = sessionStorage.getItem('userInfo')
-    
-    // 또는 Pinia/Vuex store 사용하는 경우:
-    // const userStore = useUserStore()
-    // if (userStore.user.levelLabel === '관리자') {
-    //   userRole.value = 'admin'
-    // }
-    
   } catch (error) {
     console.error('사용자 정보를 가져오는 중 오류 발생:', error)
     alert('비정상적인 접근입니다.')
-    router.push('/')
+    handleClose()
   }
 }
 
 // 컴포넌트 마운트 시 사용자 권한 확인
-onMounted(() => {
+onMounted(async () => {
+  // 사용자 정보가 없으면 먼저 가져오기
+  if (!authStore.userInfo) {
+    try {
+      await authStore.fetchUserInfo()
+    } catch (error) {
+      console.error('사용자 정보를 가져오는데 실패했습니다:', error)
+      alert('비정상적인 접근입니다.')
+      handleClose()
+      return
+    }
+  }
   checkUserRole()
 })
 
@@ -228,7 +225,8 @@ async function handleSave() {
     const response = await axios.post('http://localhost:8080/sales', requestBody)
     console.log('등록 성공:', response.data)
     alert('매출이 성공적으로 등록되었습니다.')
-    router.push('/sales')
+    emit('success', response.data)
+    handleClose()
   } catch (error) {
     console.error('등록 API 호출 실패:', error)
     
@@ -253,9 +251,9 @@ async function handleSave() {
   }
 }
 
-function handleCancel() {
-  console.log('취소 버튼 클릭')
-  router.push('/sales')
+function handleClose() {
+  console.log('모달 닫기')
+  emit('close')
 }
 
 function handleReset() {
@@ -276,158 +274,225 @@ function handleReset() {
   
   console.log('폼 데이터가 초기화되었습니다.')
 }
+
+function handleOverlayClick() {
+  handleClose()
+}
 </script>
 
 <style scoped>
-section {
-  padding: 20px;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.register-container {
-  max-width: 800px;
-  margin: 0 auto;
+.modal-container {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.header {
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e9ecef;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #4A6741 0%, #8BA888 100%);
+  border-bottom: 1px solid #e9ecef;
+  color: white;
 }
 
-.header h2 {
+.modal-header h3 {
   margin: 0;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
 }
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.cancel-btn,
-.save-btn,
-.reset-btn {
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: bold;
+.close-btn {
+  background: none;
   border: none;
+  font-size: 24px;
   cursor: pointer;
-  font-size: 14px;
+  color: white;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.cancel-btn {
-  background-color: #d9d9d9;
-  color: #333;
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
-.cancel-btn:hover {
-  background-color: #e9e9e9;
-}
-
-.save-btn {
-  background-color: #cbe86b;
-  color: #1a1a1a;
-}
-
-.save-btn:hover {
-  background-color: #b8d654;
-}
-
-.reset-btn {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-.reset-btn:hover {
-  background-color: #e0a800;
-}
-
-.form-container {
-  background-color: #f8fdf2;
+.modal-body {
   padding: 24px;
-  border-radius: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
+  margin-left: -100px;
 }
 
 .field {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
 }
 
 .field label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 8px;
   color: #333;
+  min-width: 80px;
+  text-align: right;
 }
 
 .required {
   color: #dc3545;
+  font-weight: 700;
 }
 
 .field input {
-  padding: 12px 16px;
+  padding: 6px 10px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: white;
   transition: border-color 0.2s;
+  width: 300px;
+  flex-shrink: 0;
 }
 
 .field input:focus {
   outline: none;
-  border-color: #cbe86b;
-  box-shadow: 0 0 0 2px rgba(203, 232, 107, 0.2);
+  border-color: #28a745;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1);
 }
 
 .field input.error {
   border-color: #dc3545;
 }
 
+.field input.error:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+}
+
 .error-message {
   color: #dc3545;
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: 11px;
+  margin-top: 2px;
+  font-weight: 500;
 }
 
-.field input[type="number"] {
-  text-align: left;
+.field input::placeholder {
+  color: #adb5bd;
+  font-size: 13px;
 }
 
-.field input[type="date"] {
-  color: #333;
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.footer-left {
+  flex: 1;
+}
+
+.footer-right {
+  display: flex;
+  gap: 8px;
+}
+
+.cancel-btn,
+.save-btn,
+.reset-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.cancel-btn {
+  background-color: #adb5bd;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #9ca3af;
+}
+
+.save-btn {
+  background-color: #4A6741;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #3d5635;
+}
+
+.reset-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.reset-btn:hover {
+  background-color: #c82333;
 }
 
 @media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+  .modal-container {
+    width: 95%;
+    margin: 20px;
   }
   
-  .header-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .modal-header {
+    padding: 12px 20px;
   }
   
-  .field-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    padding: 12px 20px;
+  }
+  
+  .field input {
+    padding: 10px 12px;
+    font-size: 16px;
   }
 }
 </style>
