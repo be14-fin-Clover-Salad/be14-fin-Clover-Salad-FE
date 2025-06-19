@@ -424,4 +424,9 @@ function handleTotalAmount(val) {
   color: #858585;
   margin-left: 1.5em;
 }
+
+:global(.view-area) {
+  padding: 0 !important;
+  background-color: #f7f8fa !important; /* 필요시 배경도 덮어쓰기 */
+}
 </style>

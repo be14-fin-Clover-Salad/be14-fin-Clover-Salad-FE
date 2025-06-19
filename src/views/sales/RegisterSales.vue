@@ -91,8 +91,10 @@
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // 사용자 권한 관리
 const userRole = ref('')
@@ -100,43 +102,36 @@ const userRole = ref('')
 // 사용자 권한 확인 함수
 function checkUserRole() {
   try {
-    // localStorage에서 사용자 정보 가져오기 (실제 저장 위치에 따라 수정 필요)
-    const userInfo = localStorage.getItem('userInfo')
-    if (userInfo) {
-      const parsedUserInfo = JSON.parse(userInfo)
-      if (parsedUserInfo.levelLabel === '관리자') {
-        userRole.value = 'admin'
-      } else {
-        userRole.value = 'user'
-        // 관리자가 아닌 경우 접근 차단
-        alert('비정상적인 접근입니다.')
-        router.push('/')
-        return
-      }
+    // Pinia 스토어에서 사용자 정보 가져오기
+    if (authStore.userInfo && authStore.userInfo.levelLabel === '관리자') {
+      userRole.value = 'admin'
     } else {
-      // 사용자 정보가 없는 경우도 접근 차단
+      userRole.value = 'user'
+      // 관리자가 아닌 경우 접근 차단
       alert('비정상적인 접근입니다.')
-      router.push('/')
+      router.push('/sales')
+      return
     }
-    
-    // 또는 sessionStorage 사용하는 경우:
-    // const userInfo = sessionStorage.getItem('userInfo')
-    
-    // 또는 Pinia/Vuex store 사용하는 경우:
-    // const userStore = useUserStore()
-    // if (userStore.user.levelLabel === '관리자') {
-    //   userRole.value = 'admin'
-    // }
-    
   } catch (error) {
     console.error('사용자 정보를 가져오는 중 오류 발생:', error)
     alert('비정상적인 접근입니다.')
-    router.push('/')
+    router.push('/sales')
   }
 }
 
 // 컴포넌트 마운트 시 사용자 권한 확인
-onMounted(() => {
+onMounted(async () => {
+  // 사용자 정보가 없으면 먼저 가져오기
+  if (!authStore.userInfo) {
+    try {
+      await authStore.fetchUserInfo()
+    } catch (error) {
+      console.error('사용자 정보를 가져오는데 실패했습니다:', error)
+      alert('비정상적인 접근입니다.')
+      router.push('/sales')
+      return
+    }
+  }
   checkUserRole()
 })
 
