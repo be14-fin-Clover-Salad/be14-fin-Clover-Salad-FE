@@ -64,7 +64,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import axios from "@/api/auth";
+import api from "@/api/auth";
 import { useAuthStore } from "@/stores/auth";
 import { useNotificationStore } from "@/stores/notification";
 import { computed, ref, watch } from "vue";
@@ -90,7 +90,7 @@ watch(() => user.value, async (newUser) => {
   }
 }, { immediate: true });  // 컴포넌트 마운트 시에도 실행
 
-// 사용자 정보가 유실된 경우 자동 복구
+// 사용자 정보가 유실된 경우 자동 복구 (단일 로직으로 통합)
 watch(() => user.value, async (newUser, oldUser) => {
   // 토큰은 있지만 사용자 정보가 없는 경우 (유실된 경우)
   if (auth.accessToken && (!newUser || !newUser.name)) {
@@ -106,24 +106,6 @@ watch(() => user.value, async (newUser, oldUser) => {
     }
   }
 }, { immediate: true })
-
-// 추가: 컴포넌트 마운트 시 사용자 정보 확인 및 복구
-const checkAndRecoverUserInfo = async () => {
-  if (auth.accessToken && !auth.userInfo) {
-    console.log('[Header] 컴포넌트 마운트 시 사용자 정보 복구 시도...')
-    try {
-      await auth.recoverUserInfo()
-      console.log('[Header] 컴포넌트 마운트 시 사용자 정보 복구 성공')
-    } catch (error) {
-      console.error('[Header] 컴포넌트 마운트 시 사용자 정보 복구 실패:', error)
-      auth.clearToken()
-      router.push('/login')
-    }
-  }
-}
-
-// 컴포넌트 마운트 시 실행
-checkAndRecoverUserInfo()
 
 const dropdownOpen = ref(false);
 const toggleDropdown = () => {
@@ -153,7 +135,7 @@ const logout = async () => {
   }
 
   try {
-    await axios.post(
+    await api.post(
       "/auth/logout",
       {},
       {

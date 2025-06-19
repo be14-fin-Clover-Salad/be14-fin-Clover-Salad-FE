@@ -200,8 +200,6 @@ router.beforeEach(async (to, from, next) => {
       next()
     }
   }
-  // 여기부터 남기면 개발 단계에서 로그인 로직 건너 뜀
-  // next();
 });
 
 export default router;

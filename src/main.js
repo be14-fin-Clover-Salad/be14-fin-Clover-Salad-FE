@@ -26,38 +26,17 @@ const tryRefreshAndLoadUser = async () => {
 
   if (auth.accessToken && !auth.userInfo) {
     try {
-      const res = await api.get('/employee/mypage', {
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`
-        },
-        withCredentials: true
-      })
-      
-      auth.setUserInfo(res.data)
+      await auth.recoverUserInfo()
     } catch (err) {
-      console.error('[userInfo 복구 실패]', err)
+      console.error('[main.js] 사용자 정보 복구 실패:', err)
       auth.clearToken()
     }
   } else if (!auth.accessToken) {
     try {
-      const res = await api.post('/auth/refresh-token', null, {
-        withCredentials: true
-      })
-      const newToken = res.headers['authorization']?.split(' ')[1]
-
-      if (newToken) {
-        auth.setAccessToken(newToken)
-
-        const userRes = await api.get('/employee/mypage', {
-          headers: {
-            Authorization: `Bearer ${newToken}`
-          },
-          withCredentials: true
-        })
-        auth.setUserInfo(userRes.data)
-      }
+      await auth.refreshToken()
+      await auth.recoverUserInfo()
     } catch (err) {
-      console.warn('[refresh-token 재발급 실패]', err)
+      console.warn('[main.js] 토큰 재발급 및 사용자 정보 복구 실패:', err)
       auth.clearToken()
       window.location.href = '/login'
     }
