@@ -67,7 +67,7 @@ import { useRouter } from "vue-router";
 import api from "@/api/auth";
 import { useAuthStore } from "@/stores/auth";
 import { useNotificationStore } from "@/stores/notification";
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import NotificationDropdown from './notification/NotificationDropdown.vue';
 
 const router = useRouter();
@@ -109,12 +109,20 @@ watch(() => user.value, async (newUser, oldUser) => {
 
 const dropdownOpen = ref(false);
 const toggleDropdown = () => {
+  // 알림 드롭다운이 열려있으면 닫기
+  if (notificationDropdownOpen.value) {
+    notificationDropdownOpen.value = false;
+  }
   dropdownOpen.value = !dropdownOpen.value;
 };
 
 const notificationDropdownOpen = ref(false);
 
 const toggleNotificationDropdown = () => {
+  // 프로필 드롭다운이 열려있으면 닫기
+  if (dropdownOpen.value) {
+    dropdownOpen.value = false;
+  }
   notificationDropdownOpen.value = !notificationDropdownOpen.value;
 };
 
@@ -153,18 +161,21 @@ const logout = async () => {
   }
 };
 
-// 테스트용: 사용자 정보 유실 시뮬레이션
-const simulateUserInfoLoss = () => {
-  console.log('🧪 [테스트] 사용자 정보 유실 시뮬레이션 시작')
-  console.log('유실 전 토큰:', auth.accessToken)
-  console.log('유실 전 사용자 정보:', auth.userInfo)
-  
-  auth.simulateUserInfoLoss()
-  
-  console.log('유실 후 토큰:', auth.accessToken)
-  console.log('유실 후 사용자 정보:', auth.userInfo)
-  console.log('🧪 [테스트] 복구 로직이 자동으로 실행될 것입니다...')
-}
+// 드롭다운 외부 클릭 시 닫기
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.right')) {
+    dropdownOpen.value = false;
+    notificationDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>
