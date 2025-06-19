@@ -68,11 +68,14 @@ const tryRefreshAndLoadUser = async () => {
   }
 }
 
-app.mount('#app')
 
 tryRefreshAndLoadUser().then(() => {
   if (auth.userInfo) {
     const notificationStore = useNotificationStore()
-    notificationStore.setupSse()
+    notificationStore.setupSse().finally(() => {
+      app.mount('#app')
+    })
+  } else {
+    app.mount('#app')
   }
 })
