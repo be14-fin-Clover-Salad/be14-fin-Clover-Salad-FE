@@ -1,12 +1,12 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click.self="emitClose">
+  <div v-if="isOpen" class="modal-overlay" @click.self="handleClose">
     <div class="modal-content">
       <h2 class="modal-title">
         <span class="highlight">계약서</span> 재업로드
       </h2>
 
       <p class="description">
-        계약 <strong>{{ contractCode }}</strong>에 대한 계약서를 새로 업로드해 주세요.
+        계약 <strong>{{ contract?.code }}</strong>에 대한 계약서를 새로 업로드해 주세요.
       </p>
       <p class="subtext">PDF 형식의 전자 계약서만 가능합니다.</p>
 
@@ -19,7 +19,7 @@
 
       <!-- 파일명 공간 고정 -->
       <div class="file-name-area">
-        {{ fileName || '\u00A0' }} <!-- 공백 채움 -->
+        {{ fileName || '\u00A0' }}
       </div>
 
       <div class="button-row">
@@ -34,21 +34,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import api from '@/api/auth'
+import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
   isOpen: Boolean,
-  contractCode: {
-    type: String,
-    default: ''
-  }
+  contract: Object
 })
 
-const emit = defineEmits(['close', 'upload'])
+const emit = defineEmits(['close', 'replace-success'])
 
 const reason = ref('')
 const selectedFile = ref(null)
 const fileName = ref('')
+
+watch(() => props.isOpen, (val) => {
+  if (!val) {
+    reset()
+  }
+})
+
+function reset() {
+  reason.value = ''
+  selectedFile.value = null
+  fileName.value = ''
+}
+
+function handleClose() {
+  reset()
+  emit('close')
+}
 
 function handleFileChange(event) {
   const file = event.target.files[0]
@@ -61,7 +77,7 @@ function handleFileChange(event) {
   }
 }
 
-function handleUpload() {
+async function handleUpload() {
   if (!selectedFile.value) {
     alert('PDF 파일을 선택해주세요.')
     return
@@ -71,15 +87,30 @@ function handleUpload() {
     return
   }
 
-  const formData = new FormData()
-  formData.append('file', selectedFile.value)
-  formData.append('reason', reason.value)
+  try {
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
 
-  emit('upload', formData)
-}
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+    formData.append('note', reason.value)
 
-function emitClose() {
-  emit('close')
+    const response = await api.patch(
+      `/api/command/contract/replace/${props.contract.id}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+
+    emit('replace-success', response.data)
+  } catch (error) {
+    console.error('재업로드 실패: ', error)
+    alert('계약서 재업로드에 실패했습니다.')
+  }
 }
 </script>
 
@@ -94,7 +125,7 @@ function emitClose() {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* z축 충분히 확보 */
+  z-index: 1000;
 }
 
 .modal-content {
@@ -135,7 +166,6 @@ function emitClose() {
   margin-bottom: 8px;
 }
 
-/* 파일명 고정 공간 */
 .file-name-area {
   height: 20px;
   font-size: 13px;
