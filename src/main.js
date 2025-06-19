@@ -69,11 +69,21 @@ const tryRefreshAndLoadUser = async () => {
 }
 
 
-tryRefreshAndLoadUser().then(() => {
+// 알림 발생 시점을 명확히 하기위해
+async function bootstrap() {
+  await tryRefreshAndLoadUser()
+
   if (auth.userInfo) {
     const notificationStore = useNotificationStore()
-    notificationStore.setupSse()
+    try {
+      await notificationStore.setupSse()
+    } catch (e) {
+      console.warn('[SSE] 연결 실패:', e)
+    }
   }
+
   app.mount('#app')
-})
+}
+
+bootstrap()
   
