@@ -1,29 +1,33 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click.self="emitClose">
+  <div v-if="isOpen" class="modal-overlay" @click.self="handleClose">
     <div class="modal-content">
-      <h2 class="modal-title">계약서 재업로드</h2>
-      <div class="upload-box">
-        <p class="upload-instruction">
-          계약 <strong>{{ contract.code }}</strong>에 대한 계약서를 새로 업로드해 주세요.
-        </p>
-        <p class="upload-subtext">PDF 형식의 전자 계약서만 가능합니다.</p>
+      <h2 class="modal-title">
+        <span class="highlight">계약서</span> 재업로드
+      </h2>
 
-        <input
-          v-model="note"
-          class="note-input"
-          type="text"
-          placeholder="변경 사유를 입력하세요"
-        />
+      <p class="description">
+        계약 <strong>{{ contract?.code }}</strong>에 대한 계약서를 새로 업로드해 주세요.
+      </p>
+      <p class="subtext">PDF 형식의 전자 계약서만 가능합니다.</p>
 
-        <div class="file-control">
-          <label class="upload-label">
-            <input type="file" accept="application/pdf" @change="handleFileChange" hidden />
-            <span class="upload-button">PDF 파일 선택</span>
-          </label>
-          <span class="selected-file" v-if="selectedFileName">{{ selectedFileName }}</span>
-        </div>
+      <input
+        type="text"
+        v-model="reason"
+        placeholder="변경 사유를 입력하세요"
+        class="reason-input"
+      />
 
-        <button class="submit-button" @click="submitUpload">업로드 시작</button>
+      <!-- 파일명 공간 고정 -->
+      <div class="file-name-area">
+        {{ fileName || '\u00A0' }}
+      </div>
+
+      <div class="button-row">
+        <label class="file-button">
+          PDF 파일 선택
+          <input type="file" accept="application/pdf" @change="handleFileChange" hidden />
+        </label>
+        <button class="upload-button" @click="handleUpload">업로드 시작</button>
       </div>
     </div>
   </div>
@@ -31,68 +35,81 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import api from '@/api/auth'
+import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
   isOpen: Boolean,
   contract: Object
 })
+
 const emit = defineEmits(['close', 'replace-success'])
 
-const emitClose = () => emit('close')
-
-const note = ref('')
+const reason = ref('')
 const selectedFile = ref(null)
-const selectedFileName = ref('')
+const fileName = ref('')
 
-// 모달 열릴때 초기화
 watch(() => props.isOpen, (val) => {
-  if (val) {
-    note.value = ''
-    selectedFile.value = null
-    selectedFileName.value = ''
+  if (!val) {
+    reset()
   }
 })
 
-const handleFileChange = (e) => {
-  const file = e.target.files[0]
+function reset() {
+  reason.value = ''
+  selectedFile.value = null
+  fileName.value = ''
+}
+
+function handleClose() {
+  reset()
+  emit('close')
+}
+
+function handleFileChange(event) {
+  const file = event.target.files[0]
   if (file) {
     selectedFile.value = file
-    selectedFileName.value = file.name
+    fileName.value = file.name
+  } else {
+    selectedFile.value = null
+    fileName.value = ''
   }
 }
 
-const submitUpload = async () => {
-  if (!note.value.trim()) {
-    alert('변경 사유를 입력해 주세요.')
-    return
-  }
+async function handleUpload() {
   if (!selectedFile.value) {
-    alert('PDF 파일을 선택해 주세요.')
+    alert('PDF 파일을 선택해주세요.')
     return
   }
-
-  const formData = new FormData()
-  formData.append('file', selectedFile.value)
-  formData.append('note', note.value)
+  if (!reason.value.trim()) {
+    alert('변경 사유를 입력해주세요.')
+    return
+  }
 
   try {
-    const token = useAuthStore().accessToken
-    const res = await api.patch(
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+    formData.append('note', reason.value)
+
+    const response = await api.patch(
       `/api/command/contract/replace/${props.contract.id}`,
       formData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
         }
       }
     )
-    emit('replace-success', res.data)
-  } catch (err) {
-    alert('재업로드 실패')
-    console.error(err)
+
+    emit('replace-success', response.data)
+  } catch (error) {
+    console.error('재업로드 실패: ', error)
+    alert('계약서 재업로드에 실패했습니다.')
   }
 }
 </script>
@@ -100,81 +117,88 @@ const submitUpload = async () => {
 <style scoped>
 .modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
+
 .modal-content {
   background: white;
-  border-radius: 10px;
-  padding: 40px;
-  width: 400px;
-}
-.upload-box {
-  border: 2px dashed #8e8eff;
-  padding: 40px 20px;
+  padding: 24px;
+  border-radius: 12px;
+  width: 420px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
   text-align: center;
-  border-radius: 8px;
+  z-index: 1001;
 }
-.upload-instruction {
+
+.modal-title {
+  font-size: 20px;
   font-weight: bold;
-  font-size: 16px;
+  margin-bottom: 12px;
 }
-.upload-subtext {
-  font-size: 13px;
-  color: #aaa;
-  margin-top: 6px;
+
+.highlight {
+  color: #3b82f6;
 }
-.note-input {
+
+.description {
+  margin: 8px 0;
+}
+
+.subtext {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.reason-input {
   width: 100%;
-  padding: 8px;
-  margin-top: 14px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 8px;
 }
-.file-control {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.upload-label {
-  display: inline-block;
-}
-.upload-button {
-  border: 1px solid #4791ff;
-  padding: 6px 14px;
-  border-radius: 4px;
-  color: #4791ff;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.upload-button:hover {
-  background-color: #e6f0ff;
-}
-.selected-file {
+
+.file-name-area {
+  height: 20px;
   font-size: 13px;
   color: #444;
-  max-width: 200px;
+  margin-bottom: 16px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.submit-button {
-  margin-top: 20px;
-  background-color: #4791ff;
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
 }
-.submit-button:hover {
-  background-color: #317ae0;
+
+.file-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.upload-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
 }
 </style>
