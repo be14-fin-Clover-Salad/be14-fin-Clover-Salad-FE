@@ -17,29 +17,25 @@ app.use(createPinia({
 app.use(router)
 
 const auth = useAuthStore()
+const notificationStore = useNotificationStore()
 
 const tryRefreshAndLoadUser = async () => {
 
-  if (window.location.pathname === '/login' || window.location.pathname === '/reset-password') {
+  if (['/login', '/reset-password'].includes(window.location.pathname)) {
     return
   } 
 
-  if (auth.accessToken && !auth.userInfo) {
-    try {
+  try {
+    if (auth.accessToken && !auth.userInfo) {
       await auth.recoverUserInfo()
-    } catch (err) {
-      console.error('[main.js] 사용자 정보 복구 실패:', err)
-      auth.clearToken()
-    }
-  } else if (!auth.accessToken) {
-    try {
+    } else if (!auth.accessToken) {
       await auth.refreshToken()
       await auth.recoverUserInfo()
-    } catch (err) {
-      console.warn('[main.js] 토큰 재발급 및 사용자 정보 복구 실패:', err)
+    } 
+  } catch (err) {
+      console.error('[main.js] 사용자 정보 복구 실패:', err)
       auth.clearToken()
       window.location.href = '/login'
-    }
   }
 }
 
@@ -49,9 +45,9 @@ async function bootstrap() {
   await tryRefreshAndLoadUser()
 
   if (auth.userInfo) {
-    const notificationStore = useNotificationStore()
     try {
       await notificationStore.setupSse()
+      console.log('[main.ts] SSE 연결 성공')
     } catch (e) {
       console.warn('[SSE] 연결 실패:', e)
     }
