@@ -116,10 +116,23 @@ function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
 }
 
-function handleUploadSuccess(contractData) {
-  selectedContract.value = contractData
+
+async function handleUploadSuccess(contractData) {
+  const contractId = contractData.contractId
   showUploadModal.value = false
-  showSuccessModal.value = true
+
+  try {
+    const token = useAuthStore().accessToken
+    const response = await api.get(`/api/query/contract/${contractId}/info`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true
+    })
+    selectedContract.value = response.data
+    showSuccessModal.value = true
+  } catch (error) {
+    alert('계약 상세 조회 실패')
+    console.error('계약 상세 조회 에러:', error)
+  }
 }
 
 function goToDetailView() {
