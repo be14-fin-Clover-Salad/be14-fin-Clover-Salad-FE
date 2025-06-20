@@ -47,7 +47,7 @@ async function bootstrap() {
   if (auth.userInfo) {
     try {
       await notificationStore.setupSse()
-      console.log('[main.ts] SSE 연결 성공')
+      console.log('[main.js] SSE 연결 성공')
     } catch (e) {
       console.warn('[SSE] 연결 실패:', e)
     }
