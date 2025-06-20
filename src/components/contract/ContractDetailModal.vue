@@ -5,7 +5,7 @@
         <h2 class="title">{{ contract.customerName }}–렌탈 계약</h2>
         <div class="button-group">
           <button class="btn">인쇄</button>
-          <button class="btn">수정</button>
+          <button class="btn" @click="showApprovalModal = true">결재 요청</button>
           <button class="btn primary">등록</button>
         </div>
       </div>
@@ -97,12 +97,24 @@
         </table>
       </div>
     </div>
+
+    <!-- 결재 요청 모달 -->
+    <ContractApprovalRequestModal
+      v-if="showApprovalModal"
+      :isOpen="showApprovalModal"
+      :contractId="contract.id"
+      :contractCode="contract.code"
+      :contractState="contract.state"
+      @close="showApprovalModal = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '@/api/auth'
+import ContractApprovalRequestModal from '@/views/contract/ContractApprovalRequestModal.vue'
+
 
 const props = defineProps({
   contractId: Number,
@@ -111,7 +123,9 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const contract = ref({})
+console.log(' Contract 객체:', contract.value)
 const tab = ref('info')
+const showApprovalModal = ref(false)
 
 const pdfThumbnailUrl = computed(() =>
   contract.value.renameFile
@@ -124,6 +138,7 @@ function formatAmount(val) {
 }
 
 onMounted(async () => {
+  console.log('전달받은 contractId:', props.contractId)
   const res = await api.get(`/api/query/contract/${props.contractId}/info`)
   contract.value = res.data
 })
