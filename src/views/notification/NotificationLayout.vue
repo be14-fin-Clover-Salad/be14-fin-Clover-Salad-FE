@@ -102,9 +102,11 @@ import { useRouter } from 'vue-router'
 import api from '@/api/auth'
 import ApprovalDetailModal from '@/components/approval/ApprovalDetailModal.vue'
 import { useNotificationStore } from '@/stores/notification'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
+const authStore = useAuthStore()
 
 // 스토어 디버깅
 console.log('Notification Store:', notificationStore)
@@ -124,7 +126,7 @@ const fetchNotifications = async (page) => {
     try {
         const response = await api.get(`/notification/list?page=${page}`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                'Authorization': `Bearer ${authStore.accessToken}`
             }
         })
         notifications.value = response.data
@@ -174,7 +176,7 @@ const handleNotificationClick = async (notification) => {
             // 결재 상세 정보 가져오기
             const response = await api.get(`/approval/${approvalId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    'Authorization': `Bearer ${authStore.accessToken}`
                 }
             })
             

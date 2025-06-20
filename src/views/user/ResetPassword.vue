@@ -40,7 +40,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from '@/api/auth';
+import api from '@/api/auth';
 
 const route = useRoute();
 const router = useRouter();
@@ -77,16 +77,17 @@ const handleSubmit = async () => {
       return;
     }
 
-    await axios.post('/employee/password-resets/confirm', {
+    const response = await api.post('/employee/password-resets/confirm', {
       token,
       newPassword: password.value
     });
     
-    alert('비밀번호가 성공적으로 변경되었습니다.');
+    console.log('서버 응답:', response);
+    alert(response.data);
     router.push('/login');
   } catch (error) {
-    alert('비밀번호 재설정에 실패했습니다. 다시 시도해주세요.');
-    console.error('비밀번호 재설정 오류:', error);
+    console.log('서버 응답:', error.response);
+    alert(error.response.data);
   }
 };
 

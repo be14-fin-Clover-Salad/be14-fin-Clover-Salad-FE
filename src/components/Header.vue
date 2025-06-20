@@ -1,5 +1,5 @@
 <template>
-  <header class="header" v-if="user">
+  <header class="header" v-if="auth.accessToken">
     <!-- 로고 -->
     <div class="left" @click="goHome">
       <img src="/logo_text.svg" alt="logo" class="logo" />
@@ -26,23 +26,23 @@
             alt="프로필"
           />
           <div v-else class="fallback-avatar">
-            {{ user.name?.charAt(0) }}
+            {{ user.name?.charAt(0) || '?' }}
           </div>
         </div>
         <div class="info">
-          <div class="team">{{ user.departmentName }}</div>
-          <div class="name">{{ user.name }} {{ user.levelLabel }}</div>
+          <div class="team">{{ user.departmentName || '로딩 중...' }}</div>
+          <div class="name">{{ user.name || '사용자' }} {{ user.levelLabel || '' }}</div>
           <!-- 드롭다운 메뉴 (토글) -->
           <div class="dropdown-menu" v-if="dropdownOpen">
             <div class="dropdown-arrow"></div>
             <div class="dropdown-header">
               <div class="dropdown-header-left">
                 <img v-if="user.profilePath" :src="user.profilePath" alt="프로필" class="dropdown-avatar" />
-                <div v-else class="dropdown-fallback-avatar">{{ user.name?.charAt(0) }}</div>
+                <div v-else class="dropdown-fallback-avatar">{{ user.name?.charAt(0) || '?' }}</div>
               </div>
               <div class="dropdown-header-right">
-                <div class="dropdown-team">{{ user.departmentName }}</div>
-                <div class="dropdown-employee">{{ user.name }} {{ user.levelLabel }}</div>
+                <div class="dropdown-team">{{ user.departmentName || '로딩 중...' }}</div>
+                <div class="dropdown-employee">{{ user.name || '사용자' }} {{ user.levelLabel || '' }}</div>
               </div>
             </div>
             <div class="dropdown-divider"></div>
@@ -64,10 +64,10 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import axios from "@/api/auth";
+import api from "@/api/auth";
 import { useAuthStore } from "@/stores/auth";
 import { useNotificationStore } from "@/stores/notification";
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import NotificationDropdown from './notification/NotificationDropdown.vue';
 
 const router = useRouter();
@@ -90,14 +90,39 @@ watch(() => user.value, async (newUser) => {
   }
 }, { immediate: true });  // 컴포넌트 마운트 시에도 실행
 
+// 사용자 정보가 유실된 경우 자동 복구 (단일 로직으로 통합)
+watch(() => user.value, async (newUser, oldUser) => {
+  // 토큰은 있지만 사용자 정보가 없는 경우 (유실된 경우)
+  if (auth.accessToken && (!newUser || !newUser.name)) {
+    console.warn('[Header] 사용자 정보가 유실됨, 복구 시도 중...')
+    try {
+      await auth.recoverUserInfo()
+      console.log('[Header] 사용자 정보 복구 성공')
+    } catch (error) {
+      console.error('[Header] 사용자 정보 복구 실패:', error)
+      // 복구 실패 시 토큰도 클리어
+      auth.clearToken()
+      router.push('/login')
+    }
+  }
+}, { immediate: true })
+
 const dropdownOpen = ref(false);
 const toggleDropdown = () => {
+  // 알림 드롭다운이 열려있으면 닫기
+  if (notificationDropdownOpen.value) {
+    notificationDropdownOpen.value = false;
+  }
   dropdownOpen.value = !dropdownOpen.value;
 };
 
 const notificationDropdownOpen = ref(false);
 
 const toggleNotificationDropdown = () => {
+  // 프로필 드롭다운이 열려있으면 닫기
+  if (dropdownOpen.value) {
+    dropdownOpen.value = false;
+  }
   notificationDropdownOpen.value = !notificationDropdownOpen.value;
 };
 
@@ -118,7 +143,7 @@ const logout = async () => {
   }
 
   try {
-    await axios.post(
+    await api.post(
       "/auth/logout",
       {},
       {
@@ -135,6 +160,22 @@ const logout = async () => {
     router.push("/login");
   }
 };
+
+// 드롭다운 외부 클릭 시 닫기
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.right')) {
+    dropdownOpen.value = false;
+    notificationDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>

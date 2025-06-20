@@ -70,7 +70,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import Pagination from '@/components/common/Pagination.vue'
-import axios from '@/api/auth'
+import api from '@/api/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -91,10 +91,10 @@ async function fetchQnaList() {
   if (!loginUserId.value) return
   try {
     const [empRes, qnaRes] = await Promise.all([
-      axios.post('/employee/search', {}, {
+      api.post('/employee/search', {}, {
         headers: { Authorization: `Bearer ${accessToken.value}` }
       }),
-      axios.get(
+      api.get(
         isAdmin.value
           ? '/support/qna'
           : `/support/qna?employeeId=${loginUserId.value}`,

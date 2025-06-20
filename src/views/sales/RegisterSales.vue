@@ -89,7 +89,11 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/api/auth'
+import BaseDataTable from '@/components/BaseDataTable.vue'
+import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
+import SalesSearchFields from '@/components/sales/SalesSearchFields.vue'
+import RegisterSales from '@/views/sales/RegisterSales.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
@@ -222,7 +226,7 @@ async function handleSave() {
   console.log('전송할 데이터:', requestBody)
   
   try {
-    const response = await axios.post('http://localhost:8080/sales', requestBody)
+    const response = await api.post('/sales', requestBody)
     console.log('등록 성공:', response.data)
     alert('매출이 성공적으로 등록되었습니다.')
     emit('success', response.data)

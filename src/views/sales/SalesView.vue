@@ -57,7 +57,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/api/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
 import SearchFilterShell from '@/components/common/SearchFilterShell.vue'
 import SalesSearchFields from '@/components/sales/SalesSearchFields.vue'
@@ -124,7 +124,7 @@ async function handleSearch(data) {
   
   try {
     isLoading.value = true
-    const response = await axios.post('http://localhost:8080/sales/search', requestBody)
+    const response = await api.post('/sales/search', requestBody)
     console.log('검색 결과:', response.data)
     
     // 백엔드 응답 데이터를 테이블 형태로 변환
