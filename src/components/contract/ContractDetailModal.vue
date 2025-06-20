@@ -34,8 +34,8 @@
             <div class="value">{{ contract.customerName }}</div>
           </div>
           <div class="field">
-            <label>계약 상태</label>
-            <div class="value">{{ contract.status || '알 수 없음' }}</div>
+            <label>담당 영업사원</label>
+            <div class="value">{{ contract.employeeName || '알 수 없음' }}</div>
           </div>
         </div>
         <div class="row">
@@ -97,14 +97,8 @@
         </table>
       </div>
 
-      <ContractApprovalRequestModal
-        v-if="showApprovalModal"
-        :isOpen="showApprovalModal"
-        :contractId="props.contractId"
-        :contractCode="props.contractCode"
-        :contractState="props.contractStatus"
-        @close="showApprovalModal = false"
-      />
+      <ContractApprovalRequestModal v-if="showApprovalModal" :isOpen="showApprovalModal" :contractId="props.contractId"
+        :contractCode="props.contractCode" :contractState="props.contractStatus" @close="showApprovalModal = false" />
     </div>
   </div>
 </template>
