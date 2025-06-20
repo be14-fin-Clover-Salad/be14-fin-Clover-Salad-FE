@@ -12,10 +12,10 @@
           <div class="input">{{ requester }}</div>
         </div>
 
-        <div class="field status-field">
+       <div class="field status-field">
           <label>결재 상태:</label>
           <span class="status-badge" :class="getStatusClass(contractState)">
-            {{ mapStateLabel(contractState) }}
+            {{ contractState || '알 수 없음' }}
           </span>
         </div>
 
@@ -62,19 +62,12 @@ import api from '@/api/auth'
 
 const props = defineProps({
   isOpen: Boolean,
-  contractId: {
-    type: Number,
-    required: true
-  },
-  contractCode: {
-    type: String,
-    default: ''
-  },
-  contractState: {
-    type: String,
-    default: ''
-  }
+  contractId: Number,
+  contractCode: String,
+  contractState: String,
 })
+console.log('props.contractState:', props.contractState)
+
 
 const emit = defineEmits(['close', 'refresh'])
 
@@ -100,13 +93,7 @@ function getStatusClass(status) {
   }
 }
 
-function mapStateLabel(status) {
-  const validStates = ['결재전', '결재중', '반려', '계약만료', '중도해지', '계약무효']
-  return validStates.includes(status) ? status : '알 수 없음'
-}
-
 async function handleSubmit() {
-  console.log('전송할 contractId:', props.contractId)
   if (!form.value.title.trim() || !form.value.content.trim()) {
     alert('결재 제목과 내용을 모두 입력해주세요.')
     return
