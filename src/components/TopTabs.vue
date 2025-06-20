@@ -72,20 +72,20 @@ const closeTab = (tab) => {
 <style scoped>
 .top-tabs {
   display: flex;
-  padding: 0 16px;
+  padding: 0 16px 0 5px;
   background-color: #e8f2c9;
   border-bottom: 1px solid #c8d6ae;
-  height: 42px;
+  height: 38px;
   align-items: flex-end;
+  position: relative;
 }
 .tab {
   padding: 8px 16px;
-  margin-right: 4px;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  background-color: #f8f8f8;
-  border: 1px solid #ddd;
+  border: 1px solid #c8d6ae;
   border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background-color: #eeeeee;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -93,16 +93,40 @@ const closeTab = (tab) => {
   align-items: center;
   color: #333;
   position: relative;
-  top: 1px;
+  bottom: -1px;
 }
 .tab.active {
   background-color: white;
-  border-color: #d5eb97 #d5eb97 white;
-  z-index: 1;
+  z-index: 2;
+  border-bottom-color: white;
+  font-weight: 600;
 }
-.tab:hover {
-  background-color: #f0f6ea;
+
+.tab.active::before,
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 15px;
+  height: 15px;
 }
+
+.tab.active::before {
+  left: -15px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 5px 5px 0 0 white;
+}
+
+.tab.active::after {
+  right: -15px;
+  border-bottom-left-radius: 8px;
+  box-shadow: -5px 5px 0 0 white;
+}
+
+.tab:hover:not(.active) {
+  background-color: #e0e0e0;
+}
+
 .close {
   margin-left: 8px;
   font-weight: bold;

@@ -42,8 +42,12 @@ const toggle = (menu) => {
 };
 
 const navigate = (label, path) => {
-  tabStore.addTab({ title: label, path });
-  router.push(path);
+  if (tabStore.hasTab(path)) {
+    router.push(path);
+  } else {
+    tabStore.addTab({ title: label, path });
+    router.push(path);
+  }
 };
 </script>
 
