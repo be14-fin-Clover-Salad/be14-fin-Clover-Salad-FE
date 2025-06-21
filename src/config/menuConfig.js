@@ -24,10 +24,14 @@ export const menuList = [
     group: "실적",
     items: [
       {
-        label: "실적 관리",
-        path: "/performance",
-        // component: () =>
-        //   import("@/views/performance/PerformanceManagementView.vue"),
+        label: "개인 실적 목표 관리",
+        path: "/goal/employee",
+        component: () => import("@/views/goal/EmployeeGoalList.vue"),
+      },
+      {
+        label: "팀 실적 목표 조회",
+        path: "/goal/department",
+        component: () => import("@/views/goal/DepartmentGoalList.vue"),
       },
       {
         label: "매출 내역",

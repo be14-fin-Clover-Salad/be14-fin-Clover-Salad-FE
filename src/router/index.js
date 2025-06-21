@@ -121,16 +121,6 @@ routes.push({
   },
 });
 
-// 상품 리스트
-routes.push({
-  path: "/product/list",
-  component: () => import("@/views/product/ProductList.vue"),
-  meta: {
-    title: "상품 목록",
-    basePath: "/product/list"
-  }
-});
-
 // 상품 상세 조회
 routes.push({
   path: "/product/detail/:productId",
@@ -160,6 +150,36 @@ routes.push({
     basePath: "/product/list"
   }
 });
+
+// 실적 목표 등록
+routes.push({
+  path: "/goal/register",
+  component: () => import("@/views/goal/EmployeeGoalRegister.vue"),
+    meta: {
+      title: "실적 목표 등록",
+      basePath: "/goal/employee"
+    }
+})
+
+// 실적 목표 상세 조회
+routes.push({
+  path: "/goal/detail/:gotEmployeeCode/:gotTargetYear",
+  component: () => import("@/views/goal/EmployeeGoalDetail.vue"),
+    meta: {
+      title: "실적 목표 상세 조회",
+      basePath: "/goal/employee"
+    }
+})
+
+// 실적 목표 수정
+routes.push({
+  path: "/goal/update/:gotEmployeeCode/:gotTargetYear",
+  component: () => import("@/views/goal/EmployeeGoalUpdate.vue"),
+    meta: {
+      title: "실적 목표 수정",
+      basePath: "/goal/employee"
+    }
+})
 
 const router = createRouter({
   history: createWebHistory(),
