@@ -110,47 +110,46 @@ const removeUser = (user) => {
 }
 
 onMounted(async () => {
-  const headers = {
-    Authorization: `Bearer ${authStore.accessToken}`
-  }
-
   try {
+    const headers = {
+      'Authorization': `Bearer ${authStore.accessToken}`
+    }
     const [empRes, deptRes] = await Promise.all([
       api.post('/employee/search', {}, { headers }),
       api.get('/department/hierarchy', { headers })
     ])
     employees.value = empRes.data
     departments.value = deptRes.data
-  } catch (error) {
-    console.error('데이터 로드 실패:', error)
+  } catch (e) {
+    alert('데이터 조회 실패')
+    console.error('❌ 초기 로딩 실패:', e)
   }
 })
 
 const submitNotice = async () => {
-  if (!title.value.trim() || !content.value.trim()) {
-    alert('제목과 내용을 모두 입력해주세요.')
+  if (!loginUserId.value) {
+    alert('로그인 유저 정보 없음')
     return
   }
 
-  isSubmitting.value = true
-
   try {
+    const employeeIds = selectedEmployees.value.map(emp => emp.id)
     await api.post('/support/notice/create', {
-      title: title.value.trim(),
-      content: content.value.trim(),
-      targetDepartments: selectedDepartments.value,
-      targetEmployees: selectedEmployees.value
+      title: title.value,
+      content: content.value,
+      targetEmployeeId: [...employeeIds, loginUserId.value]
     }, {
-      headers: { Authorization: `Bearer ${authStore.accessToken}` }
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.accessToken}`
+      }
     })
-    
-    alert('공지사항이 등록되었습니다.')
+
+    alert('공지 등록 완료!')
     router.push('/support/notice')
-  } catch (error) {
-    console.error(error)
-    alert('등록에 실패했습니다.')
-  } finally {
-    isSubmitting.value = false
+  } catch (e) {
+    alert('공지 등록 실패!')
+    console.error('❌ 등록 실패:', e)
   }
 }
 </script>
