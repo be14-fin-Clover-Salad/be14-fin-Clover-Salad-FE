@@ -80,7 +80,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import axios from '@/api/auth'
+import api from '@/api/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -106,7 +106,7 @@ const isWriter = computed(() => qna.value && Number(qna.value.writerId) === Numb
 
 const fetchQna = async () => {
   try {
-    const { data } = await axios.get(`/support/qna/${qnaId}`, {
+    const { data } = await api.get(`/support/qna/${qnaId}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
     qna.value = data
@@ -131,7 +131,7 @@ const submitEdit = async () => {
     alert('제목과 내용을 모두 입력해주세요.');
     return;
   }
-  await axios.patch(`/support/qna/${qnaId}`, {
+  await api.patch(`/support/qna/${qnaId}`, {
     title: editTitle.value,
     content: editContent.value
   }, {
@@ -152,7 +152,7 @@ const submitAnswer = async () => {
   }
   try {
     if (!qna.value.answerContent) {
-      await axios.post(`/support/qna/${qnaId}/answer`, {
+      await api.post(`/support/qna/${qnaId}/answer`, {
         answerContent: answerContent.value,
         status: '완료'
       }, {
@@ -160,7 +160,7 @@ const submitAnswer = async () => {
       })
       alert('답변이 등록되었습니다.')
     } else {
-      await axios.put(`/support/qna/${qnaId}/answer`, {
+      await api.put(`/support/qna/${qnaId}/answer`, {
         answerContent: answerContent.value
       }, {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -178,7 +178,7 @@ const submitAnswer = async () => {
 const deleteQna = async () => {
   if (!confirm('정말로 삭제하시겠습니까?')) return
   try {
-    await axios.delete(`/support/qna/delete/${qnaId}`, {
+    await api.delete(`/support/qna/delete/${qnaId}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
     alert('게시글이 삭제되었습니다.')

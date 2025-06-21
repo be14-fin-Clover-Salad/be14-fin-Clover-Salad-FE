@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '@/api/auth'
+import { useAuthStore } from '@/stores/auth'
 
 export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
@@ -8,9 +9,10 @@ export const useNotificationStore = defineStore('notification', () => {
 
   async function fetchUnreadCount() {
     try {
+      const auth = useAuthStore()
       const response = await api.get('/notification/unread-latest', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Authorization': `Bearer ${auth.accessToken}`
         }
       })
       unreadCount.value = response.data.length
@@ -21,9 +23,10 @@ export const useNotificationStore = defineStore('notification', () => {
 
   async function fetchNotifications() {
     try {
+      const auth = useAuthStore()
       const response = await api.get('/notification/unread-latest', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Authorization': `Bearer ${auth.accessToken}`
         }
       })
       notifications.value = response.data
@@ -35,9 +38,10 @@ export const useNotificationStore = defineStore('notification', () => {
 
   async function markAsRead(notificationId) {
     try {
+      const auth = useAuthStore()
       await api.patch(`/notification/${notificationId}/read`, null, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${auth.accessToken}`
         }
       })
       const index = notifications.value.findIndex(n => n.id === notificationId)
@@ -53,8 +57,8 @@ export const useNotificationStore = defineStore('notification', () => {
   const setupSse = async () => {
     if (typeof window === 'undefined') return
   
-    const accessToken = localStorage.getItem('access_token')
-    if (!accessToken) {
+    const auth = useAuthStore()
+    if (!auth.accessToken) {
       console.warn('[SSE] 토큰 없음 - SSE 연결 불가')
       return
     }
@@ -65,7 +69,7 @@ export const useNotificationStore = defineStore('notification', () => {
       // 1️⃣ 토큰 먼저 받아오기
       const response = await api.get('/notification/subscribe-token', {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${auth.accessToken}`,
         },
       })
       const subscribeToken = response.data
@@ -101,17 +105,18 @@ export const useNotificationStore = defineStore('notification', () => {
 
   async function deleteNotifications(notificationIds) {
     try {
+      const auth = useAuthStore()
       console.log('삭제할 알림 ID:', notificationIds)
       console.log('요청 데이터:', { deleteNotification: notificationIds })
       console.log('요청 헤더:', {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        'Authorization': `Bearer ${auth.accessToken}`
       })
 
       await api.patch('/notification/delete', {
         deleteNotification: notificationIds
       }, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          'Authorization': `Bearer ${auth.accessToken}`
         }
       })
       

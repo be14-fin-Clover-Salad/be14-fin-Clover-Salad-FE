@@ -24,7 +24,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import axios from '@/api/auth'
+import api from '@/api/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -43,7 +43,7 @@ const submitQna = async () => {
   isSubmitting.value = true
 
   try {
-    const res = await axios.post(
+    const res = await api.post(
       '/support/qna/create',
       {
         title: title.value.trim(),

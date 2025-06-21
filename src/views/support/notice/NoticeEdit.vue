@@ -68,7 +68,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { QuillEditor } from '@vueup/vue-quill'
-import axios from '@/api/auth';
+import api from '@/api/auth'
 import AddTargetModal from '@/components/notice/AddTargetModal.vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -116,13 +116,13 @@ const removeUser = (user) => {
 const fetchNotice = async () => {
   try {
     const headers = {
-      Authorization: `Bearer ${accessToken.value}`
+      Authorization: `Bearer ${authStore.accessToken}`
     }
 
     const [noticeRes, empRes, deptRes] = await Promise.all([
-      axios.get(`/support/notice/${noticeId}`, { headers }),
-      axios.post('/employee/search', {}, { headers }),
-      axios.get('/department/hierarchy', { headers })
+      api.get(`/support/notice/${noticeId}`, { headers }),
+      api.post('/employee/search', {}, { headers }),
+      api.get('/department/hierarchy', { headers })
     ])
 
     const data = noticeRes.data
@@ -149,21 +149,30 @@ const fetchNotice = async () => {
 }
 
 const submitEdit = async () => {
+  if (!title.value.trim() || !content.value.trim()) {
+    alert('제목과 내용을 모두 입력해주세요.')
+    return
+  }
+
+  isSubmitting.value = true
+
   try {
-    const headers = { Authorization: `Bearer ${accessToken.value}` }
-    const targetIds = selectedEmployees.value.map(emp => emp.id)
-
-    await axios.put(`/support/notice/edit/${noticeId}`, {
-      title: title.value,
-      content: content.value,
-      targetEmployeeId: [...targetIds, loginUserId.value]
-    }, { headers })
-
-    alert('공지 수정 완료!')
+    await api.put(`/support/notice/edit/${noticeId}`, {
+      title: title.value.trim(),
+      content: content.value.trim(),
+      targetDepartments: selectedDepartments.value,
+      targetEmployees: selectedEmployees.value
+    }, {
+      headers: { Authorization: `Bearer ${authStore.accessToken}` }
+    })
+    
+    alert('공지사항이 수정되었습니다.')
     router.push(`/support/notice/${noticeId}`)
-  } catch (e) {
-    alert('수정 실패!')
-    console.error('❌ 공지 수정 실패:', e)
+  } catch (error) {
+    console.error('수정 실패:', error)
+    alert('수정에 실패했습니다.')
+  } finally {
+    isSubmitting.value = false
   }
 }
 

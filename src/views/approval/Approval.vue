@@ -190,9 +190,10 @@ function handleRefresh() {
 watch(() => route.query.approvalId, async (newApprovalId, oldApprovalId) => {
     if (route.query.showDetail === 'true' && newApprovalId && newApprovalId !== oldApprovalId) {
         try {
+            const authStore = useAuthStore()
             const response = await api.get(`/approval/${newApprovalId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    'Authorization': `Bearer ${authStore.accessToken}`
                 }
             })
             selectedApproval.value = response.data

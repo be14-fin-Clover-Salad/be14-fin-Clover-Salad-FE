@@ -86,7 +86,6 @@
     </div>
   </div>
 
-  <!-- 비밀번호 변경 모달 -->
   <div v-if="showPasswordModal" class="modal-overlay">
     <div class="modal-content">
       <h2>비밀번호 변경</h2>
@@ -111,7 +110,6 @@
     </div>
   </div>
 
-  <!-- 프로필 이미지 변경 모달 -->
   <div v-if="showProfileModal" class="modal-overlay">
     <div class="modal-content profile-modal">
       <h2>프로필 이미지 변경</h2>
@@ -124,17 +122,26 @@
         
         <div class="file-upload">
           <label>파일 업로드</label>
-          <div class="upload-box" @click="$refs.fileInput.click()">
+          <div 
+            class="upload-box" 
+            @click="$refs.fileInput.click()"
+            @dragover.prevent="handleDragOver"
+            @dragleave.prevent="handleDragLeave"
+            @drop.prevent="handleDrop"
+            :class="{ 'drag-over': isDragOver }"
+          >
             <svg v-if="!selectedFile" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span v-if="selectedFile">{{ selectedFile.name }}</span>
+            <span v-else class="upload-text">클릭하거나 파일을 드래그하세요</span>
           </div>
           <input 
             type="file" 
             ref="fileInput" 
             @change="handleFileSelect" 
             accept="image/*" 
+            multiple="false"
             style="display: none"
           >
         </div>
@@ -149,7 +156,7 @@
 </template>
 
 <script>
-import axios from '@/api/auth';
+import api from '@/api/auth';
 import { useAuthStore } from '@/stores/auth';
 
 export default {
@@ -181,7 +188,8 @@ export default {
       profileUrl: '',
       selectedFile: null,
       phoneError: '',
-      nameError: ''
+      nameError: '',
+      isDragOver: false
     }
   },
   computed: {
@@ -221,7 +229,7 @@ export default {
     async fetchUserInfo() {
       try {
         const auth = useAuthStore();
-        const response = await axios.get('/employee/mypage', {
+        const response = await api.get('/employee/mypage', {
           headers: {
             Authorization: `Bearer ${auth.accessToken}`
           },
@@ -239,7 +247,7 @@ export default {
 
       try {
         const auth = useAuthStore();
-        const response = await axios.post('/employee/password-change', {
+        const response = await api.post('/employee/password-change', {
           currentPassword: this.passwordForm.currentPassword,
           newPassword: this.passwordForm.newPassword
         }, {
@@ -289,7 +297,7 @@ export default {
           data: this.tempUserInfo
         });
 
-        const response = await axios.patch('/employee/mypage', this.tempUserInfo, {
+        const response = await api.patch('/employee/mypage', this.tempUserInfo, {
           headers: {
             Authorization: `Bearer ${auth.accessToken}`
           }
@@ -329,20 +337,61 @@ export default {
       this.selectedFile = null;
     },
     handleFileSelect(event) {
-      this.selectedFile = event.target.files[0];
+      const files = event.target.files;
+      if (files.length > 1) {
+        alert('하나의 이미지 파일만 선택 가능합니다. 첫 번째 파일이 선택됩니다.');
+      }
+      this.selectedFile = files[0];
     },
     async saveProfile() {
       try {
         const auth = useAuthStore();
         
         if (this.selectedFile) {
-          alert('AWS S3 구현 중');
-          this.closeProfileModal();
-          return;
-        }
+          const formData = new FormData();
+          formData.append('file', this.selectedFile);
+          formData.append('type', 'PROFILE');
+          
+          console.log('파일 업로드 요청 시작:', {
+            url: '/api/command/file/upload',
+            file: this.selectedFile.name
+          });
 
-        if (this.profileUrl) {
-          // URL 유효성 검사
+          const uploadResponse = await api.post('/api/command/file/upload', formData, {
+            headers: {
+              Authorization: `Bearer ${auth.accessToken}`,
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          
+          console.log('파일 업로드 응답:', uploadResponse);
+
+          if (uploadResponse.data && uploadResponse.data.id) {
+            console.log('프로필 업데이트 요청 시작:', {
+              url: '/employee/mypage/profile',
+              fileId: uploadResponse.data.id
+            });
+
+            const profileResponse = await api.patch('/employee/mypage/profile', {
+              fileId: uploadResponse.data.id
+            }, {
+              headers: {
+                Authorization: `Bearer ${auth.accessToken}`
+              }
+            });
+            
+            console.log('프로필 업데이트 응답:', profileResponse);
+
+            if (profileResponse.data) {
+              this.userInfo.profilePath = uploadResponse.data.url;
+              const auth = useAuthStore();
+              auth.updateProfileImage(uploadResponse.data.url);
+              alert('프로필 이미지가 변경되었습니다.');
+              this.closeProfileModal();
+            }
+          }
+        } else if (this.profileUrl) {
+
           try {
             new URL(this.profileUrl);
           } catch (e) {
@@ -355,7 +404,7 @@ export default {
             data: { path: this.profileUrl }
           });
 
-          const response = await axios.patch('/employee/mypage/profile-path', {
+          const response = await api.patch('/employee/mypage/profile-path', {
             path: this.profileUrl
           }, {
             headers: {
@@ -372,6 +421,8 @@ export default {
             alert('프로필 이미지가 변경되었습니다.');
             this.closeProfileModal();
           }
+        } else {
+          alert('이미지 파일을 선택하거나 URL을 입력해주세요.');
         }
       } catch (error) {
         console.error('프로필 이미지 변경에 실패했습니다:', error);
@@ -426,15 +477,38 @@ export default {
     },
     onlyKorean(event) {
       const keyCode = event.keyCode;
-      // 한글 입력을 위한 키코드 범위 체크
-      if (!((keyCode >= 12593 && keyCode <= 12643) || // 한글 자모
-            (keyCode >= 44032 && keyCode <= 55203) || // 한글 완성형
-            keyCode === 8 || // 백스페이스
-            keyCode === 46)) { // 삭제
+      if (!((keyCode >= 12593 && keyCode <= 12643) ||
+            (keyCode >= 44032 && keyCode <= 55203) ||
+            keyCode === 8 ||
+            keyCode === 46)) {
         event.preventDefault();
         this.nameError = '한글만 입력하실 수 있습니다.';
       } else {
         this.nameError = '';
+      }
+    },
+    handleDragOver(event) {
+      event.preventDefault();
+      this.isDragOver = true;
+    },
+    handleDragLeave(event) {
+      event.preventDefault();
+      this.isDragOver = false;
+    },
+    handleDrop(event) {
+      event.preventDefault();
+      this.isDragOver = false;
+      const files = event.dataTransfer.files;
+      if (files.length > 1) {
+        alert('하나의 이미지 파일만 업로드 가능합니다. 첫 번째 파일이 선택됩니다.');
+      }
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          this.selectedFile = file;
+        } else {
+          alert('이미지 파일만 업로드 가능합니다.');
+        }
       }
     }
   },
@@ -745,5 +819,16 @@ export default {
 
 .name-error {
   color: #ff0000 !important;
+}
+
+.drag-over {
+  border-color: #2196F3 !important;
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.upload-text {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
 }
 </style>

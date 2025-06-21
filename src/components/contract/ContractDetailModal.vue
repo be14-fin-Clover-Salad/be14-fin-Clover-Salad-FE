@@ -5,7 +5,7 @@
         <h2 class="title">{{ contract.customerName }}–렌탈 계약</h2>
         <div class="button-group">
           <button class="btn">인쇄</button>
-          <button class="btn">수정</button>
+          <button class="btn" @click="showApprovalModal = true">결재 요청</button>
           <button class="btn primary">등록</button>
         </div>
       </div>
@@ -22,25 +22,22 @@
           <div class="field">
             <label>계약서 *</label>
             <div class="value">{{ contract.renameFile }}</div>
-            <div class="desc">계약 관리 등록시 해당 계약의 계약서 PDF가 존재해야 합니다</div>
           </div>
           <div class="field">
             <label>계약 번호</label>
             <div class="value">{{ contract.code }}</div>
           </div>
         </div>
-
         <div class="row">
           <div class="field">
             <label>고객 명</label>
             <div class="value">{{ contract.customerName }}</div>
           </div>
           <div class="field">
-            <label>계약 담당자</label>
-            <div class="value">{{ contract.employeeName }}</div>
+            <label>담당 영업사원</label>
+            <div class="value">{{ contract.employeeName || '알 수 없음' }}</div>
           </div>
         </div>
-
         <div class="row">
           <div class="field full">
             <label>총 렌탈 금액</label>
@@ -64,10 +61,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in contract.productList" :key="p.serialNumber">
-              <td>{{ p.productName }}</td>
-              <td>{{ p.serialNumber }}</td>
-              <td>{{ p.quantity }}</td>
+            <tr v-for="(p, i) in contract.productList" :key="i">
+              <td>{{ p.productName || '-' }}</td>
+              <td>{{ p.serialNumber || '-' }}</td>
+              <td>{{ p.quantity || '-' }}</td>
               <td>{{ formatAmount(p.rentalCost) }} 원</td>
             </tr>
           </tbody>
@@ -86,16 +83,22 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr v-if="contract.aprvTitle || contract.aprvContent || contract.aprvState">
               <td>{{ contract.aprvTitle || '-' }}</td>
               <td>{{ contract.aprvContent || '-' }}</td>
               <td>{{ contract.aprvState || '-' }}</td>
               <td>{{ contract.reqId || '-' }}</td>
               <td>{{ contract.aprvId || '-' }}</td>
             </tr>
+            <tr v-else>
+              <td colspan="5" style="text-align: center;">결재 정보가 없습니다.</td>
+            </tr>
           </tbody>
         </table>
       </div>
+
+      <ContractApprovalRequestModal v-if="showApprovalModal" :isOpen="showApprovalModal" :contractId="props.contractId"
+        :contractCode="props.contractCode" :contractState="props.contractStatus" @close="showApprovalModal = false" />
     </div>
   </div>
 </template>
@@ -103,19 +106,28 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '@/api/auth'
+import ContractApprovalRequestModal from '@/views/contract/ContractApprovalRequestModal.vue'
 
 const props = defineProps({
   contractId: Number,
+  contractCode: String,
+  contractStatus: String,
   isOpen: Boolean
 })
+
+console.log('props.contractStatus:', props.contractStatus)
+
 const emit = defineEmits(['close'])
 
-const contract = ref({})
+const contract = ref({
+  productList: []
+})
 const tab = ref('info')
+const showApprovalModal = ref(false)
 
 const pdfThumbnailUrl = computed(() =>
   contract.value.renameFile
-    ? `https://your-s3-url/thumbs/${contract.value.renameFile.replace(/\.pdf$/, '.png')}`
+    ? `https://saladerp-bucket.s3.ap-northeast-2.amazonaws.com/contract/thumbs/${contract.value.renameFile.replace(/\.[^/.]+$/, '.png')}`
     : ''
 )
 
@@ -125,6 +137,7 @@ function formatAmount(val) {
 
 onMounted(async () => {
   const res = await api.get(`/api/query/contract/${props.contractId}/info`)
+  console.log('contract data:', res.data)
   contract.value = res.data
 })
 </script>
@@ -231,6 +244,8 @@ label {
   padding: 8px;
   border-radius: 6px;
   margin-top: 4px;
+  cursor: default;
+  user-select: none;
 }
 
 .desc {

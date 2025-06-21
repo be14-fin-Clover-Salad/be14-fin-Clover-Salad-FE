@@ -1,18 +1,28 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell :initial="searchForm" :expanded="isExpanded" @search="handleSearch" @reset="handleReset"
-      @toggle-expand="isExpanded = !isExpanded">
+    <SearchFilterShell
+      :initial="searchForm"
+      :expanded="isExpanded"
+      @search="handleSearch"
+      @reset="handleReset"
+      @toggle-expand="isExpanded = !isExpanded"
+    >
       <template #fields="{ filters, expanded }">
         <ContractSearchFields :filters="filters" :expanded="expanded" />
       </template>
     </SearchFilterShell>
 
-
     <!-- 테이블 -->
     <div class="table-wrapper">
-      <BaseDataTable :columns="columns" :rows="rows" :isLoading="isLoading" :selectedCode="selectedRowCode"
-        @row-click="handleRowClick" @row-dblclick="handleRowDblClick" />
+      <BaseDataTable
+        :columns="columns"
+        :rows="rows"
+        :isLoading="isLoading"
+        :selectedCode="selectedRowCode"
+        @row-click="handleRowClick"
+        @row-dblclick="handleRowDblClick"
+      />
     </div>
 
     <!-- 버튼 영역 -->
@@ -21,24 +31,31 @@
       <button class="replace-btn" @click="openReplaceModal" :disabled="!selectedContract">재업로드</button>
     </div>
 
-    <!-- 계약서 등록 모달 -->
-    <ContractUploadModal :isOpen="showUploadModal" @close="showUploadModal = false"
-      @upload-success="handleUploadSuccess" />
-
-    <!-- 업로드 완료 안내 모달 -->
-    <ContractUploadSuccessModal :isOpen="showSuccessModal" @confirm="goToDetailView"
-      @close="showSuccessModal = false" />
-
-    <!-- 상세 보기 모달 -->
-    <!-- <ContractDetailModal :isOpen="showDetailModal" :contract="selectedContract" @close="showDetailModal = false" /> -->
-    <ContractDetailModal v-if="selectedContract" :isOpen="showDetailModal" :contractId="selectedContract?.id"
-      @close="showDetailModal = false" />
-  
-
-
-    <!-- 계약서 재업로드 모달 -->
-    <ContractReplaceModal :isOpen="showReplaceModal" :contract="selectedContract" @close="handleReplaceModalClose"
-      @replace-success="handleReplaceSuccess" />
+    <!-- 모달들 -->
+    <ContractUploadModal
+      :isOpen="showUploadModal"
+      @close="showUploadModal = false"
+      @upload-success="handleUploadSuccess"
+    />
+    <ContractUploadSuccessModal
+      :isOpen="showSuccessModal"
+      @confirm="goToDetailView"
+      @close="showSuccessModal = false"
+    />
+    <ContractDetailModal
+      v-if="selectedContract"
+      :isOpen="showDetailModal"
+      :contractId="selectedContract?.id"
+      :contractCode="selectedContract.code"
+      :contractStatus="selectedContract.status"
+      @close="showDetailModal = false"
+    />
+    <ContractReplaceModal
+      :isOpen="showReplaceModal"
+      :contract="selectedContract"
+      @close="handleReplaceModalClose"
+      @replace-success="handleReplaceSuccess"
+    />
   </section>
 </template>
 
@@ -95,10 +112,22 @@ function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
 }
 
-function handleUploadSuccess(contractData) {
-  selectedContract.value = contractData
+async function handleUploadSuccess(contractData) {
+  const contractId = contractData.contractId
   showUploadModal.value = false
-  showSuccessModal.value = true
+
+  try {
+    const token = useAuthStore().accessToken
+    const response = await api.get(`/api/query/contract/${contractId}/info`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true
+    })
+    selectedContract.value = response.data
+    showSuccessModal.value = true
+  } catch (error) {
+    alert('계약 상세 조회 실패')
+    console.error('계약 상세 조회 에러:', error)
+  }
 }
 
 function goToDetailView() {
@@ -115,6 +144,7 @@ function handleRowClick(contract) {
 function handleRowDblClick(contract) {
   selectedContract.value = contract
   showDetailModal.value = true
+  console.log('contract:', contract)
 }
 
 function openReplaceModal() {
@@ -128,9 +158,8 @@ function handleReplaceModalClose() {
 
 function handleReplaceSuccess(updatedContract) {
   showReplaceModal.value = false
-  handleSearch({ ...searchForm })
   selectedContract.value = updatedContract
-  showDetailModal.value = true
+  showSuccessModal.value = true
 }
 
 const columns = [
@@ -146,8 +175,6 @@ const columns = [
   { label: '상품 명', key: 'productNames', width: '200px' },
   { label: '비고', key: 'etc', width: '150px' }
 ]
-
-
 </script>
 
 <style scoped>
