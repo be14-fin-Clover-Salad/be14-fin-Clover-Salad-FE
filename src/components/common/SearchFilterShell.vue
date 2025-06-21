@@ -54,11 +54,14 @@ function emitReset() {
 <style scoped>
 .search-filter-shell {
   padding: 16px;
-  background: #f5f8f2;
+  background: #f7f8fa;
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e0e4d8;
+  border: 1px solid #e8eaed;
   margin-bottom: 24px;
+  /* 반응형 처리를 위한 최소 너비 설정 */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .actions {
@@ -66,21 +69,30 @@ function emitReset() {
   align-items: center;
   margin-top: 12px;
   gap: 12px;
+  /* 반응형 처리를 위한 flex-wrap 추가 */
+  flex-wrap: wrap;
 }
 
 .spacer {
   flex: 1;
+  /* 최소 너비 설정으로 버튼들이 압축되지 않도록 */
+  min-width: 0;
 }
 
 .expand-btn {
   font-size: 13px;
   color: #1976d2;
   cursor: pointer;
+  /* 버튼이 줄어들지 않도록 */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .button-group {
   display: flex;
   gap: 10px;
+  /* 버튼 그룹이 줄어들지 않도록 */
+  flex-shrink: 0;
 }
 
 .search-btn,
@@ -92,21 +104,73 @@ function emitReset() {
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  /* 버튼 텍스트가 줄어들지 않도록 */
+  white-space: nowrap;
+  /* 최소 너비 설정 */
+  min-width: 60px;
 }
 
 .search-btn {
   background-color: #c3d977;
-  color: #222;
+  color: #1e3a0f;
+  border: 1px solid #a6ce39;
 }
 .search-btn:hover {
-  background-color: #b3cc6a;
+  background-color: #a6ce39;
+  color: white;
 }
 
 .reset-btn {
-  background-color: #f1f1f1;
-  color: #444;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
 }
 .reset-btn:hover {
-  background-color: #e4e4e4;
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* 반응형 미디어 쿼리 */
+@media (max-width: 768px) {
+  .search-filter-shell {
+    padding: 12px;
+  }
+  
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .spacer {
+    display: none;
+  }
+  
+  .expand-btn {
+    text-align: center;
+    padding: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+  }
+  
+  .button-group {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-filter-shell {
+    padding: 8px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .search-btn,
+  .reset-btn {
+    width: 100%;
+  }
 }
 </style>

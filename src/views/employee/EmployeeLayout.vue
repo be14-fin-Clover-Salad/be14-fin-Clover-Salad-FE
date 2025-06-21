@@ -316,7 +316,6 @@ export default {};
 
 <style lang="scss" scoped>
 .employee-search-fields {
-  background-color: #f8fdf2;
   padding: 16px 24px;
   border-radius: 8px;
   margin-bottom: 12px;

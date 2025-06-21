@@ -89,10 +89,12 @@ const row2 = [
 
 <style scoped>
 .contract-search-fields {
-  background-color: #f8fdf2;
   padding: 16px 24px;
   border-radius: 8px;
   margin-bottom: 12px;
+  /* 반응형 처리를 위한 최소 너비 설정 */
+  min-width: 0;
+  overflow: hidden;
 }
 
 .row {
@@ -100,11 +102,14 @@ const row2 = [
   grid-template-columns: repeat(7, 1fr);
   gap: 12px;
   margin-bottom: 10px;
+  /* 반응형 그리드 설정 */
 }
 
 .field {
   display: flex;
   flex-direction: column;
+  /* 필드가 줄어들지 않도록 최소 너비 설정 */
+  min-width: 0;
 }
 
 .field label {
@@ -112,6 +117,10 @@ const row2 = [
   font-weight: 600;
   margin-bottom: 2px;
   color: #333;
+  /* 라벨 텍스트가 줄어들지 않도록 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .field input,
@@ -125,7 +134,11 @@ const row2 = [
   -webkit-appearance: none;
   -moz-appearance: none;
   vertical-align: middle;
-  line-height: 1.5;        
+  line-height: 1.5;
+  /* 입력 필드가 부모를 넘어가지 않도록 */
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .select-wrapper {
@@ -151,15 +164,93 @@ const row2 = [
 .range-inputs {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .range-inputs input {
   flex: 1;
+  min-width: 0;
 }
 
 .tilde {
-  font-size: 14px;
-  color: #444;
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+/* 반응형 미디어 쿼리 */
+@media (max-width: 1400px) {
+  .row {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .row {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .contract-search-fields {
+    padding: 12px 16px;
+  }
+  
+  .row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .field label {
+    font-size: 12px;
+  }
+  
+  .field input,
+  .field select {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 576px) {
+  .row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .contract-search-fields {
+    padding: 8px 12px;
+  }
+  
+  .row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .field label {
+    font-size: 11px;
+  }
+  
+  .field input,
+  .field select {
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+  
+  .range-inputs {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .tilde {
+    display: none;
+  }
 }
 </style>

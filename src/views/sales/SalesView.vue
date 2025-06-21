@@ -286,7 +286,6 @@ section {
 }
 
 .sales-search-fields {
-  background-color: #f8fdf2;
   padding: 16px 24px;
   border-radius: 8px;
   margin-bottom: 12px;
@@ -503,21 +502,21 @@ section {
 }
 
 .confirm-delete-btn {
-  background-color: #4A6741;
+  background-color: #e53935;
   color: white;
 }
 
 .confirm-delete-btn:hover {
-  background-color: #39512F;
+  background-color: #c62828;
 }
 
 .cancel-modal-btn {
-  background-color: #adb5bd;
+  background-color: #6c757d;
   color: white;
 }
 
 .cancel-modal-btn:hover {
-  background-color: #868e96;
+  background-color: #5a6268;
 }
 
 .table-wrapper table {

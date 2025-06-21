@@ -55,7 +55,7 @@ import Breadcrumb from "@/components/Breadcrumb.vue";
 
 .view-area {
   flex: 1;
-  padding: 20px;
+  padding: 30px;
   overflow-y: auto;
   background-color: #fff;
 }

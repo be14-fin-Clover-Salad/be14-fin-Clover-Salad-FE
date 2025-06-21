@@ -488,7 +488,7 @@ onMounted(() => {
 
     .confirm-button {
         padding: 8px 20px;
-        background-color: #dc3545;
+        background-color: #e53935;
         color: white;
         border: none;
         border-radius: 4px;
@@ -496,7 +496,7 @@ onMounted(() => {
         font-size: 14px;
 
         &:hover {
-            background-color: #c82333;
+            background-color: #c62828;
         }
     }
 
@@ -524,7 +524,7 @@ onMounted(() => {
 
 .delete-button {
     padding: 8px 16px;
-    background-color: #dc3545;
+    background-color: #e53935;
     color: white;
     border: none;
     border-radius: 4px;
@@ -532,7 +532,7 @@ onMounted(() => {
     font-size: 14px;
 
     &:hover {
-        background-color: #c82333;
+        background-color: #c62828;
     }
 }
 
@@ -543,7 +543,7 @@ onMounted(() => {
 
 .confirm-button {
     padding: 8px 16px;
-    background-color: #28a745;
+    background-color: #a6ce39;
     color: white;
     border: none;
     border-radius: 4px;
@@ -551,7 +551,7 @@ onMounted(() => {
     font-size: 14px;
 
     &:hover {
-        background-color: #218838;
+        background-color: #94b933;
     }
 }
 

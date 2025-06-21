@@ -22,10 +22,6 @@
           <option value="반려">반려</option>
         </select>
       </div>
-      <div class="field">
-        <label>계약 코드</label>
-        <input v-model="filters.contractCode" placeholder="예: A-2501-0001" type="text" />
-      </div>
     </div>
     <div class="row">
       <div class="field">
@@ -44,6 +40,8 @@
         <label>결재 일자 (종료)</label>
         <input v-model="filters.approvalDateEnd" type="date" />
       </div>
+    </div>
+    <div class="row">
       <div class="field">
         <label>요청 담당자</label>
         <input v-model="filters.requester" placeholder="예: 강원미" type="text" />
@@ -56,6 +54,10 @@
         <label>결재 코멘트</label>
         <input v-model="filters.comment" placeholder="예: 계약서 내용 미흡" type="text" />
       </div>
+      <div class="field">
+        <label>계약 코드</label>
+        <input v-model="filters.contractCode" placeholder="예: A-2501-0001" type="text" />
+      </div>
     </div>
   </div>
 </template>
@@ -66,7 +68,6 @@ defineProps({ filters: Object })
 
 <style scoped>
 .approval-search-fields {
-  background-color: #f8fdf2;
   padding: 16px 24px;
   border-radius: 8px;
   margin-bottom: 12px;
@@ -74,13 +75,13 @@ defineProps({ filters: Object })
 
 .row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 10px;
 }
 
 .row:last-child {
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .field {

@@ -138,9 +138,9 @@ function formatCurrency(val) {
 .dashboard-wrapper {
   position: relative;
   z-index: 10;
-  margin: -20px;
-  width: calc(100% + 40px);
-  height: calc(100% + 40px);
+  transform: translate(-30px, -30px);
+  width: calc(100% + 60px);
+  height: calc(100% + 60px);
   background-color: #f7f8fa;
   overflow-x: hidden;
   overflow-y: auto;
@@ -278,8 +278,8 @@ function formatCurrency(val) {
   margin-left: 1.5em;
 }
 
-:global(.view-area) {
-  padding: 0 !important;
-  background-color: #f7f8fa !important; /* 필요시 배경도 덮어쓰기 */
-}
+// :global(.view-area) {
+//   padding: 0 !important;
+//   background-color: #f7f8fa !important; /* 필요시 배경도 덮어쓰기 */
+// }
 </style>
