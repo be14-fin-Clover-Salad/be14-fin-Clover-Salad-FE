@@ -1,15 +1,19 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
+const BASE_URL = import.meta.env.MODE === 'development'
+  ? 'http://localhost:8080'
+  : 'http://salad-alb-240627784.ap-northeast-2.elb.amazonaws.com'
+
 // 일반 요청용 인스턴스
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: BASE_URL,
   withCredentials: true
 })
 
 // 인터셉터 미적용된 리프레시 토큰 재발급용 (리프레시 토큰 재발급 요청 무한 루프 방지)
 const rawApi = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: BASE_URL,
   withCredentials: true
 })
 
