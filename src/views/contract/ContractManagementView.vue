@@ -31,29 +31,25 @@
       <button class="replace-btn" @click="openReplaceModal" :disabled="!selectedContract">재업로드</button>
     </div>
 
-    <!-- 계약서 등록 모달 -->
+    <!-- 모달들 -->
     <ContractUploadModal
       :isOpen="showUploadModal"
       @close="showUploadModal = false"
       @upload-success="handleUploadSuccess"
     />
-
-    <!-- 업로드 완료 안내 모달 -->
     <ContractUploadSuccessModal
       :isOpen="showSuccessModal"
       @confirm="goToDetailView"
       @close="showSuccessModal = false"
     />
-
-    <!-- 상세 보기 모달 -->
     <ContractDetailModal
       v-if="selectedContract"
       :isOpen="showDetailModal"
       :contractId="selectedContract?.id"
+      :contractCode="selectedContract.code"
+      :contractStatus="selectedContract.status"
       @close="showDetailModal = false"
     />
-
-    <!-- 계약서 재업로드 모달 -->
     <ContractReplaceModal
       :isOpen="showReplaceModal"
       :contract="selectedContract"
@@ -116,7 +112,6 @@ function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
 }
 
-
 async function handleUploadSuccess(contractData) {
   const contractId = contractData.contractId
   showUploadModal.value = false
@@ -149,6 +144,7 @@ function handleRowClick(contract) {
 function handleRowDblClick(contract) {
   selectedContract.value = contract
   showDetailModal.value = true
+  console.log('contract:', contract)
 }
 
 function openReplaceModal() {
