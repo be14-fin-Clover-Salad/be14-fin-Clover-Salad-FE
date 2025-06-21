@@ -7,7 +7,7 @@
       :class="{ active: isActive(tab) }"
       @click="switchTab(tab)"
     >
-      {{ tab.title }}
+      <span class="tab-title">{{ tab.title }}</span>
       <span class="close" @click.stop="closeTab(tab)">×</span>
     </div>
   </div>
@@ -72,45 +72,86 @@ const closeTab = (tab) => {
 <style scoped>
 .top-tabs {
   display: flex;
-  padding: 0 16px;
-  background-color: #e8f2c9;
+  padding: 0 16px 0 5px;
+  background-color: #F9F9F9;
   border-bottom: 1px solid #c8d6ae;
   height: 42px;
   align-items: flex-end;
+  position: relative;
 }
 .tab {
-  padding: 8px 16px;
-  margin-right: 4px;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  background-color: #f8f8f8;
-  border: 1px solid #ddd;
+  padding: 8px 2px 8px 16px;
+  border: 1px solid #c8d6ae;
   border-bottom: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: #eeeeee;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   color: #333;
   position: relative;
-  top: 1px;
+  bottom: -1px;
+  min-width: 0;
+  max-width: 200px;
 }
 .tab.active {
   background-color: white;
-  border-color: #d5eb97 #d5eb97 white;
-  z-index: 1;
+  z-index: 2;
+  border-bottom-color: white;
+  font-weight: 600;
 }
-.tab:hover {
-  background-color: #f0f6ea;
+
+.tab.active::before,
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
 }
+
+.tab.active::before {
+  left: -18px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 6px 6px 0 0 white;
+}
+
+.tab.active::after {
+  right: -18px;
+  border-bottom-left-radius: 10px;
+  box-shadow: -6px 6px 0 0 white;
+}
+
+.tab:hover:not(.active) {
+  background-color: #e0e0e0;
+}
+
 .close {
-  margin-left: 8px;
-  font-weight: bold;
+  font-weight: normal;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
   color: #888;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+  line-height: 1;
+  position: relative;
+  top: 1px;
 }
-.close:hover {
-  color: #444;
+
+.tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
