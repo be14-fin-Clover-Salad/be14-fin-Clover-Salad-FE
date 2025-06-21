@@ -33,23 +33,18 @@ const tryRefreshAndLoadUser = async () => {
       await auth.recoverUserInfo()
     } 
   } catch (err) {
-      console.error('[main.js] 사용자 정보 복구 실패:', err)
       auth.clearToken()
       window.location.href = '/login'
   }
 }
 
-
-// 알림 발생 시점을 명확히 하기위해
 async function bootstrap() {
   await tryRefreshAndLoadUser()
 
   if (auth.userInfo) {
     try {
       await notificationStore.setupSse()
-      console.log('[main.js] SSE 연결 성공')
     } catch (e) {
-      console.warn('[SSE] 연결 실패:', e)
     }
   }
 
