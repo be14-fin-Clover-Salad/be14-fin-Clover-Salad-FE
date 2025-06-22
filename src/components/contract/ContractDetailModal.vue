@@ -17,6 +17,7 @@
         <span class="tab" :class="{ active: tab === 'approval' }" @click="tab = 'approval'">결재 내역</span>
       </div>
 
+      <!-- 상세 조회 -->
       <div v-if="tab === 'info'" class="tab-content">
         <div class="row">
           <div class="field">
@@ -46,10 +47,51 @@
         </div>
       </div>
 
-      <div v-else-if="tab === 'file'" class="tab-content">
-        <img :src="pdfThumbnailUrl" alt="계약서 미리보기" style="max-width: 500px" />
+      <!-- 계약서 탭 : 좌측 정보 / 우측 썸네일&다운로드 -->
+      <div v-else-if="tab === 'file'" class="tab-content file-detail-row">
+        <!-- 좌측 정보 -->
+        <div class="file-info-panel">
+          <div>
+            <label>계약서 *</label>
+            <div class="value">{{ contract.renameFile || '-' }}</div>
+            <small>계약 관리 등록시 해당 계약의 계약서 PDF가 존재해야 합니다</small>
+          </div>
+          <div>
+            <label>고객 명 *</label>
+            <div class="value">{{ contract.customerName || '-' }}</div>
+          </div>
+          <div>
+            <label>고객 주소 *</label>
+            <div class="value">{{ contract.customerAddress || '-' }}</div>
+          </div>
+          <div>
+            <label>고객 연락처 *</label>
+            <div class="value">{{ contract.customerPhone || '-' }}</div>
+          </div>
+        </div>
+        <!-- 우측 썸네일/다운로드 -->
+        <div class="file-thumbnail-panel">
+          <div v-if="thumbnailSrc">
+            <img :src="thumbnailSrc" alt="계약서 미리보기" class="contract-thumbnail" @click="showPreview = true"
+              style="cursor: pointer;" />
+            <div style="margin-top: 16px;">
+              <a :href="fileSrc" target="_blank" rel="noopener" download class="download-link">
+                PDF 다운로드
+              </a>
+            </div>
+          </div>
+          <p v-else class="desc">미리보기 이미지를 불러올 수 없습니다.</p>
+        </div>
+        <!-- 클릭 시 전체 확대 미리보기 팝업 -->
+        <div v-if="showPreview" class="img-modal" @click.self="showPreview = false">
+          <img :src="thumbnailSrc" alt="계약서 전체 미리보기" class="img-modal-img" />
+          <a :href="fileSrc" target="_blank" rel="noopener" download class="download-link" style="margin-top:16px;">
+            PDF 다운로드
+          </a>
+        </div>
       </div>
 
+      <!-- 렌탈 상품 내역 -->
       <div v-else-if="tab === 'product'" class="tab-content">
         <table class="data-table">
           <thead>
@@ -71,6 +113,7 @@
         </table>
       </div>
 
+      <!-- 결재 내역 -->
       <div v-else-if="tab === 'approval'" class="tab-content">
         <table class="data-table">
           <thead>
@@ -83,20 +126,22 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-if="contract.aprvTitle || contract.aprvContent || contract.aprvState">
-              <td>{{ contract.aprvTitle || '-' }}</td>
-              <td>{{ contract.aprvContent || '-' }}</td>
-              <td>{{ contract.aprvState || '-' }}</td>
-              <td>{{ contract.reqId || '-' }}</td>
-              <td>{{ contract.aprvId || '-' }}</td>
+            <tr v-for="item in contract.approvalList" :key="item.id">
+              <td>{{ item.title }}</td>
+              <td>{{ item.content }}</td>
+              <td>{{ item.state }}</td>
+              <td>{{ item.reqName || '-' }}</td>
+              <td>{{ item.aprvName || '-' }}</td>
             </tr>
-            <tr v-else>
+            <tr v-if="!contract.approvalList || contract.approvalList.length === 0">
               <td colspan="5" style="text-align: center;">결재 정보가 없습니다.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
+
+      <!-- 결재 요청 모달 -->
       <ContractApprovalRequestModal v-if="showApprovalModal" :isOpen="showApprovalModal" :contractId="props.contractId"
         :contractCode="props.contractCode" :contractState="props.contractStatus" @close="showApprovalModal = false" />
     </div>
@@ -114,22 +159,25 @@ const props = defineProps({
   contractStatus: String,
   isOpen: Boolean
 })
-
-console.log('props.contractStatus:', props.contractStatus)
-
 const emit = defineEmits(['close'])
 
-const contract = ref({
-  productList: []
-})
+const contract = ref({ productList: [] })
 const tab = ref('info')
 const showApprovalModal = ref(false)
+const showPreview = ref(false)
 
-const pdfThumbnailUrl = computed(() =>
-  contract.value.renameFile
-    ? `https://saladerp-bucket.s3.ap-northeast-2.amazonaws.com/contract/thumbs/${contract.value.renameFile.replace(/\.[^/.]+$/, '.png')}`
-    : ''
-)
+// S3 BASE URL
+const S3_BASE = 'https://saladerp-bucket.s3.ap-northeast-2.amazonaws.com/'
+
+// 썸네일/파일 URL 조합 (키만 있으면 S3 BASE를 붙임)
+const thumbnailSrc = computed(() => {
+  const path = contract.value.thumbnailUrl
+  return path ? (path.startsWith('http') ? path : S3_BASE + path) : ''
+})
+const fileSrc = computed(() => {
+  const path = contract.value.fileUrl
+  return path ? (path.startsWith('http') ? path : S3_BASE + path) : ''
+})
 
 function formatAmount(val) {
   return val?.toLocaleString() || '0'
@@ -137,7 +185,6 @@ function formatAmount(val) {
 
 onMounted(async () => {
   const res = await api.get(`/api/query/contract/${props.contractId}/info`)
-  console.log('contract data:', res.data)
   contract.value = res.data
 })
 </script>
@@ -217,6 +264,114 @@ onMounted(async () => {
 
 .tab-content {
   margin-top: 16px;
+}
+
+.file-detail-row {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.file-info-panel {
+  flex: 1 1 300px;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.file-info-panel label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.file-info-panel .value {
+  background: #f5f5f5;
+  padding: 7px 8px;
+  border-radius: 6px;
+  margin-top: 3px;
+  font-size: 15px;
+}
+
+.file-info-panel small {
+  color: #888;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.file-thumbnail-panel {
+  flex: 0 0 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contract-thumbnail {
+  width: 350px;
+  height: auto;
+  border: 3px solid #b71c1c;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.contract-thumbnail:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.download-link {
+  color: #fff;
+  background: #b71c1c;
+  padding: 8px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.download-link:hover {
+  background: #c62828;
+}
+
+/* 팝업 이미지 모달 */
+.img-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.56);
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.img-modal-img {
+  width: 600px;
+  max-width: 90vw;
+  border-radius: 18px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.22);
+  border: 4px solid #b71c1c;
+}
+
+@media (max-width: 900px) {
+  .file-detail-row {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .file-thumbnail-panel {
+    margin-top: 18px;
+  }
+
+  .img-modal-img {
+    width: 96vw;
+  }
 }
 
 .row {

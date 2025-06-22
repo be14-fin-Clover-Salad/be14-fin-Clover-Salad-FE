@@ -119,9 +119,9 @@ export const menuList = [
         component: () => import("@/views/notification/NotificationLayout.vue"),
       },
       {
-        label: "로그인 관리",
-        path: "/admin/login",
-        // component: () => import("@/views/admin/LoginManagementView.vue"),
+        label: "로그 관리",
+        path: "/admin/log",
+        component: () => import("@/views/log/AccessLogView.vue"),
       },
     ],
   }
