@@ -12,16 +12,16 @@ export const menuList = [
           basePath: "/dashboard/employee"
         }
       },
-      {
-        label: "상품별 매출 조회",
-        path: "/dashboard/product",
-        redirect: "/dashboard/product/:productId",
-        component: () => import("@/views/dashboard/ProductDashboard.vue"),
-        meta: {
-          title: "상품병 대시보드",
-          basePath: "/dashboard/product"
-        }
-      },
+      // { // 기능 미완성으로 인한 메뉴 숨기기
+      //   label: "상품별 매출 조회",
+      //   path: "/dashboard/product",
+      //   redirect: "/dashboard/product/:productId",
+      //   component: () => import("@/views/dashboard/ProductDashboard.vue"),
+      //   meta: {
+      //     title: "상품별 대시보드",
+      //     basePath: "/dashboard/product"
+      //   }
+      // },
       {
         label: "영업부 매출 조회",
         path: "/sales-dashboard",
