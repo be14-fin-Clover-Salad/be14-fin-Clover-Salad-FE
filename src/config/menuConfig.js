@@ -16,7 +16,8 @@ export const menuList = [
       {
         label: "영업부 매출 조회",
         path: "/sales-dashboard",
-        component: () => import("@/views/salesDashboard/SalesDashboardLayout.vue"),
+        component: () =>
+          import("@/views/salesDashboard/SalesDashboardLayout.vue"),
       },
     ],
   },
@@ -51,18 +52,19 @@ export const menuList = [
       {
         label: "계약서 양식 관리",
         path: "/contract/template",
-        component: () => import("@/views/contractTemplate/ContractTemplateView.vue"),
+        component: () =>
+          import("@/views/contractTemplate/ContractTemplateView.vue"),
       },
     ],
   },
   {
     group: "고객",
     items: [
-      {
-        label: "고객 등록",
-        path: "/customer/register",
-        component: () => import("@/views/customer/CustomerRegister.vue"),
-      },
+      // {
+      //   label: "고객 등록",
+      //   path: "/customer/register",
+      //   component: () => import("@/views/customer/CustomerRegister.vue"),
+      // },
       {
         label: "고객 관리",
         path: "/customer",
@@ -70,8 +72,8 @@ export const menuList = [
       },
       {
         label: "상담 관리",
-        path: "/consulting",
-        component: () => import("@/views/consulting/ConsultingView.vue"),
+        path: "/consult",
+        component: () => import("@/views/consult/ConsultingView.vue"),
       },
     ],
   },
@@ -124,7 +126,7 @@ export const menuList = [
         component: () => import("@/views/log/AccessLogView.vue"),
       },
     ],
-  }
+  },
 ];
 
 // 탭에서만 사용할 메뉴 항목들
@@ -134,7 +136,7 @@ export const tabOnlyMenuItems = [
     path: "/mypage",
     component: () => import("@/views/user/Mypage.vue"),
     meta: {
-      group: "마이페이지"
-    }
-  }
+      group: "마이페이지",
+    },
+  },
 ];

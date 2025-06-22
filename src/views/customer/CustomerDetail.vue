@@ -1,93 +1,58 @@
 <template>
   <div class="customer-detail">
     <!-- 기본 정보 -->
-    <div class="section">
+    <div class="section" v-if="customer">
       <div class="section-header">
         <h2 class="section-title">기본 정보 <span class="required">*</span></h2>
         <div class="section-actions">
-          <button class="button primary">수정</button>
-          <button class="button danger">삭제</button>
+          <button class="button primary" @click="handleUpdate">수정</button>
+          <button class="button danger" @click="handleDelete">삭제</button>
         </div>
       </div>
-
       <div class="form-grid">
         <div class="form-item">
           <label>고객명</label>
-          <input type="text" v-model="form.name" />
+          <input type="text" v-model="customer.name" />
         </div>
         <div class="form-item">
           <label>생년월일</label>
-          <input type="date" v-model="form.birth" />
+          <input type="date" v-model="customer.birthdate" />
         </div>
         <div class="form-item">
           <label>연락처</label>
-          <input type="text" v-model="form.phone" />
+          <input type="text" v-model="customer.phone" />
         </div>
         <div class="form-item">
           <label>이메일</label>
-          <input type="email" v-model="form.email" />
+          <input type="email" v-model="customer.email" />
         </div>
         <div class="form-item full-width">
           <label>주소</label>
-          <input type="text" v-model="form.address" />
+          <input type="text" v-model="customer.address" />
         </div>
         <div class="form-item">
           <label>구분</label>
-          <select v-model="form.type">
-            <option>고객</option>
-            <option>리드</option>
+          <select v-model="customer.type">
+            <option value="CUSTOMER">고객</option>
+            <option value="PROSPECT">리드</option>
           </select>
         </div>
         <div class="form-item">
           <label>고객 등록일</label>
           <input
             type="date"
-            v-model="form.createdAt"
+            :value="formattedRegisterAt"
             readonly
             class="readonly"
           />
         </div>
         <div class="form-item full-width">
           <label>비고</label>
-          <textarea rows="3" v-model="form.note" />
+          <textarea rows="3" v-model="customer.etc" />
         </div>
       </div>
     </div>
-
-    <!-- 계약 내역 -->
-    <div class="section">
-      <h2 class="section-title">계약 내역 ↗</h2>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>계약 상태</th>
-            <th>계약 시작일</th>
-            <th>계약 만료일</th>
-            <th>계약 금액</th>
-            <th>은행명</th>
-            <th>계좌 번호</th>
-            <th>납부일</th>
-            <th>예금주</th>
-            <th>본점/지점</th>
-            <th>담당 직원</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(contract, idx) in contracts" :key="idx">
-            <td>{{ contract.status }}</td>
-            <td>{{ contract.startDate }}</td>
-            <td>{{ contract.endDate }}</td>
-            <td>{{ contract.amount }}</td>
-            <td>{{ contract.bank }}</td>
-            <td>{{ contract.account }}</td>
-            <td>{{ contract.payDay }}</td>
-            <td>{{ contract.holder }}</td>
-            <td>{{ contract.branch }}</td>
-            <td>{{ contract.staff }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div v-else class="loading-message">고객 정보를 불러오는 중입니다...</div>
 
     <!-- 상담 내역 -->
     <div class="section">
@@ -95,7 +60,7 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>일자</th>
+            <th>상담일</th>
             <th>상담 직원</th>
             <th>내용</th>
             <th>만족도</th>
@@ -103,64 +68,112 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(consult, idx) in consults" :key="idx">
-            <td>{{ consult.date }}</td>
-            <td>{{ consult.staff }}</td>
+          <tr v-if="consults.length === 0">
+            <td colspan="5">상담 내역이 없습니다.</td>
+          </tr>
+          <tr
+            v-for="consult in consults"
+            :key="consult.id"
+            @click="openConsultModal(consult)"
+            class="clickable-row"
+          >
+            <td>{{ consult.consultAt }}</td>
+            <td>{{ consult.employeeName }}</td>
             <td>{{ consult.content }}</td>
-            <td>{{ consult.score }}</td>
-            <td>{{ consult.note }}</td>
+            <td>{{ consult.feedbackScore }}</td>
+            <td>{{ consult.etc }}</td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- 상담 상세 모달 -->
+    <ConsultDetailModal
+      :show="showConsultDetailModal"
+      :consult="selectedConsult"
+      @close="closeConsultModal"
+    />
   </div>
 </template>
 
 <script setup>
-import { reactive } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import {
+  getMyCustomerById,
+  updateCustomer,
+  deleteCustomer,
+  getCustomerConsults,
+} from "@/api/customer.js";
+import ConsultDetailModal from "@/components/consult/ConsultDetailModal.vue";
 
-const form = reactive({
-  name: "강수지",
-  birth: "1993-10-06",
-  phone: "010-3867-9572",
-  email: "ksd5007@gmail.com",
-  address: "서울시 송파구 보성로87 상미빌딩 3층 강영회",
-  type: "고객",
-  createdAt: "2024-12-30",
-  note: "*직원\n*계약은 주의 필요함",
+const route = useRoute();
+const router = useRouter();
+
+const customer = ref(null);
+const consults = ref([]);
+const showConsultDetailModal = ref(false);
+const selectedConsult = ref(null);
+
+const customerId = Number(route.params.id);
+
+const openConsultModal = (consult) => {
+  selectedConsult.value = consult;
+  showConsultDetailModal.value = true;
+};
+
+const closeConsultModal = () => {
+  showConsultDetailModal.value = false;
+  selectedConsult.value = null;
+};
+
+const formattedRegisterAt = computed(() => {
+  if (!customer.value?.registerAt) return "";
+  return customer.value.registerAt.split("T")[0];
 });
 
-const contracts = [
-  {
-    status: "계약 중",
-    startDate: "2024.12.30",
-    endDate: "2025.6.30",
-    amount: "17,424,000",
-    bank: "신한",
-    account: "110-0000-000000",
-    payDay: "25일",
-    holder: "강수지",
-    branch: "본점",
-    staff: "김광승",
-  },
-];
+onMounted(async () => {
+  const state = history.state;
+  if (state && state.customerData) {
+    console.log("History state에서 고객 데이터 로드:", state.customerData);
+    customer.value = state.customerData;
+  } else {
+    console.log("API를 통해 고객 데이터 로드:", customerId);
+    customer.value = await getMyCustomerById(customerId);
+  }
 
-const consults = [
-  {
-    date: "2025.05.01",
-    staff: "강백현 대리",
-    content: "보증기 필터 교체 관련",
-    score: "5.0",
-    note: "-",
-  },
-  {
-    date: "2025.05.03",
-    staff: "김영경 과장",
-    content: "에어컨 연결 문의",
-    score: "4.8",
-    note: "-",
-  },
-];
+  // 계약 및 상담 내역 조회
+  if (customer.value) {
+    try {
+      consults.value = await getCustomerConsults(customer.value.id);
+    } catch (error) {
+      console.error("상담 내역 조회 중 에러 발생:", error);
+    }
+  }
+});
+
+const handleUpdate = async () => {
+  if (!customer.value) return;
+  try {
+    await updateCustomer(customer.value.id, customer.value);
+    alert("고객 정보가 수정되었습니다.");
+  } catch (error) {
+    alert("고객 정보 수정에 실패했습니다.");
+  }
+};
+
+const handleDelete = async () => {
+  if (!customer.value) return;
+  if (confirm("정말로 이 고객 정보를 삭제하시겠습니까?")) {
+    try {
+      await deleteCustomer(customer.value.id);
+      alert("고객 정보가 삭제되었습니다.");
+      router.push("/customer");
+    } catch (error) {
+      alert("고객 정보 삭제에 실패했습니다.");
+    }
+  }
+};
 </script>
 
 <style scoped>
@@ -297,5 +310,20 @@ const consults = [
   padding: 10px;
   text-align: center;
   color: #333;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover {
+  background-color: #f9f9f9;
+}
+
+.loading-message {
+  padding: 40px;
+  text-align: center;
+  color: #888;
+  font-size: 16px;
 }
 </style>
