@@ -14,12 +14,12 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:5001", // Spring Boot 서버 주소
+        target: "http://localhost:5000", // Spring Boot 서버 주소
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
       },
       "/notification/subscribe": {
-        target: "http://localhost:5001",
+        target: "http://localhost:5000",
         changeOrigin: true,
         ws: true,
         rewrite: (path) => path.replace(/^\/notification/, "/notification"),
