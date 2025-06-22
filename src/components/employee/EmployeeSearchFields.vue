@@ -6,13 +6,13 @@
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
       </div>
     </div>
-    <div class="row">
+    <div class="row" v-if="expanded">
       <div class="field" v-for="(item, index) in row2" :key="item.key">
         <label :for="item.key">{{ item.label }}</label>
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
       </div>
     </div>
-    <div class="row">
+    <div class="row" v-if="expanded">
       <div class="field" v-for="(item, index) in row3" :key="item.key">
         <label :for="item.key">{{ item.label }}</label>
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
@@ -22,7 +22,10 @@
 </template>
 
 <script setup>
-const props = defineProps({ filters: Object })
+const props = defineProps({ 
+  filters: Object,
+  expanded: { type: Boolean, default: true }
+})
 
 const row1 = [
   { label: '사번', key: 'code', placeholder: '예: 202401001' },

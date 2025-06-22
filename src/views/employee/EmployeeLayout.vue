@@ -4,8 +4,8 @@
       <!-- 1. 상단 검색창 영역 -->
       <div class="search-bar-area">
         <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
-          <template #fields="{ filters }">
-            <EmployeeSearchFields :filters="filters" />
+          <template #fields="{ filters, expanded }">
+            <EmployeeSearchFields :filters="filters" :expanded="expanded" />
           </template>
         </SearchFilterShell>
       </div>

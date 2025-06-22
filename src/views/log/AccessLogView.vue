@@ -1,6 +1,6 @@
 <template>
   <div class="access-log-container">
-    <h2 class="page-title">접속 로그 관리</h2>
+    <!-- <h2 class="page-title">접속 로그 관리</h2> -->
 
     <!-- 검색 필터 -->
     <div class="search-bar">

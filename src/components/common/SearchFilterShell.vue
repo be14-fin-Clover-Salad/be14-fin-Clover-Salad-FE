@@ -1,11 +1,11 @@
 <template>
   <div class="search-filter-shell">
     <form @submit.prevent="emitSearch">
-      <slot name="fields" :filters="filters" :expanded="isExpanded" />
+      <slot name="fields" :filters="filters" :expanded="props.showToggle ? isExpanded : true" />
 
       <div class="actions">
-        <!-- 더보기 버튼을 왼쪽으로 -->
-        <span class="expand-btn" @click="toggleExpand">
+        <!-- 더보기 버튼을 왼쪽으로 (showToggle이 true일 때만 표시) -->
+        <span v-if="props.showToggle" class="expand-btn" @click="toggleExpand">
           <span class="expand-text">{{ isExpanded ? '접기' : '더보기' }}</span>
           <svg 
             class="expand-icon" 
@@ -44,7 +44,8 @@ const emit = defineEmits(['search', 'reset', 'toggle-expand'])
 
 const props = defineProps({
   initial: { type: Object, default: () => ({}) },
-  expanded: { type: Boolean, default: false }
+  expanded: { type: Boolean, default: false },
+  showToggle: { type: Boolean, default: true } // 더보기 버튼 표시 여부
 })
 
 const filters = reactive({ ...props.initial })

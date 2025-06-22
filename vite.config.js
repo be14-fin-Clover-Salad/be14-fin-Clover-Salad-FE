@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8080,
+    port: 5173,
     // proxy: {
     //   '/api': {
     //     target: 'http://localhost:8080', // Spring Boot 서버 주소

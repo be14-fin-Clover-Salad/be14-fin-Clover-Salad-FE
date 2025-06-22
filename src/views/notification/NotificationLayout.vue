@@ -47,12 +47,26 @@
         <div class="bottom-actions">
             <div class="pagination">
                 <button 
-                    v-for="page in totalPages" 
-                    :key="page"
-                    @click="changePage(page - 1)"
-                    :class="{ 'active': currentPage === page - 1 }"
+                    @click="changePage(currentPage - 10)"
+                    :disabled="currentPage < 10"
                     class="page-button">
-                    {{ page }}
+                    &lt;
+                </button>
+                <div class="page-numbers">
+                    <span 
+                        v-for="pageNum in visiblePageNumbers" 
+                        :key="pageNum"
+                        @click="changePage(pageNum - 1)"
+                        :class="{ 'active': currentPage === pageNum - 1 }"
+                        class="page-number">
+                        {{ pageNum }}
+                    </span>
+                </div>
+                <button 
+                    @click="changePage(currentPage + 10)"
+                    :disabled="currentPage + 10 >= totalPages"
+                    class="page-button">
+                    &gt;
                 </button>
             </div>
             
@@ -228,6 +242,18 @@ const isAllSelected = computed(() => {
     return notifications.value.length > 0 && selectedNotifications.value.length === notifications.value.length
 })
 
+const visiblePageNumbers = computed(() => {
+    const startPage = Math.floor(currentPage.value / 10) * 10 + 1
+    const endPage = Math.min(startPage + 9, totalPages.value)
+    const pages = []
+    
+    for (let i = startPage; i <= endPage; i++) {
+        pages.push(i)
+    }
+    
+    return pages
+})
+
 const toggleSelectAll = (event) => {
     if (event.target.checked) {
         selectedNotifications.value = notifications.value.map(n => n.id)
@@ -393,33 +419,61 @@ onMounted(() => {
 .pagination {
     display: flex;
     justify-content: center;
-    gap: 5px;
+    align-items: center;
+    gap: 10px;
     margin-top: 20px;
+}
 
-    .page-button {
-        min-width: 32px;
-        height: 32px;
-        padding: 0 6px;
+.page-numbers {
+    display: flex;
+    gap: 4px;
+}
+
+.page-number {
+    cursor: pointer;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    color: #495057;
+    font-size: 14px;
+    font-weight: normal;
+    background-color: transparent;
+
+    &:hover {
         border: 1px solid #dee2e6;
-        background-color: white;
-        color: #495057;
-        font-size: 14px;
-        cursor: pointer;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    }
 
-        &:hover {
-            background-color: #e9ecef;
-            border-color: #dee2e6;
-        }
+    &.active {
+        background-color: transparent;
+        font-weight: bold;
+        color: #000000;
+    }
+}
 
-        &.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
+.page-button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border: none;
+    background-color: transparent;
+    color: #495057;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+
+    &:hover:not(:disabled) {
+        background-color: transparent;
+        border: 1px solid #dee2e6;
+    }
+
+    &:disabled {
+        background-color: transparent;
+        color: #adb5bd;
+        cursor: not-allowed;
     }
 }
 
