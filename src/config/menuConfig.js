@@ -5,14 +5,23 @@ export const menuList = [
       {
         label: "사원별 실적 조회",
         path: "/dashboard/employee",
-        // component: () =>
-        // import("@/views/dashboard/EmployeePerformanceView.vue"),
+        redirect: "/dashboard/employee/:employeeCode",
+        component: () => import("@/views/dashboard/EmployeeDashboard.vue"),
+        meta: {
+          title: "사원별 대시보드",
+          basePath: "/dashboard/employee"
+        }
       },
-      {
-        label: "상품별 매출 조회",
-        path: "/dashboard/product",
-        // component: () => import("@/views/dashboard/ProductSalesView.vue"),
-      },
+      // { // 기능 미완성으로 인한 메뉴 숨기기
+      //   label: "상품별 매출 조회",
+      //   path: "/dashboard/product",
+      //   redirect: "/dashboard/product/:productId",
+      //   component: () => import("@/views/dashboard/ProductDashboard.vue"),
+      //   meta: {
+      //     title: "상품별 대시보드",
+      //     basePath: "/dashboard/product"
+      //   }
+      // },
       {
         label: "영업부 매출 조회",
         path: "/sales-dashboard",
