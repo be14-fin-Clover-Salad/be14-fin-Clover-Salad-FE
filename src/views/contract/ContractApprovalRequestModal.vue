@@ -12,7 +12,7 @@
           <div class="input">{{ requester }}</div>
         </div>
 
-       <div class="field status-field">
+        <div class="field status-field">
           <label>결재 상태:</label>
           <span class="status-badge" :class="getStatusClass(contractState)">
             {{ contractState || '알 수 없음' }}
@@ -24,29 +24,27 @@
           <input v-model="form.title" class="input editable" placeholder="결재 제목을 입력하세요" />
         </div>
 
+        <!-- 결재 내용 textarea를 아래로 확장 -->
         <div class="field full">
           <label>결재 내용:</label>
           <textarea
             v-model="form.content"
-            rows="6"
+            rows="12"
             class="content-textarea editable"
             placeholder="결재 요청 내용을 입력하세요"
           ></textarea>
         </div>
 
-        <div class="field full">
-          <label>결재 코멘트:</label>
-          <textarea
-            v-model="form.comment"
-            rows="5"
-            class="comment-textarea editable"
-            placeholder="참고 코멘트를 입력하세요 (선택)"
-          ></textarea>
-        </div>
-
+        <!-- action buttons -->
         <div class="field full action-buttons">
           <div class="button-group">
-            <button class="approve-btn" @click="handleSubmit">요청</button>
+            <button
+              class="approve-btn"
+              :disabled="isApproveDisabled"
+              @click="handleSubmit"
+            >
+              {{ approveBtnLabel }}
+            </button>
             <button class="reject-btn" @click="emit('close')">취소</button>
           </div>
         </div>
@@ -56,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/auth'
 
@@ -68,7 +66,6 @@ const props = defineProps({
 })
 console.log('props.contractState:', props.contractState)
 
-
 const emit = defineEmits(['close', 'refresh'])
 
 const authStore = useAuthStore()
@@ -76,8 +73,19 @@ const requester = authStore.userInfo?.name || ''
 
 const form = ref({
   title: '',
-  content: '',
-  comment: ''
+  content: ''
+})
+
+// 상태에 따라 버튼 라벨과 비활성화 조건 계산
+const approveBtnLabel = computed(() => {
+  if (props.contractState === '결재전') return '요청'
+  if (props.contractState === '반려') return '재요청'
+  return '요청'
+})
+
+const isApproveDisabled = computed(() => {
+  // 결재중(혹은 '완료' 등 비활성화할 상태)에는 버튼 비활성화
+  return props.contractState === '결재중'
 })
 
 function getStatusClass(status) {
@@ -88,6 +96,8 @@ function getStatusClass(status) {
       return 'status-inprogress'
     case '계약중':
       return 'status-active'
+    case '반려':
+      return 'status-rejected'
     default:
       return 'status-unknown'
   }
@@ -104,8 +114,8 @@ async function handleSubmit() {
     const payload = {
       contractId: props.contractId,
       title: form.value.title,
-      content: form.value.content,
-      comment: form.value.comment
+      content: form.value.content
+      // comment 제거
     }
 
     await api.post('/approval/request', payload, {
@@ -187,8 +197,7 @@ textarea {
   font-family: inherit;
 }
 
-.content-textarea,
-.comment-textarea {
+.content-textarea {
   width: 100%;
   border: none;
   background: #f8f9fa;
@@ -199,6 +208,8 @@ textarea {
   outline: none;
   border-radius: 6px;
   border: 1px solid #e0e0e0;
+  min-height: 180px;
+  /* 결재내용란 더 크게 */
 }
 
 .editable {
@@ -231,6 +242,12 @@ textarea {
   background-color: #e8f5e9;
   color: #2e7d32;
   border: 1px solid #81c784;
+}
+
+.status-badge.status-rejected {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef5350;
 }
 
 .status-badge.status-unknown {
@@ -266,6 +283,13 @@ textarea {
   box-sizing: border-box;
 }
 
+.approve-btn:disabled {
+  background: #f1f1f1;
+  color: #aaa;
+  border: 1px solid #ddd;
+  cursor: not-allowed;
+}
+
 .reject-btn {
   background-color: #ffebee;
   color: #c62828;
@@ -281,7 +305,7 @@ textarea {
   box-sizing: border-box;
 }
 
-.approve-btn:hover {
+.approve-btn:hover:enabled {
   background-color: #c8e6c9;
 }
 
