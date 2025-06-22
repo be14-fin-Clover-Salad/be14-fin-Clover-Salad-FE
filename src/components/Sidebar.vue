@@ -1,18 +1,3 @@
-<script setup>
-import { ref } from "vue";
-
-const openMenu = ref(null);
-const activeSubmenu = ref("");
-
-const toggleMenu = (menuName) => {
-  openMenu.value = openMenu.value === menuName ? null : menuName;
-};
-
-const activate = (submenu) => {
-  activeSubmenu.value = submenu;
-};
-</script>
-
 <template>
   <aside class="sidebar">
     <div class="sidebar-content">
