@@ -1,7 +1,12 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell :initial="searchForm" :showToggle="false" @search="handleSearch" @reset="handleReset">
+    <SearchFilterShell
+      :initial="searchForm"
+      :showToggle="false"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
       <template #fields="{ filters }">
         <ContractTemplateSearchFields :filters="filters" />
       </template>
@@ -9,29 +14,48 @@
 
     <!-- 테이블 -->
     <div class="table-wrapper">
-      <BaseDataTable :columns="columns" :rows="rows" :isLoading="isLoading" :selectedCode="selectedRowCode"
-        @row-click="handleRowClick" @row-dblclick="handleRowDblClick" />
+      <BaseDataTable
+        :columns="columns"
+        :rows="rows"
+        :isLoading="isLoading"
+        :selectedCode="selectedRowCode"
+        @row-click="handleRowClick"
+        @row-dblclick="handleRowDblClick"
+      >
+        <template #cell-createdAt="{ row }">
+          {{ row.createdAtFormatted }}
+        </template>
+      </BaseDataTable>
     </div>
 
     <!-- 버튼 영역 -->
     <div class="action-buttons">
-      <button class="register-btn" @click="showUploadModal = true">등록</button>
+      <button class="register-btn" @click="openCreateModal">등록</button>
       <button class="edit-btn" :disabled="!selectedTemplate" @click="handleEdit">수정</button>
       <button class="delete-btn" :disabled="!selectedTemplate" @click="handleDelete">삭제</button>
     </div>
 
-    <!-- 업로드 모달 -->
-    <ContractTemplateUploadModal :isOpen="showUploadModal" :editMode="!!selectedTemplate"
-      :initialData="selectedTemplate" @close="showUploadModal = false" @upload-success="handleUploadSuccess" />
+    <!-- 업로드/수정 모달 -->
+    <ContractTemplateUploadModal
+      :isOpen="showUploadModal"
+      :editMode="!!selectedTemplate"
+      :initialData="selectedTemplate"
+      @close="closeUploadModal"
+      @upload-success="handleUploadSuccess"
+    />
 
     <!-- 상세 모달 -->
-    <ContractTemplateDetailModal v-if="selectedTemplate" :isOpen="showDetailModal" :template="selectedTemplate"
-      @close="showDetailModal = false" />
+    <ContractTemplateDetailModal
+      v-if="showDetailModal"
+      :isOpen="showDetailModal"
+      :template="selectedTemplate"
+      @close="closeDetailModal"
+    />
   </section>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
@@ -40,6 +64,7 @@ import ContractTemplateSearchFields from '@/views/contractTemplate/ContractTempl
 import ContractTemplateUploadModal from '@/views/contractTemplate/ContractTemplateUploadModal.vue'
 import ContractTemplateDetailModal from '@/views/contractTemplate/ContractTemplateDetailModal.vue'
 
+// 검색 폼 상태
 const searchForm = reactive({
   name: '',
   version: '',
@@ -47,24 +72,50 @@ const searchForm = reactive({
   createdAtEnd: ''
 })
 
-const rows = reactive([])
+// 테이블 데이터 / UI 상태
+const rows = ref([])
 const isLoading = ref(false)
 const showUploadModal = ref(false)
 const showDetailModal = ref(false)
 const selectedTemplate = ref(null)
 const selectedRowCode = ref(null)
 
+const columns = [
+  { label: '양식명', key: 'name', width: '150px' },
+  { label: '버전', key: 'version', width: '100px' },
+  { label: '등록일', key: 'createdAtFormatted', width: '150px' },
+  { label: '비고', key: 'description', width: '200px' }
+]
+
+// 마운트 시 한 번만
+onMounted(() => {
+  handleSearch({ ...searchForm })
+})
+
+function openCreateModal() {
+  selectedTemplate.value = null
+  selectedRowCode.value = null
+  showUploadModal.value = true
+}
+
 async function handleSearch(data) {
-  const token = useAuthStore().accessToken
+  isLoading.value = true
   try {
-    isLoading.value = true
-    const response = await api.post('/api/query/documentTemplate/search', data, {
+    const token = useAuthStore().accessToken
+    const res = await api.post('/api/query/documentTemplate/search', data, {
       headers: { Authorization: `Bearer ${token}` },
       withCredentials: true
     })
-    rows.splice(0, rows.length, ...response.data)
-  } catch (error) {
-    console.error('검색 실패:', error)
+    rows.value = res.data.map(item => ({
+      ...item,
+      createdAtFormatted: new Date(item.createdAt)
+        .toLocaleString('ko-KR', {
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        })
+    }))
+  } catch (e) {
+    console.error('검색 실패:', e)
   } finally {
     isLoading.value = false
   }
@@ -74,20 +125,12 @@ function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
 }
 
-function handleUploadSuccess(templateData) {
-  selectedTemplate.value = templateData
-  showUploadModal.value = false
-  handleSearch({ ...searchForm })
-  showDetailModal.value = true
+function handleRowClick(t) {
+  selectedRowCode.value = t.id
+  selectedTemplate.value = t
 }
-
-function handleRowClick(template) {
-  selectedRowCode.value = template.id
-  selectedTemplate.value = template
-}
-
-function handleRowDblClick(template) {
-  selectedTemplate.value = template
+function handleRowDblClick(t) {
+  selectedTemplate.value = t
   showDetailModal.value = true
 }
 
@@ -95,89 +138,71 @@ async function handleEdit() {
   if (!selectedTemplate.value) return
   try {
     const token = useAuthStore().accessToken
-    const response = await api.get(`/api/query/documentTemplate/${selectedTemplate.value.id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    selectedTemplate.value = response.data
+    const res = await api.get(
+      `/api/query/documentTemplate/${selectedTemplate.value.id}`,
+      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+    )
+    selectedTemplate.value = res.data
     showUploadModal.value = true
-  } catch (err) {
+  } catch {
     alert('수정 불러오기 실패')
-    console.error(err)
   }
 }
 
 async function handleDelete() {
   if (!selectedTemplate.value) return
-  if (!confirm('정말 삭제하시겠습니까?')) return
+  if (!confirm('삭제하시겠습니까?')) return
   try {
     const token = useAuthStore().accessToken
-    await api.delete(`/api/command/documentTemplate/${selectedTemplate.value.id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    await api.delete(
+      `/api/command/documentTemplate/${selectedTemplate.value.id}`,
+      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+    )
     alert('삭제 완료')
     selectedTemplate.value = null
-    handleSearch({ ...searchForm })
-  } catch (err) {
+    await handleSearch({ ...searchForm })
+  } catch {
     alert('삭제 실패')
-    console.error(err)
   }
 }
 
-const columns = [
-  { label: '양식명', key: 'name', width: '150px' },
-  { label: '버전', key: 'version', width: '100px' },
-  { label: '등록일', key: 'createdAt', width: '150px' },
-  { label: '비고', key: 'note', width: '200px' }
-]
+
+async function handleUploadSuccess(uploadResp) {
+  showUploadModal.value = false
+  
+  await handleSearch({ ...searchForm })
+
+  const templateId = (uploadResp && uploadResp.id)
+    ? uploadResp.id
+    : (selectedTemplate.value && selectedTemplate.value.id)
+
+  try {
+    const token = useAuthStore().accessToken
+    const res = await api.get(
+      `/api/query/documentTemplate/${templateId}`,
+      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+    )
+    selectedTemplate.value = res.data
+    selectedRowCode.value = templateId
+    showDetailModal.value = true
+  } catch (e) {
+    console.error('상세 조회 실패:', e)
+    alert('정상 등록/수정되었으나 상세 정보를 불러오지 못했습니다.')
+  }
+}
+
+function closeUploadModal() { showUploadModal.value = false }
+function closeDetailModal() { showDetailModal.value = false }
 </script>
 
 <style scoped>
-section {
-  padding: 20px;
-}
-
-::v-deep(.data-table) {
-    width: 100%;
-    table-layout: auto;
-  }
-
-.table-wrapper {
-  margin-top: 24px;
-  overflow-x: auto;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.register-btn,
-.edit-btn,
-.delete-btn {
-  background-color: #6c87c1;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.edit-btn {
-  background-color: #ffc107;
-  color: #000;
-}
-
-.delete-btn {
-  background-color: #f44336;
-}
-
-.edit-btn:disabled,
-.delete-btn:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  color: #666;
-}
+section { padding:20px }
+::v-deep(.data-table) { width:100%; table-layout:auto }
+.table-wrapper { margin-top:24px; overflow-x:auto }
+.action-buttons { display:flex; justify-content:flex-end; gap:12px; margin-top:16px }
+.register-btn,.edit-btn,.delete-btn{padding:8px 16px;font-size:14px;border:none;border-radius:6px;cursor:pointer}
+.register-btn{background:#6c87c1;color:#fff}
+.edit-btn{background:#ffc107;color:#000}
+.delete-btn{background:#f44336;color:#fff}
+.register-btn:disabled,.edit-btn:disabled,.delete-btn:disabled{background:#ccc;color:#666;cursor:not-allowed}
 </style>
