@@ -113,9 +113,9 @@ textarea {
   cursor: pointer;
 }
 .submit-btn {
-  background-color: #e6f7ec;
-  color: #1eaf67;
-  border: 1px solid #1eaf67;
+  background-color: #a6ce39;
+  color: white;
+  border: 1px solid #a6ce39;
 }
 .submit-btn:disabled {
   background-color: #f0f0f0;

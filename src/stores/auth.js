@@ -72,7 +72,6 @@ export const useAuthStore = defineStore('auth', {
           throw new Error('새로운 액세스 토큰을 받지 못했습니다.')
         }
       } catch (error) {
-        console.error('토큰 갱신 실패:', error)
         this.clearToken()
         throw error
       }
@@ -88,7 +87,6 @@ export const useAuthStore = defineStore('auth', {
         this.setUserInfo(response.data)
         return response.data
       } catch (error) {
-        console.error('사용자 정보를 가져오는데 실패했습니다:', error)
         this.clearToken()
         throw error
       }
@@ -104,19 +102,15 @@ export const useAuthStore = defineStore('auth', {
       }
       
       try {
-        console.log('[Auth] 사용자 정보 복구 시도...')
         const userInfo = await this.fetchUserInfo()
-        console.log('[Auth] 사용자 정보 복구 성공')
         return userInfo
       } catch (error) {
-        console.error('[Auth] 사용자 정보 복구 실패:', error)
         throw error
       }
     },
     
     // 개발/테스트용: 사용자 정보만 의도적으로 유실 (토큰은 유지)
     simulateUserInfoLoss() {
-      console.warn('[Auth] 사용자 정보 유실 시뮬레이션')
       this.userInfo = null
     }
   }

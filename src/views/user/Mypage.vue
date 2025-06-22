@@ -668,21 +668,21 @@ export default {
 }
 
 .confirm-btn {
-  background-color: #4CAF50;
+  background-color: #a6ce39;
   color: white;
 }
 
 .cancel-btn {
-  background-color: #f44336;
+  background-color: #e53935;
   color: white;
 }
 
 .confirm-btn:hover {
-  background-color: #45a049;
+  background-color: #94b933;
 }
 
 .cancel-btn:hover {
-  background-color: #da190b;
+  background-color: #c62828;
 }
 
 .error-message {
@@ -726,12 +726,12 @@ export default {
 }
 
 .edit-btn {
-  background-color: #2196F3;
+  background-color: #4791ff;
   color: white;
 }
 
 .save-btn {
-  background-color: #4CAF50;
+  background-color: #a6ce39;
   color: white;
 }
 
@@ -747,11 +747,11 @@ export default {
 }
 
 .edit-btn:hover {
-  background-color: #1976D2;
+  background-color: #317ae0;
 }
 
 .save-btn:hover {
-  background-color: #45a049;
+  background-color: #94b933;
 }
 
 .profile-modal {

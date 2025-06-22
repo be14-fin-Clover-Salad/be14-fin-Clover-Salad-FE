@@ -234,6 +234,7 @@ const handleDelete = async () => {
 .section-actions .button.primary {
   background-color: #a6ce39;
 }
+
 .section-actions .button.primary:hover {
   background-color: #94b933;
 }
@@ -241,6 +242,7 @@ const handleDelete = async () => {
 .section-actions .button.danger {
   background-color: #e53935;
 }
+
 .section-actions .button.danger:hover {
   background-color: #c62828;
   color: #fbe9e7;

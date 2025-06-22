@@ -25,10 +25,14 @@ export const menuList = [
     group: "실적",
     items: [
       {
-        label: "실적 관리",
-        path: "/performance",
-        // component: () =>
-        //   import("@/views/performance/PerformanceManagementView.vue"),
+        label: "개인 실적 목표 관리",
+        path: "/goal/employee",
+        component: () => import("@/views/goal/EmployeeGoalList.vue"),
+      },
+      {
+        label: "팀 실적 목표 조회",
+        path: "/goal/department",
+        component: () => import("@/views/goal/DepartmentGoalList.vue"),
       },
       {
         label: "매출 내역",
@@ -117,9 +121,9 @@ export const menuList = [
         component: () => import("@/views/notification/NotificationLayout.vue"),
       },
       {
-        label: "로그인 관리",
-        path: "/admin/login",
-        // component: () => import("@/views/admin/LoginManagementView.vue"),
+        label: "로그 관리",
+        path: "/admin/log",
+        component: () => import("@/views/log/AccessLogView.vue"),
       },
     ],
   },

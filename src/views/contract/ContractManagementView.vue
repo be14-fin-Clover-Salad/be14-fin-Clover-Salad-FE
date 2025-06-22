@@ -31,29 +31,25 @@
       <button class="replace-btn" @click="openReplaceModal" :disabled="!selectedContract">재업로드</button>
     </div>
 
-    <!-- 계약서 등록 모달 -->
+    <!-- 모달들 -->
     <ContractUploadModal
       :isOpen="showUploadModal"
       @close="showUploadModal = false"
       @upload-success="handleUploadSuccess"
     />
-
-    <!-- 업로드 완료 안내 모달 -->
     <ContractUploadSuccessModal
       :isOpen="showSuccessModal"
       @confirm="goToDetailView"
       @close="showSuccessModal = false"
     />
-
-    <!-- 상세 보기 모달 -->
     <ContractDetailModal
       v-if="selectedContract"
       :isOpen="showDetailModal"
       :contractId="selectedContract?.id"
+      :contractCode="selectedContract.code"
+      :contractStatus="selectedContract.status"
       @close="showDetailModal = false"
     />
-
-    <!-- 계약서 재업로드 모달 -->
     <ContractReplaceModal
       :isOpen="showReplaceModal"
       :contract="selectedContract"
@@ -64,7 +60,8 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
@@ -74,6 +71,8 @@ import ContractUploadModal from '@/views/contract/ContractUploadModal.vue'
 import ContractUploadSuccessModal from '@/components/contract/ContractUploadSuccessModal.vue'
 import ContractDetailModal from '@/components/contract/ContractDetailModal.vue'
 import ContractReplaceModal from '@/views/contract/ContractReplaceModal.vue'
+
+const route = useRoute()
 
 const searchForm = reactive({
   code: '', minAmount: '', maxAmount: '',
@@ -95,6 +94,23 @@ const selectedContract = ref(null)
 const selectedRowCode = ref(null)
 const isExpanded = ref(false)
 
+// 페이지 로드 시 쿼리 파라미터 확인
+onMounted(async () => {
+  const contractCode = route.query.contractCode
+  if (contractCode) {
+    // 해당 계약 코드로 검색
+    await handleSearch({ code: contractCode })
+    
+    // 검색 결과에서 해당 계약 찾기
+    const targetContract = rows.find(contract => contract.code === contractCode)
+    if (targetContract) {
+      selectedContract.value = targetContract
+      selectedRowCode.value = targetContract.id
+      showDetailModal.value = true
+    }
+  }
+})
+
 async function handleSearch(data) {
   const authStore = useAuthStore()
   const token = authStore.accessToken
@@ -115,7 +131,6 @@ async function handleSearch(data) {
 function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
 }
-
 
 async function handleUploadSuccess(contractData) {
   const contractId = contractData.contractId
@@ -149,6 +164,7 @@ function handleRowClick(contract) {
 function handleRowDblClick(contract) {
   selectedContract.value = contract
   showDetailModal.value = true
+  console.log('contract:', contract)
 }
 
 function openReplaceModal() {
@@ -168,13 +184,13 @@ function handleReplaceSuccess(updatedContract) {
 
 const columns = [
   { label: '계약 번호', key: 'code', width: '120px' },
-  { label: '렌탈 비용', key: 'amount', width: '100px' },
+  { label: '렌탈 비용 (원/월)', key: 'amount', width: '100px' },
   { label: '계약 상태', key: 'status', width: '100px' },
   { label: '고객 명', key: 'customerName', width: '130px' },
   { label: '담당 영업사원', key: 'employeeName', width: '130px' },
   { label: '계약 시작일', key: 'startDate', width: '120px' },
   { label: '계약 만료일', key: 'endDate', width: '120px' },
-  { label: '납입 일자', key: 'paymentDay', width: '100px' },
+  { label: '납입 일자 (일)', key: 'paymentDay', width: '100px' },
   { label: '등록일', key: 'createdAt', width: '120px' },
   { label: '상품 명', key: 'productNames', width: '200px' },
   { label: '비고', key: 'etc', width: '150px' }

@@ -84,8 +84,10 @@ const accessToken = ref('')
 const title = ref('')
 const content = ref('')
 const isDeleted = ref(false)
+const isSubmitting = ref(false)
 
 const selectedEmployees = ref([])
+const selectedDepartments = ref([])
 const openAddModal = ref(false)
 const employees = ref([])
 const departments = ref([])
@@ -291,7 +293,7 @@ input[type='text'] {
   margin-top: 2rem;
 }
 .submit-btn {
-  background-color: #00a86b;
+  background-color: #a6ce39;
   color: white;
   padding: 0.8rem 1.6rem;
   border: none;
