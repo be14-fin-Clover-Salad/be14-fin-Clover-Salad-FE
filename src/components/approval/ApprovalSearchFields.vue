@@ -110,6 +110,15 @@ defineProps({
   font-size: 13px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: white;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  vertical-align: middle;
+  line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .field input:focus,
