@@ -43,8 +43,8 @@
       @close="showSuccessModal = false"
     />
     <ContractDetailModal
-      v-if="showDetailModal"
-      :key="selectedContract.id"
+      v-if="selectedContract"
+      :key="selectedContract?.id"    
       :isOpen="showDetailModal"
       :contractId="selectedContract.id"
       :contractCode="selectedContract.code"
@@ -178,6 +178,7 @@ function openReplaceModal() {
 function handleReplaceModalClose() {
   showReplaceModal.value = false
 }
+
 
 // 재업로드 성공 후 상세정보 재조회
 async function handleReplaceSuccess(updatedContract) {
