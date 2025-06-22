@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const BASE_URL = import.meta.env.MODE === 'development'
   ? 'http://localhost:5000'
-  : 'http://salad-alb-240627784.ap-northeast-2.elb.amazonaws.com'
+  : 'https://api.saladerp.com'
 
 // 일반 요청용 인스턴스
 const api = axios.create({
