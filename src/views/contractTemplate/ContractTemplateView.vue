@@ -1,7 +1,7 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
+    <SearchFilterShell :initial="searchForm" :showToggle="false" @search="handleSearch" @reset="handleReset">
       <template #fields="{ filters }">
         <ContractTemplateSearchFields :filters="filters" />
       </template>

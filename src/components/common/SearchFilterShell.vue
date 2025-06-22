@@ -16,7 +16,7 @@
         />
         -->
         <div class="spacer"></div>
-        <span class="expand-btn" @click="emit('toggle-expand')">
+        <span v-if="props.showToggle"class="expand-btn" @click="emit('toggle-expand')">
           {{ expanded ? '접기 ▲' : '더보기 ▼' }}
         </span>
 
@@ -37,7 +37,8 @@ const emit = defineEmits(['search', 'reset', 'toggle-expand'])
 
 const props = defineProps({
   initial: { type: Object, default: () => ({}) },
-  expanded: { type: Boolean, default: false }
+  expanded: { type: Boolean, default: false },
+  showToggle: { type: Boolean, default: true } // 더보기 버튼 표시 여부
 })
 
 const filters = reactive({ ...props.initial })
