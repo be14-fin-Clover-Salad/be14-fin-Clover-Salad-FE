@@ -1,5 +1,5 @@
 <template>
-  <div class="qna-wrapper" v-if="filteredQnas.length">
+  <div class="qna-container" v-if="filteredQnas.length">
     <div class="top-area">
       <div class="filter-area">
         <select v-model="selectedStatus">
@@ -13,54 +13,74 @@
       </div>
     </div>
 
-    <table class="qna-table">
-      <thead>
-        <tr>
-          <th class="qna-index">번호</th>
-          <th class="qna-title">제목</th>
-          <th class="qna-status">상태</th>
-          <th class="qna-author">작성자</th>
-          <th class="qna-date">등록일자</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(qna, index) in paginatedQnas"
-          :key="qna.id"
-          class="qna-row"
-          :class="{ deleted: isAdmin && qna.is_deleted }"
-        >
-          <td class="qna-index">{{ calcQnaNumber(index) }}</td>
-          <td class="qna-title">
-            <router-link :to="`/support/qna/${qna.id}`" class="qna-link">
-              <template v-if="isAdmin && qna.is_deleted">
-                <del v-html="formatTitle(qna.title)" />
-              </template>
-              <template v-else>
-                <span v-html="formatTitle(qna.title)" />
-              </template>
-            </router-link>
-          </td>
-          <td class="qna-status">
-            <span :class="['status-badge', qna.answerStatus === '대기' ? 'waiting' : 'done']">
-              {{ qna.answerStatus }}
-            </span>
-          </td>
-          <td class="qna-author">
-            {{ getEmployeeDisplayName(qna.writerId) }}
-          </td>
-          <td class="qna-date">{{ formatDate(qna.createdAt) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="board-container">
+      <table class="board-table">
+        <thead>
+          <tr>
+            <th class="qna-index">번호</th>
+            <th class="qna-title">제목</th>
+            <th class="qna-status">상태</th>
+            <th class="qna-author">작성자</th>
+            <th class="qna-date">등록일자</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(qna, index) in paginatedQnas"
+            :key="qna.id"
+            class="qna-row"
+            :class="{ deleted: isAdmin && qna.is_deleted }"
+          >
+            <td class="qna-index">{{ calcQnaNumber(index) }}</td>
+            <td class="qna-title">
+              <router-link :to="`/support/qna/${qna.id}`" class="qna-link">
+                <template v-if="isAdmin && qna.is_deleted">
+                  <del v-html="formatTitle(qna.title)" />
+                </template>
+                <template v-else>
+                  <span v-html="formatTitle(qna.title)" />
+                </template>
+              </router-link>
+            </td>
+            <td class="qna-status">
+              <span :class="['status-badge', qna.answerStatus === '대기' ? 'waiting' : 'done']">
+                {{ qna.answerStatus }}
+              </span>
+            </td>
+            <td class="qna-author">
+              {{ getEmployeeDisplayName(qna.writerId) }}
+            </td>
+            <td class="qna-date">{{ formatDate(qna.createdAt) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <div class="qna-bottom-actions">
-      <Pagination
-        :total="filteredQnas.length"
-        :pageSize="pageSize"
-        :currentPage="currentPage"
-        @update:currentPage="currentPage = $event"
-      />
+    <div class="bottom-actions">
+      <div class="pagination">
+        <button 
+          @click="changePage(currentPage - 10)"
+          :disabled="currentPage < 10"
+          class="page-button">
+          &lt;
+        </button>
+        <div class="page-numbers">
+          <span 
+            v-for="pageNum in visiblePageNumbers" 
+            :key="pageNum"
+            @click="changePage(pageNum - 1)"
+            :class="{ 'active': currentPage === pageNum - 1 }"
+            class="page-number">
+            {{ pageNum }}
+          </span>
+        </div>
+        <button 
+          @click="changePage(currentPage + 10)"
+          :disabled="currentPage + 10 >= totalPages"
+          class="page-button">
+          &gt;
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -69,7 +89,6 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import Pagination from '@/components/common/Pagination.vue'
 import api from '@/api/auth'
 
 const router = useRouter()
@@ -84,8 +103,8 @@ const isAdmin = computed(() =>
 const qnas = ref([])
 const employees = ref([])
 const selectedStatus = ref('')
-const currentPage = ref(1)
-const pageSize = 5
+const currentPage = ref(0)
+const pageSize = 10
 
 async function fetchQnaList() {
   if (!loginUserId.value) return
@@ -120,12 +139,34 @@ const filteredQnas = computed(() => {
   return [...base].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 })
 
+const totalPages = computed(() => {
+  return Math.ceil(filteredQnas.value.length / pageSize)
+})
+
+const visiblePageNumbers = computed(() => {
+  const startPage = Math.floor(currentPage.value / 10) * 10 + 1
+  const endPage = Math.min(startPage + 9, totalPages.value)
+  const pages = []
+  
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i)
+  }
+  
+  return pages
+})
+
+const changePage = (page) => {
+  if (page >= 0 && page < totalPages.value) {
+    currentPage.value = page
+  }
+}
+
 const calcQnaNumber = (index) => {
-  return filteredQnas.value.length - ((currentPage.value - 1) * pageSize + index)
+  return filteredQnas.value.length - ((currentPage.value) * pageSize + index)
 }
 
 const paginatedQnas = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
+  const start = (currentPage.value) * pageSize
   return filteredQnas.value.slice(start, start + pageSize)
 })
 
@@ -143,14 +184,13 @@ const goToCreatePage = () => router.push('/support/qna/create')
 const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong>')
 </script>
 
-<style scoped>
-.qna-wrapper {
-  max-width: 1500px;
+<style lang="scss" scoped>
+.qna-container {
+  max-width: 1200px;
   margin: 0 auto;
-  font-size: 15px;
-  font-weight: 500;
-  color: #222;
+  padding: 20px;
 }
+
 .top-area {
   display: flex;
   justify-content: space-between;
@@ -158,118 +198,206 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
   margin-bottom: 14px;
   gap: 16px;
 }
+
 .filter-area {
   display: flex;
   align-items: center;
   margin-bottom: 0;
 }
+
 .filter-area select {
   padding: 8px 12px;
   min-width: 120px;
-  font-size: 15px;
-  border: 1px solid #ccc;
+  font-size: 14px;
+  border: 1px solid #dee2e6;
   border-radius: 4px;
   height: 38px;
-  background: #fafcf5;
+  background: #ffffff;
   vertical-align: middle;
   box-sizing: border-box;
 }
 
 .qna-actions .ask-btn {
-  background: #86b649;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 9px 28px;
+  padding: 6px 12px;
+  background-color: #a6ce39;
+  color: white;
   border: none;
-  border-radius: 7px;
-  box-shadow: 0 1px 6px 0 rgba(80, 120, 80, 0.05);
-  transition: background 0.18s, box-shadow 0.16s, transform 0.13s;
-  outline: none;
+  border-radius: 4px;
   cursor: pointer;
-  letter-spacing: 0.1px;
-  height: 40px;
+  font-size: 13px;
+  font-weight: 600;
+  height: 36px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-left: 0;
-}
-.qna-actions .ask-btn:hover {
-  background: #419e35;
-  color: #fff;
-  box-shadow: 0 2px 8px 0 rgba(76, 175, 80, 0.15);
-  transform: translateY(-1px) scale(1.02);
+
+  &:hover {
+    background-color: #94b933;
+  }
 }
 
-.qna-bottom-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+.board-container {
+  background: #fff;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
 }
-.qna-table {
+
+.board-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 0;
-  table-layout: fixed;
+  font-size: 14px;
+  
+  th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: #ffffff;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    &.deleted {
+      opacity: 0.5;
+    }
+  }
 }
-.qna-table thead {
-  background-color: #f0f7e4;
-  font-weight: 600;
-}
-.qna-table th,
-.qna-table td {
-  padding: 12px 20px;
-  border-bottom: 1px solid #ddd;
-  vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  height: 38px;
-}
-.qna-index {
+
+.board-table .qna-index {
   text-align: center;
-  width: 60px;
-  font-size: 16px;
 }
+
+.qna-index {
+  width: 60px;
+}
+
 .qna-status {
   text-align: center;
   width: 100px;
 }
+
 .qna-author {
   text-align: center;
   width: 220px;
 }
+
 .qna-date {
   text-align: center;
   width: 120px;
 }
+
 .qna-link {
   text-decoration: none;
   color: inherit;
 }
+
 .qna-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
 }
+
 .status-badge {
-  padding: 0.2rem 0.7rem;
-  border-radius: 20px;
-  font-size: 0.95rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: bold;
   display: inline-block;
+  color: white;
 }
+
 .status-badge.waiting {
-  background-color: #fff0f0;
-  color: #e53935;
-  border: 1px solid #e53935;
+  background-color: #ffc107;
+  color: white;
+  border: 1px solid #ffc107;
 }
+
 .status-badge.done {
-  background-color: #e6f4ea;
-  color: #43a047;
-  border: 1px solid #43a047;
+  background-color: #4A90E2;
+  color: white;
+  border: 1px solid #4A90E2;
 }
-.deleted {
-  opacity: 0.5;
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.page-number {
+  cursor: pointer;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: normal;
+  background-color: transparent;
+
+  &:hover {
+    border: 1px solid #dee2e6;
+  }
+
+  &.active {
+    background-color: transparent;
+    font-weight: bold;
+    color: #000000;
+  }
+}
+
+.page-button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: none;
+  background-color: transparent;
+  color: #495057;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: normal;
+
+  &:hover:not(:disabled) {
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+  }
+
+  &:disabled {
+    background-color: transparent;
+    color: #adb5bd;
+    cursor: not-allowed;
+  }
+}
+
+.bottom-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 0;
+  position: relative;
 }
 </style>

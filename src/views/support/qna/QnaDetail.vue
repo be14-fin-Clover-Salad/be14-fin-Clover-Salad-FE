@@ -288,12 +288,12 @@ const deleteQna = async () => {
   cursor: pointer;
 }
 .answer-btn {
-  background-color: #e6f7ec;
-  color: #1eaf67;
-  border: 1px solid #1eaf67;
+  background-color: #a6ce39;
+  color: white;
+  border: 1px solid #a6ce39;
 }
 .answer-btn:hover {
-  background-color: #d3f0e0;
+  background-color: #94b933;
 }
 .cancel-btn {
   background-color: #fbe6e6;
@@ -307,22 +307,22 @@ const deleteQna = async () => {
   margin-top: 0.5rem;
 }
 .edit-btn {
-  background-color: #e6f7ec;
-  color: #1eaf67;
-  border: 1px solid #1eaf67;
+  background-color: #4791ff;
+  color: white;
+  border: 1px solid #4791ff;
   padding: 0.5rem 1rem;
   border-radius: 6px;
 }
 .edit-btn:hover {
-  background-color: #cfe2f8;
+  background-color: #317ae0;
 }
 .delete-btn {
-  background-color: #ffeaea;
-  color: #cc0000;
-  border: 1px solid #cc0000;
+  background-color: #e53935;
+  color: white;
+  border: 1px solid #e53935;
 }
 .delete-btn:hover {
-  background-color: #ffdada;
+  background-color: #c62828;
 }
 .status-badge {
   padding: 0.2rem 0.6rem;

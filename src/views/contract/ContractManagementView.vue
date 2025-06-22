@@ -60,7 +60,8 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
@@ -70,6 +71,8 @@ import ContractUploadModal from '@/views/contract/ContractUploadModal.vue'
 import ContractUploadSuccessModal from '@/components/contract/ContractUploadSuccessModal.vue'
 import ContractDetailModal from '@/components/contract/ContractDetailModal.vue'
 import ContractReplaceModal from '@/views/contract/ContractReplaceModal.vue'
+
+const route = useRoute()
 
 const searchForm = reactive({
   code: '', minAmount: '', maxAmount: '',
@@ -90,6 +93,23 @@ const showReplaceModal = ref(false)
 const selectedContract = ref(null)
 const selectedRowCode = ref(null)
 const isExpanded = ref(false)
+
+// 페이지 로드 시 쿼리 파라미터 확인
+onMounted(async () => {
+  const contractCode = route.query.contractCode
+  if (contractCode) {
+    // 해당 계약 코드로 검색
+    await handleSearch({ code: contractCode })
+    
+    // 검색 결과에서 해당 계약 찾기
+    const targetContract = rows.find(contract => contract.code === contractCode)
+    if (targetContract) {
+      selectedContract.value = targetContract
+      selectedRowCode.value = targetContract.id
+      showDetailModal.value = true
+    }
+  }
+})
 
 async function handleSearch(data) {
   const authStore = useAuthStore()

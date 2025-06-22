@@ -298,25 +298,25 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 .edit-btn {
-  background-color: #e6f0fb;
-  color: #1e6fd9;
-  border-color: #1e6fd9;
+  background-color: #4791ff;
+  color: white;
+  border-color: #4791ff;
 }
 .edit-btn:hover {
-  background-color: #cfe2f8;
+  background-color: #317ae0;
 }
 .delete-btn {
-  background-color: #fbe6e6;
-  color: #d11a2a;
-  border-color: #d11a2a;
+  background-color: #e53935;
+  color: white;
+  border-color: #e53935;
 }
 .delete-btn:hover {
-  background-color: #f5cfcf;
+  background-color: #c62828;
 }
 .check-btn {
-  background-color: #e6f7ec;
-  color: #1eaf67;
-  border-color: #1eaf67;
+  background-color: #a6ce39;
+  color: white;
+  border-color: #a6ce39;
 }
 .check-btn:disabled {
   background-color: #f0f0f0;

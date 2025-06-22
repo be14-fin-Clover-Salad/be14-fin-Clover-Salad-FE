@@ -160,9 +160,7 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
 <style scoped>
 .employee-dept-list-outer {
   width: 100%;
-  height: 583px;
-  min-height: 583px;
-  max-height: 583px;
+  height: 100%;
   border-radius: 5px;
   border: 1px solid #F6F6F6;
   background: #fff;

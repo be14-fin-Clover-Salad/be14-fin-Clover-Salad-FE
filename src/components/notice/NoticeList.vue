@@ -1,54 +1,73 @@
 <template>
-  <div class="notice-wrapper" v-if="notices.length">
-    <table class="notice-table">
-      <thead>
-        <tr>
-          <th class="notice-index">번호</th>
-          <th class="notice-title">제목</th>
-          <th class="notice-author">작성자</th>
-          <th class="notice-date">등록일자</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(notice, index) in pagedNotices"
-          :key="notice.id"
-          class="notice-row"
-          :class="{ deleted: notice.isDeleted }"
-        >
-          <td class="notice-index">
-            <template v-if="isPinnedAdmin(notice)">🚩</template>
-            <template v-else>{{ calcNoticeNumber(index) }}</template>
-          </td>
-          <td
-            class="notice-title"
-            :class="{
-              system: notice.writerName === '관리자',
-              deletedTitle: isAdmin && notice.isDeleted,
-              read: !isAdmin && notice.isChecked
-            }"
+  <div class="notice-container" v-if="notices.length">
+    <div class="board-container">
+      <table class="board-table">
+        <thead>
+          <tr>
+            <th class="notice-index">번호</th>
+            <th class="notice-title">제목</th>
+            <th class="notice-author">작성자</th>
+            <th class="notice-date">등록일자</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(notice, index) in pagedNotices"
+            :key="notice.id"
+            class="notice-row"
+            :class="{ deleted: notice.isDeleted }"
           >
-            <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
-              <span v-html="formatTitle(notice.title)" />
-            </router-link>
-          </td>
-          <td class="notice-author">
-            {{ notice.writerName }} {{ notice.writerLevel || '' }}
-          </td>
-          <td class="notice-date">{{ formatDate(notice.createdAt) }}</td>
-        </tr>
-      </tbody>
-    </table>
+            <td class="notice-index">
+              <template v-if="isPinnedAdmin(notice)">🚩</template>
+              <template v-else>{{ calcNoticeNumber(index) }}</template>
+            </td>
+            <td
+              class="notice-title"
+              :class="{
+                system: notice.writerName === '관리자',
+                deletedTitle: isAdmin && notice.isDeleted,
+                read: !isAdmin && notice.isChecked
+              }"
+            >
+              <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
+                <span v-html="formatTitle(notice.title)" />
+              </router-link>
+            </td>
+            <td class="notice-author">
+              {{ notice.writerName }} {{ notice.writerLevel || '' }}
+            </td>
+            <td class="notice-date">{{ formatDate(notice.createdAt) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <div class="notice-bottom-actions">
-      <div class="pagination-wrapper">
-        <Pagination
-          :total="totalPages"
-          :pageSize="1"
-          :currentPage="currentPage"
-          @update:currentPage="currentPage = $event"
-        />
+    <div class="bottom-actions">
+      <div class="pagination">
+        <button 
+          @click="changePage(currentPage - 10)"
+          :disabled="currentPage < 10"
+          class="page-button">
+          &lt;
+        </button>
+        <div class="page-numbers">
+          <span 
+            v-for="pageNum in visiblePageNumbers" 
+            :key="pageNum"
+            @click="changePage(pageNum - 1)"
+            :class="{ 'active': currentPage === pageNum - 1 }"
+            class="page-number">
+            {{ pageNum }}
+          </span>
+        </div>
+        <button 
+          @click="changePage(currentPage + 10)"
+          :disabled="currentPage + 10 >= totalPages"
+          class="page-button">
+          &gt;
+        </button>
       </div>
+      
       <div class="register-wrapper" v-if="canWriteNotice">
         <button class="register-btn" @click="goToWritePage">등록</button>
       </div>
@@ -59,7 +78,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import Pagination from "@/components/common/Pagination.vue";
 import { useAuthStore } from '@/stores/auth';
 import axios from '@/api/auth';
 
@@ -77,7 +95,7 @@ const canWriteNotice = computed(() => {
 
 const router = useRouter();
 const notices = ref([]);
-const currentPage = ref(1);
+const currentPage = ref(0);
 const pageSize = 15;
 
 const adminNoticesAll = computed(() =>
@@ -98,17 +116,29 @@ const totalPages = computed(() => {
   return Math.ceil(remaining / pageSize) + 1;
 });
 const pagedNotices = computed(() => {
-  if (currentPage.value === 1) {
+  if (currentPage.value === 0) {
     const remaining = 15 - pinnedAdmins.value.length;
     return [...pinnedAdmins.value, ...mixedNotices.value.slice(0, remaining)];
   } else {
-    const offset = (currentPage.value - 2) * pageSize + (15 - pinnedAdmins.value.length);
+    const offset = (currentPage.value - 1) * pageSize + (15 - pinnedAdmins.value.length);
     return mixedNotices.value.slice(offset, offset + pageSize);
   }
 });
 
+const visiblePageNumbers = computed(() => {
+  const startPage = Math.floor(currentPage.value / 10) * 10 + 1;
+  const endPage = Math.min(startPage + 9, totalPages.value);
+  const pages = [];
+  
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+  
+  return pages;
+});
+
 const calcNoticeNumber = (index) => {
-  const offset = (currentPage.value - 1) * pageSize - pinnedAdmins.value.length;
+  const offset = (currentPage.value) * pageSize - pinnedAdmins.value.length;
   return mixedNotices.value.length - (offset + index);
 };
 const formatTitle = (title) => title.replace(/(\[[^\]]+\])/g, "<strong>$1</strong>");
@@ -117,6 +147,12 @@ const goToWritePage = () => router.push("/support/notice/create");
 
 const isPinnedAdmin = (notice) => {
   return pinnedAdmins.value.some(n => n.id === notice.id);
+};
+
+const changePage = (page) => {
+  if (page >= 0 && page < totalPages.value) {
+    currentPage.value = page;
+  }
 };
 
 onMounted(async () => {
@@ -136,112 +172,199 @@ onMounted(async () => {
 });
 </script>
 
-<style>
-.notice-wrapper {
-  max-width: 1500px;
+<style lang="scss" scoped>
+.notice-container {
+  max-width: 1200px;
   margin: 0 auto;
-  font-size: 15px;
-  font-weight: 500;
-  color: #222;
+  padding: 20px;
 }
-.notice-bottom-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
+
+.board-container {
+  background: #fff;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
 }
-.pagination-wrapper {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-.register-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  min-width: 100px;
-}
-.register-btn {
-  background-color: #e7f3d9;
-  color: #222;
-  padding: 10px 20px;
-  font-size: 15px;
-  font-weight: 600;
-  border: 1px solid #b8dca6;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-.register-btn:hover {
-  background-color: #d1e9c2;
-}
-.notice-table {
+
+.board-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  font-size: 14px;
+  
+  th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: #ffffff;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    &.deleted {
+      opacity: 0.5;
+    }
+  }
 }
-thead {
-  background-color: #f0f7e4;
-  font-size: 15px;
-  font-weight: 600;
-}
-th,
-td {
-  padding: 12px 20px;
-  vertical-align: middle;
-  border-bottom: 1px solid #ddd;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  height: 22px;
-}
+
 .notice-index {
-  text-align: center;
+  text-align: center !important;
+  vertical-align: middle;
   width: 60px;
-  font-size: 16px;
 }
+
 .notice-title {
   text-align: left;
 }
+
 th.notice-title {
   text-align: center;
 }
+
 .notice-author {
   text-align: center;
   width: 260px;
 }
+
 .notice-date {
   text-align: center;
   padding: 0 10px;
   width: 120px;
 }
+
 .system {
   color: rgb(255, 66, 89);
   font-weight: bold;
 }
+
 .read {
   color: #aaa;
 }
+
 .system.read {
   color: rgba(218, 67, 67, 0.5);
   font-weight: normal;
 }
-.deleted {
-  opacity: 0.5;
-}
+
 .deletedTitle {
   color: #aaa;
   text-decoration: line-through;
 }
+
 strong {
   font-weight: 600;
   font-size: 15px;
 }
+
 .notice-link {
   text-decoration: none;
   color: inherit;
 }
+
 .notice-link:hover {
   text-decoration: underline;
   color: #3a6b1d;
+}
+
+.bottom-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 0;
+  position: relative;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.page-number {
+  cursor: pointer;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: normal;
+  background-color: transparent;
+
+  &:hover {
+    border: 1px solid #dee2e6;
+  }
+
+  &.active {
+    background-color: transparent;
+    font-weight: bold;
+    color: #000000;
+  }
+}
+
+.page-button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: none;
+  background-color: transparent;
+  color: #495057;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: normal;
+
+  &:hover:not(:disabled) {
+    background-color: transparent;
+    border: 1px solid #dee2e6;
+  }
+
+  &:disabled {
+    background-color: transparent;
+    color: #adb5bd;
+    cursor: not-allowed;
+  }
+}
+
+.register-wrapper {
+  display: flex;
+  gap: 8px;
+  position: absolute;
+  right: 0;
+}
+
+.register-btn {
+  padding: 8px 16px;
+  background-color: #a6ce39;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #94b933;
+  }
 }
 </style>

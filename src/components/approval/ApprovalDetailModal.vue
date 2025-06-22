@@ -1,92 +1,106 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
     <div class="modal-box">
-      <div class="form-grid">
-        <!-- 첫 번째 행: 결재코드, 계약코드, 결재상태 -->
-        <div class="field">
-          <label>결재 코드:</label>
-          <div class="input">{{ approval.code }}</div>
+      <!-- 모달 헤더 -->
+      <div class="modal-header">
+        <h2 class="modal-title">결재 상세</h2>
+        <button class="close-btn" @click="emit('close')">×</button>
+      </div>
+
+      <div class="modal-content">
+        <!-- 결재 정보 테이블 -->
+        <div class="table-container">
+          <table class="erp-table">
+            <tbody>
+              <tr>
+                <th class="th-label">결재 코드</th>
+                <td class="td-value">{{ approval.code }}</td>
+                <th class="th-label">계약 코드</th>
+                <td class="td-value">{{ approval.contractCode }}</td>
+              </tr>
+              <tr>
+                <th class="th-label">결재 요청 일시</th>
+                <td class="td-value">{{ formatDateTime(approval.reqDate) }}</td>
+                <th class="th-label">결재 요청 담당자</th>
+                <td class="td-value">{{ approval.reqName }}</td>
+              </tr>
+              <tr>
+                <th class="th-label">결재 승인 일시</th>
+                <td class="td-value">{{ formatDateTime(approval.aprvDate) || '-' }}</td>
+                <th class="th-label">결재 승인 담당자</th>
+                <td class="td-value">{{ approval.aprvName || '-' }}</td>
+              </tr>
+              <tr>
+                <th class="th-label">결재 상태</th>
+                <td class="td-value">
+                  <span class="status-badge" :class="getStatusClass(approval.state)">
+                    {{ approval.state }}
+                  </span>
+                </td>
+                <th class="th-label">관련 계약</th>
+                <td class="td-value">
+                  <button class="contract-link-btn" @click="goToContract">
+                    계약 상세 보기
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="field">
-          <label>계약 코드:</label>
-          <div class="input">{{ approval.contractCode }}</div>
-        </div>
-
-        <div class="field status-field">
-          <label>결재 상태:</label>
-          <span class="status-badge" :class="getStatusClass(approval.state)">
-            {{ approval.state }}
-          </span>
-        </div>
-
-        <div class="field two-col">
-          <label>결재 요청 일시:</label>
-          <div class="input">{{ approval.reqDate }}</div>
-        </div>
-
-        <div class="field two-col">
-          <label>결재 요청 담당자:</label>
-          <div class="input">{{ approval.reqName }}</div>
-        </div>
-
-        <div class="field two-col">
-          <label>결재 승인 일시:</label>
-          <div class="input">{{ approval.aprvDate || '-' }}</div>
-        </div>
-
-        <div class="field two-col">
-          <label>결재 승인 담당자:</label>
-          <div class="input">{{ approval.aprvName }}</div>
-        </div>
-
-        <div class="field title-row">
-          <div class="title-section">
-            <label>결재 제목:</label>
-            <div class="input">{{ approval.title }}</div>
+        <!-- 결재 제목 -->
+        <div class="section-container">
+          <h3 class="section-title">결재 제목</h3>
+          <div class="content-box">
+            {{ approval.title }}
           </div>
-          <div class="button-section">
-            <button class="contract-btn" @click="goToContract">계약 관리</button>
-          </div>
         </div>
 
-        <div class="field full">
-          <label>결재 내용:</label>
-          <div class="textarea-field">
+        <!-- 결재 내용 -->
+        <div class="section-container">
+          <h3 class="section-title">결재 내용</h3>
+          <div class="content-box">
             <textarea 
               :value="approval.content" 
               readonly 
-              rows="8"
+              rows="6"
               class="content-textarea"
             ></textarea>
           </div>
         </div>
 
-        <div class="field full">
-          <label>결재 코멘트:</label>
-          <div v-if="canEditComment" class="textarea-field editable">
+        <!-- 결재 코멘트 -->
+        <div class="section-container">
+          <h3 class="section-title">결재 코멘트</h3>
+          <div v-if="canEditComment" class="content-box editable">
             <textarea 
               v-model="editableComment"
-              rows="6"
+              rows="4"
               class="comment-textarea editable"
               placeholder="결재 코멘트를 입력하세요..."
             ></textarea>
           </div>
-          <div v-else class="textarea-field">
+          <div v-else class="content-box">
             <textarea 
               :value="approval.comment || ''" 
               readonly 
-              rows="6"
+              rows="4"
               class="comment-textarea"
             ></textarea>
           </div>
         </div>
 
-        <!-- 승인/반려 버튼 (팀장이고 요청 상태일 때만 표시) -->
-        <div v-if="canApprove" class="field full action-buttons">
+        <!-- 승인/반려 버튼 -->
+        <div v-if="canApprove" class="action-section">
           <div class="button-group">
-            <button class="approve-btn" @click="handleApprove">승인</button>
-            <button class="reject-btn" @click="handleReject">반려</button>
+            <button class="approve-btn" @click="handleApprove">
+              <span class="btn-icon">✓</span>
+              승인
+            </button>
+            <button class="reject-btn" @click="handleReject">
+              <span class="btn-icon">✗</span>
+              반려
+            </button>
           </div>
         </div>
       </div>
@@ -97,6 +111,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import api from '@/api/auth'
 
 const props = defineProps({
@@ -111,6 +126,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'refresh'])
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 // 편집 가능한 코멘트 상태
 const editableComment = ref('')
@@ -167,9 +183,16 @@ const getStatusClass = (status) => {
 
 // 계약 관리 페이지로 이동
 const goToContract = () => {
-  // 계약 관리 페이지로 이동하는 로직
-  console.log('계약 관리 페이지로 이동:', props.approval.contractCode)
-  // 실제 구현시에는 router.push('/contract/manage') 등으로 처리
+  // 모달 닫기
+  emit('close')
+  
+  // 계약 관리 페이지로 이동하면서 계약 코드를 쿼리 파라미터로 전달
+  router.push({
+    path: '/contract/manage',
+    query: {
+      contractCode: props.approval.contractCode
+    }
+  })
 }
 
 // 승인 처리
@@ -244,114 +267,199 @@ watch(() => props.isOpen, (newValue) => {
     // 탭 변경 로직
   }
 })
+
+// 날짜 포맷 함수
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return null
+  
+  // 2025-06-22-11:16:25 형식을 2025-06-22 11:16 형식으로 변환
+  if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.includes(':')) {
+    // 마지막 하이픈을 공백으로 바꾸고 초 단위 제거
+    const parts = dateStr.split('-')
+    if (parts.length === 4) {
+      const datePart = `${parts[0]}-${parts[1]}-${parts[2]}`
+      const timePart = parts[3].substring(0, 5) // HH:mm만 추출 (초 제거)
+      return `${datePart} ${timePart}`
+    }
+  }
+  
+  // 기존 방식으로 파싱 시도
+  let date
+  if (typeof dateStr === 'string') {
+    date = new Date(dateStr)
+  } else if (typeof dateStr === 'number') {
+    date = new Date(dateStr)
+  } else {
+    date = dateStr
+  }
+  
+  // 유효한 날짜인지 확인
+  if (isNaN(date.getTime())) {
+    return dateStr // 원본 데이터 그대로 반환
+  }
+  
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}`
+}
 </script>
 
 <style scoped>
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .modal-box {
-  width: 900px;
+  width: 1000px;
   max-height: 90vh;
-  background: #fff;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 24px 32px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-}
-
-.field.full {
-  grid-column: span 3;
-}
-
-.field.two-col:nth-child(4),
-.field.two-col:nth-child(6) {
-  grid-column: span 2;
-}
-
-.field.title-row {
-  grid-column: span 3;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.field.title-row .title-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-right: 20px;
-}
-
-.field.title-row .button-section {
-  flex: 0;
-  display: flex;
-  align-items: flex-start;
-  padding-bottom: 0;
-  margin-top: 20px;
-}
-
-.field.status-field {
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: -30px;
-}
-
-.field.status-field label {
-  margin-bottom: 0;
-}
-
-.field label {
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: #555;
-  font-size: 14px;
-}
-
-.input {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  padding: 9.5px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #333;
-  min-height: 15px;
-}
-
-.textarea-field {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 4px;
-}
-
-.textarea-field.editable {
   background: #ffffff;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #4A6741 0%, #8BA888 100%);
+  color: white;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.table-container {
+  margin-bottom: 24px;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
-  padding: 4px;
+  overflow: hidden;
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.erp-table th,
+.erp-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.erp-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: 1px solid #e0e0e0;
+  width: 140px;
+}
+
+.erp-table td {
+  font-weight: 400;
+  color: #212529;
+  font-size: 14px;
+  background: white;
+}
+
+.erp-table tr:last-child th,
+.erp-table tr:last-child td {
+  border-bottom: none;
+}
+
+.erp-table tr:hover td {
+  background-color: #f8f9fa;
+}
+
+.section-container {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #495057;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  align-items: center;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: #4A6741;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.content-box {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 16px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.content-box.editable {
+  background: #ffffff;
+  border: 2px solid #007bff;
 }
 
 .content-textarea,
@@ -359,140 +467,181 @@ watch(() => props.isOpen, (newValue) => {
   width: 100%;
   border: none;
   background: transparent;
-  padding: 30px 30px 30px 30px;
   font-size: 14px;
-  color: #333;
+  color: #212529;
   resize: none;
   outline: none;
   font-family: inherit;
-  line-height: 1.5;
+  line-height: 1.6;
+  padding: 0;
 }
 
 .content-textarea {
-  min-height: 200px;
+  min-height: 120px;
 }
 
 .comment-textarea {
-  min-height: 150px;
+  min-height: 80px;
 }
 
 .comment-textarea.editable {
   background: #ffffff;
 }
 
+.comment-textarea::placeholder {
+  color: #6c757d;
+  font-style: italic;
+}
+
 .status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 4px;
+  border-radius: 3px;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
-  min-width: 60px;
+  height: 16px;
+  min-width: 30px;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: white;
 }
 
 .status-badge.status-approved {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border: 1px solid #90caf9;
+  background-color: #4A90E2;
 }
 
 .status-badge.status-pending {
-  background-color: #fff3e0;
-  color: #f57c00;
-  border: 1px solid #ffcc02;
+  background-color: #ffc107;
 }
 
 .status-badge.status-rejected {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef5350;
+  background-color: #FF5D5D;
 }
 
-.contract-btn {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border: 1px solid #90caf9;
-  padding: 12px 16px;
-  border-radius: 6px;
+.contract-link-btn {
+  background: none;
+  border: none;
+  color: #007bff;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
-  height: 40px;
-  width: 100px;
-  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  text-decoration: underline;
+  transition: color 0.2s;
 }
 
-.contract-btn:hover {
-  background-color: #bbdefb;
+.contract-link-btn:hover {
+  color: #0056b3;
+  text-decoration: none;
 }
 
-.action-buttons {
+.action-section {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  padding-top: 20px;
+  padding: 16px 0;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
 }
 
 .button-group {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.approve-btn,
+.reject-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 70px;
 }
 
 .approve-btn {
-  background-color: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #4caf50;
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  height: 40px;
-  width: 100px;
-  box-sizing: border-box;
+  background: #28a745;
+  color: white;
 }
 
 .reject-btn {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef5350;
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  height: 40px;
-  width: 100px;
-  box-sizing: border-box;
+  background: #dc3545;
+  color: white;
 }
 
 .approve-btn:hover {
-  background-color: #c8e6c9;
+  background: #218838;
 }
 
 .reject-btn:hover {
-  background-color: #ffcdd2;
+  background: #c82333;
 }
 
-@media (max-width: 1000px) {
+.btn-icon {
+  margin-right: 5px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+@media (max-width: 1024px) {
   .modal-box {
     width: 95%;
     margin: 0 auto;
-    padding: 24px;
   }
   
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+  .erp-table th,
+  .erp-table td {
+    padding: 12px;
+    font-size: 13px;
   }
   
-  .field.full,
-  .field.two-col,
-  .field.title-row {
-    grid-column: span 1;
+  .erp-table th {
+    width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-box {
+    width: 98%;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+  }
+  
+  .erp-table {
+    font-size: 12px;
+  }
+  
+  .erp-table th,
+  .erp-table td {
+    padding: 10px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .approve-btn,
+  .reject-btn {
+    width: 100%;
   }
 }
 </style> 
