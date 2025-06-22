@@ -4,7 +4,6 @@
       <slot name="fields" :filters="filters" :expanded="props.showToggle ? isExpanded : true" />
 
       <div class="actions">
-        <!-- 더보기 버튼을 왼쪽으로 (showToggle이 true일 때만 표시) -->
         <span v-if="props.showToggle" class="expand-btn" @click="toggleExpand">
           <span class="expand-text">{{ isExpanded ? '접기' : '더보기' }}</span>
           <svg 
@@ -24,6 +23,10 @@
               stroke-linejoin="round"
             />
           </svg>
+          <!-- 기존 버전 -->
+        <!-- <div class="spacer"></div>
+        <span v-if="props.showToggle"class="expand-btn" @click="emit('toggle-expand')">
+          {{ expanded ? '접기 ▲' : '더보기 ▼' }} -->
         </span>
 
         <!-- 검색/초기화 버튼을 오른쪽으로 -->
