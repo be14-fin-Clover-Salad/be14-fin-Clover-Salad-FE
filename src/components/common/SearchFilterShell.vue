@@ -1,14 +1,14 @@
 <template>
   <div class="search-filter-shell">
     <form @submit.prevent="emitSearch">
-      <slot name="fields" :filters="filters" :expanded="props.showToggle ? isExpanded : true" />
+      <slot name="fields" :filters="filters" :expanded="props.showToggle ? props.expanded : true" />
 
       <div class="actions">
-        <span v-if="props.showToggle" class="expand-btn" @click="toggleExpand">
-          <span class="expand-text">{{ isExpanded ? '접기' : '더보기' }}</span>
+        <span v-if="props.showToggle" class="expand-btn" @click="emit('toggle-expand')">
+          <span class="expand-text">{{ props.expanded ? '접기' : '더보기' }}</span>
           <svg 
             class="expand-icon" 
-            :class="{ 'expanded': isExpanded }"
+            :class="{ 'expanded': props.expanded }"
             width="16" 
             height="16" 
             viewBox="0 0 24 24" 
@@ -23,10 +23,6 @@
               stroke-linejoin="round"
             />
           </svg>
-          <!-- 기존 버전 -->
-        <!-- <div class="spacer"></div>
-        <span v-if="props.showToggle"class="expand-btn" @click="emit('toggle-expand')">
-          {{ expanded ? '접기 ▲' : '더보기 ▼' }} -->
         </span>
 
         <!-- 검색/초기화 버튼을 오른쪽으로 -->
@@ -41,7 +37,7 @@
 </template>
 
 <script setup>
-import { reactive, defineEmits, defineProps, ref } from 'vue'
+import { reactive, defineEmits, defineProps } from 'vue'
 
 const emit = defineEmits(['search', 'reset', 'toggle-expand'])
 
@@ -52,7 +48,6 @@ const props = defineProps({
 })
 
 const filters = reactive({ ...props.initial })
-const isExpanded = ref(props.expanded)
 
 function emitSearch() {
   emit('search', { ...filters })
@@ -61,11 +56,6 @@ function emitSearch() {
 function emitReset() {
   Object.keys(filters).forEach(key => filters[key] = '')
   emit('reset')
-}
-
-function toggleExpand() {
-  isExpanded.value = !isExpanded.value
-  emit('toggle-expand', isExpanded.value)
 }
 </script>
 
