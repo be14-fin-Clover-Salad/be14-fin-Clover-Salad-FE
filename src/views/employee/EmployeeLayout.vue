@@ -1,49 +1,51 @@
 <template>
   <div class="employee-page">
-    <!-- 1. 상단 검색창 영역 -->
-    <div class="search-bar-area">
-      <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
-        <template #fields="{ filters }">
-          <EmployeeSearchFields :filters="filters" />
-        </template>
-      </SearchFilterShell>
-    </div>
+    <section class="employee-section">
+      <!-- 1. 상단 검색창 영역 -->
+      <div class="search-bar-area">
+        <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
+          <template #fields="{ filters }">
+            <EmployeeSearchFields :filters="filters" />
+          </template>
+        </SearchFilterShell>
+      </div>
 
-    <!-- 직원 검색 결과 모달 -->
-    <EmployeeSearchResult 
-      :is-visible="showSearchModal"
-      :employees="searchResults"
-      :search-filters="searchFilters"
-      :loading="searchLoading"
-      @close="closeSearchModal"
-      @confirm-selection="handleConfirmEmployeeSelection"
-      @update-filters="handleUpdateFilters"
-    />
-    <div class="main-content">
-      <!-- 2. 좌측 부서/팀 트리 영역 -->
-      <div class="sidebar">
-        <div v-if="tree.length" class="tree-outer-border">
-          <DepartmentTreeNode
-            v-for="dept in tree"
-            :key="dept.id"
-            :node="dept"
-            :opened-path="openedPath"
-            :on-toggle="handleToggle"
+      <!-- 직원 검색 결과 모달 -->
+      <EmployeeSearchResult 
+        :is-visible="showSearchModal"
+        :employees="searchResults"
+        :search-filters="searchFilters"
+        :loading="searchLoading"
+        @close="closeSearchModal"
+        @confirm-selection="handleConfirmEmployeeSelection"
+        @update-filters="handleUpdateFilters"
+      />
+      <div class="main-content">
+        <!-- 2. 좌측 부서/팀 트리 영역 -->
+        <div class="sidebar">
+          <div v-if="tree.length" class="tree-outer-border">
+            <DepartmentTreeNode
+              v-for="dept in tree"
+              :key="dept.id"
+              :node="dept"
+              :opened-path="openedPath"
+              :on-toggle="handleToggle"
+            />
+          </div>
+        </div>
+        <!-- 3. 중앙 직원 리스트 영역 -->
+        <div class="employee-list-area">
+          <EmployeeDepartmentList 
+            @select-employee="handleSelectEmployee" 
+            :selected-employee-id="selectedEmployee?.id"
           />
         </div>
+        <!-- 4. 우측 직원 상세 정보 영역 -->
+        <div class="employee-detail-area">
+          <EmployeeDetail :employee="selectedEmployee" />
+        </div>
       </div>
-      <!-- 3. 중앙 직원 리스트 영역 -->
-      <div class="employee-list-area">
-        <EmployeeDepartmentList 
-          @select-employee="handleSelectEmployee" 
-          :selected-employee-id="selectedEmployee?.id"
-        />
-      </div>
-      <!-- 4. 우측 직원 상세 정보 영역 -->
-      <div class="employee-detail-area">
-        <EmployeeDetail :employee="selectedEmployee" />
-      </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -315,6 +317,10 @@ export default {};
 </script>
 
 <style lang="scss" scoped>
+.employee-section {
+  padding: 20px;
+}
+
 .employee-search-fields {
   padding: 16px 24px;
   border-radius: 8px;
@@ -350,8 +356,8 @@ export default {};
   border: 1px solid #F6F6F6;
   padding: 30px;
   background: #fff;
-  width: 349px;
-  height: 583px;
+  width: 100%;
+  height: 100%;
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -359,25 +365,26 @@ export default {};
   display: flex;
   justify-content: center;
   align-items: stretch;
-  height: calc(100vh - 120px);
+  height: 65vh;
+  gap: clamp(10px, 2vw, 20px);
 }
 .sidebar {
-  width: 349px;
-  flex-shrink: 0;
+  flex: 1;
+  flex-basis: 0;
+  min-width: 0;
 }
 .employee-list-area {
-  flex: 1;
+  flex: 2;
+  flex-basis: 0;
   min-width: 0;
   display: flex;
   justify-content: center;
 }
 .employee-detail-area {
-  width: 434px;
-  height: 583px;
-  min-width: 434px;
-  min-height: 583px;
-  max-width: 434px;
-  max-height: 583px;
+  flex: 2;
+  flex-basis: 0;
+  min-width: 0;
+  height: 100%;
   border-radius: 5px;
   border: 1px solid #F6F6F6;
   background: #fff;

@@ -1,8 +1,14 @@
 <template>
   <section>
-    <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
-      <template #fields="{ filters }">
-        <ProductSearchFields :filters="filters"/>
+    <SearchFilterShell 
+      :initial="searchForm" 
+      :expanded="isExpanded"
+      @search="handleSearch" 
+      @reset="handleReset"
+      @toggle-expand="handleToggleExpand"
+    >
+      <template #fields="{ filters, expanded }">
+        <ProductSearchFields :filters="filters" :expanded="expanded"/>
       </template>
     </SearchFilterShell>
     <div class="action-buttons">
@@ -41,6 +47,7 @@
   const rows = reactive([])
   const isLoading = ref(false)
   const productId = ref(null)
+  const isExpanded = ref(false)
 
   async function handleSearch(data) {
     try {
@@ -63,6 +70,10 @@
 
   function handleReset() {
     Object.keys(searchForm).forEach(key => searchForm[key] = '')
+  }
+
+  function handleToggleExpand(expanded) {
+    isExpanded.value = expanded
   }
 
   function handleRowClick(product) {

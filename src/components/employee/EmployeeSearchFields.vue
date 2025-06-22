@@ -12,6 +12,12 @@
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
       </div>
     </div>
+    <div class="row">
+      <div class="field" v-for="(item, index) in row3" :key="item.key">
+        <label :for="item.key">{{ item.label }}</label>
+        <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -21,16 +27,19 @@ const props = defineProps({ filters: Object })
 const row1 = [
   { label: '사번', key: 'code', placeholder: '예: 202401001' },
   { label: '이름', key: 'name', placeholder: '예: 홍길동' },
-  { label: '연락처', key: 'phone', placeholder: '예: 010-1234-5678' },
-  { label: '이메일', key: 'email', placeholder: '예: hong@email.com' },
-  { label: '직급', key: 'level', placeholder: '예: 사원' }
+  { label: '직급', key: 'level', placeholder: '예: 사원' },
+  { label: '부서명', key: 'departmentName', placeholder: '예: 영업1팀' }
 ]
 
 const row2 = [
+  { label: '연락처', key: 'phone', placeholder: '예: 010-1234-5678' },
+  { label: '이메일', key: 'email', placeholder: '예: hong@email.com' },
   { label: '입사일 (시작)', key: 'hireDateFrom', type: 'date' },
-  { label: '입사일 (종료)', key: 'hireDateTo', type: 'date' },
-  { label: '근무지', key: 'workPlace', placeholder: '예: 서울본사' },
-  { label: '부서명', key: 'departmentName', placeholder: '예: 영업1팀' }
+  { label: '입사일 (종료)', key: 'hireDateTo', type: 'date' }
+]
+
+const row3 = [
+  { label: '근무지', key: 'workPlace', placeholder: '예: 서울본사' }
 ]
 </script>
 
@@ -42,12 +51,17 @@ const row2 = [
 }
 .row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-bottom: 10px;
 }
-.row:last-child {
+.row:nth-child(1) {
   grid-template-columns: repeat(4, 1fr);
+}
+.row:nth-child(2) {
+  grid-template-columns: repeat(4, 1fr);
+}
+.row:nth-child(3) {
+  grid-template-columns: repeat(1, 1fr);
 }
 .field {
   display: flex;

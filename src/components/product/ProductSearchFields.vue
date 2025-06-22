@@ -1,7 +1,16 @@
 <template>
   <div class="product-search-fields">
+    <!-- 첫 번째 행 (항상 표시) -->
     <div class="row">
-      <div class="field" v-for="(item, index) in row" :key="index">
+      <div class="field" v-for="(item, index) in firstRow" :key="index">
+        <label :for="item.key">{{ item.label }}</label>
+        <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
+      </div>
+    </div>
+    
+    <!-- 나머지 행들 (expanded일 때만 표시) -->
+    <div class="row" v-if="expanded">
+      <div class="field" v-for="(item, index) in remainingRows" :key="index">
         <label :for="item.key">{{ item.label }}</label>
         <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
       </div>
@@ -10,9 +19,12 @@
 </template>
 
 <script setup>
-defineProps({ filters: Object })
+defineProps({ 
+  filters: Object,
+  expanded: { type: Boolean, default: false }
+})
 
-const row = [
+const allFields = [
   { label: '상품 코드', key: 'productCode', placeholder: 'P0001' },
   { label: '카테고리', key: 'category', placeholder: '청소기' },
   { label: '상품명', key: 'name', placeholder: '청소기 1호' },
@@ -23,6 +35,11 @@ const row = [
   { label: '월 렌탈료(시작)', key: 'rentalCostStart', placeholder: '13000', type: 'number' },
   { label: '월 렌탈료(끝)', key: 'rentalCostEnd', placeholder: '18000', type: 'number' }
 ]
+
+// 첫 번째 행 (5개 필드)
+const firstRow = allFields.slice(0, 5)
+// 나머지 행들 (4개 필드)
+const remainingRows = allFields.slice(5)
 </script>
 
 <style scoped>
