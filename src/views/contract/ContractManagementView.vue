@@ -44,6 +44,7 @@
     />
     <ContractDetailModal
       v-if="selectedContract"
+      :key="selectedContract?.id"    
       :isOpen="showDetailModal"
       :contractId="selectedContract?.id"
       :contractCode="selectedContract.code"
@@ -176,10 +177,21 @@ function handleReplaceModalClose() {
   showReplaceModal.value = false
 }
 
-function handleReplaceSuccess(updatedContract) {
+async function handleReplaceSuccess(updatedContract) {
   showReplaceModal.value = false
-  selectedContract.value = updatedContract
-  showSuccessModal.value = true
+  try {
+    const token = useAuthStore().accessToken
+    const res = await api.get(
+      `/api/query/contract/${updatedContract.contractId}/info`,
+      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+    )
+    selectedContract.value = res.data
+     showSuccessModal.value = true
+    // showDetailModal.value = true
+  } catch (e) {
+    console.error('재업로드 후 상세조회 실패:', e)
+    alert('계약 상세 조회에 실패했습니다.')
+  }
 }
 
 const columns = [
