@@ -1,4 +1,3 @@
-<!-- File: src/views/contractTemplate/ContractTemplateView.vue -->
 <template>
   <section>
     <!-- 검색 필터 -->
@@ -23,7 +22,6 @@
         @row-click="handleRowClick"
         @row-dblclick="handleRowDblClick"
       >
-        <!-- 등록일 포맷 적용 -->
         <template #cell-createdAt="{ row }">
           {{ row.createdAtFormatted }}
         </template>
@@ -57,7 +55,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import BaseDataTable from '@/components/BaseDataTable.vue'
@@ -74,7 +72,7 @@ const searchForm = reactive({
   createdAtEnd: ''
 })
 
-// 테이블 데이터 및 UI 상태
+// 테이블 데이터 / UI 상태
 const rows = ref([])
 const isLoading = ref(false)
 const showUploadModal = ref(false)
@@ -82,34 +80,39 @@ const showDetailModal = ref(false)
 const selectedTemplate = ref(null)
 const selectedRowCode = ref(null)
 
-// 테이블 칼럼 정의
 const columns = [
   { label: '양식명', key: 'name', width: '150px' },
   { label: '버전', key: 'version', width: '100px' },
-  { label: '등록일', key: 'createdAt', width: '150px' },
-  { label: '비고', key: 'note', width: '200px' }
+  { label: '등록일', key: 'createdAtFormatted', width: '150px' },
+  { label: '비고', key: 'description', width: '200px' }
 ]
 
-// 등록버튼 클릭: 신규 등록 모드로 전환
+// 마운트 시 한 번만
+onMounted(() => {
+  handleSearch({ ...searchForm })
+})
+
 function openCreateModal() {
   selectedTemplate.value = null
   selectedRowCode.value = null
   showUploadModal.value = true
 }
 
-// 검색 수행
 async function handleSearch(data) {
-  const token = useAuthStore().accessToken
   isLoading.value = true
   try {
+    const token = useAuthStore().accessToken
     const res = await api.post('/api/query/documentTemplate/search', data, {
       headers: { Authorization: `Bearer ${token}` },
       withCredentials: true
     })
-    // 등록일 포맷 필드 추가
     rows.value = res.data.map(item => ({
       ...item,
-      createdAtFormatted: formatDateTime(item.createdAt)
+      createdAtFormatted: new Date(item.createdAt)
+        .toLocaleString('ko-KR', {
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+        })
     }))
   } catch (e) {
     console.error('검색 실패:', e)
@@ -118,113 +121,88 @@ async function handleSearch(data) {
   }
 }
 
-// 검색 초기화
 function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
 }
 
-// 행 선택
-function handleRowClick(template) {
-  selectedRowCode.value = template.id
-  selectedTemplate.value = template
+function handleRowClick(t) {
+  selectedRowCode.value = t.id
+  selectedTemplate.value = t
 }
-function handleRowDblClick(template) {
-  selectedTemplate.value = template
+function handleRowDblClick(t) {
+  selectedTemplate.value = t
   showDetailModal.value = true
 }
 
-// 수정 모드
 async function handleEdit() {
   if (!selectedTemplate.value) return
-  const token = useAuthStore().accessToken
   try {
+    const token = useAuthStore().accessToken
     const res = await api.get(
       `/api/query/documentTemplate/${selectedTemplate.value.id}`,
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
     )
     selectedTemplate.value = res.data
     showUploadModal.value = true
-  } catch (e) {
+  } catch {
     alert('수정 불러오기 실패')
-    console.error(e)
   }
 }
 
-// 삭제
 async function handleDelete() {
   if (!selectedTemplate.value) return
-  if (!confirm('정말 삭제하시겠습니까?')) return
-  const token = useAuthStore().accessToken
+  if (!confirm('삭제하시겠습니까?')) return
   try {
+    const token = useAuthStore().accessToken
     await api.delete(
       `/api/command/documentTemplate/${selectedTemplate.value.id}`,
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
     )
     alert('삭제 완료')
     selectedTemplate.value = null
-    handleSearch({ ...searchForm })
-  } catch (e) {
+    await handleSearch({ ...searchForm })
+  } catch {
     alert('삭제 실패')
-    console.error(e)
   }
 }
 
-// 모달 닫기
-function closeUploadModal() {
+
+async function handleUploadSuccess(uploadResp) {
   showUploadModal.value = false
-}
-function closeDetailModal() {
-  showDetailModal.value = false
+  
+  await handleSearch({ ...searchForm })
+
+  const templateId = (uploadResp && uploadResp.id)
+    ? uploadResp.id
+    : (selectedTemplate.value && selectedTemplate.value.id)
+
+  try {
+    const token = useAuthStore().accessToken
+    const res = await api.get(
+      `/api/query/documentTemplate/${templateId}`,
+      { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
+    )
+    selectedTemplate.value = res.data
+    selectedRowCode.value = templateId
+    showDetailModal.value = true
+  } catch (e) {
+    console.error('상세 조회 실패:', e)
+    alert('정상 등록/수정되었으나 상세 정보를 불러오지 못했습니다.')
+  }
 }
 
-// 날짜/시간 포맷 함수
-function formatDateTime(val) {
-  if (!val) return ''
-  return new Date(val).toLocaleString('ko-KR', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-  })
-}
+function closeUploadModal() { showUploadModal.value = false }
+function closeDetailModal() { showDetailModal.value = false }
 </script>
 
 <style scoped>
-section { padding: 20px; }
-
-::v-deep(.data-table) {
-  width: 100%;
-  table-layout: auto;
-}
-
-.table-wrapper {
-  margin-top: 24px;
-  overflow-x: auto;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.register-btn,
-.edit-btn,
-.delete-btn {
-  padding: 8px 16px;
-  font-size: 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.register-btn { background-color: #6c87c1; color: white; }
-.edit-btn     { background-color: #ffc107; color: #000; }
-.delete-btn   { background-color: #f44336; color: white; }
-
-.register-btn:disabled,
-.edit-btn:disabled,
-.delete-btn:disabled {
-  background-color: #ccc;
-  color: #666;
-  cursor: not-allowed;
-}
+section { padding:20px }
+::v-deep(.data-table) { width:100%; table-layout:auto }
+.table-wrapper { margin-top:24px; overflow-x:auto }
+.action-buttons { display:flex; justify-content:flex-end; gap:12px; margin-top:16px }
+.register-btn,.edit-btn,.delete-btn{padding:8px 16px;font-size:14px;border:none;border-radius:6px;cursor:pointer}
+.register-btn{background:#6c87c1;color:#fff}
+.edit-btn{background:#ffc107;color:#000}
+.delete-btn{background:#f44336;color:#fff}
+.register-btn:disabled,.edit-btn:disabled,.delete-btn:disabled{background:#ccc;color:#666;cursor:not-allowed}
 </style>
