@@ -293,7 +293,7 @@ input[type='text'] {
   margin-top: 2rem;
 }
 .submit-btn {
-  background-color: #00a86b;
+  background-color: #a6ce39;
   color: white;
   padding: 0.8rem 1.6rem;
   border: none;

@@ -1,22 +1,10 @@
 <template>
     <div class="notification-container">
         <div class="board-container">
-            <div class="board-header">
-                <button 
-                    v-if="!isDeleteMode" 
-                    @click="enterDeleteMode" 
-                    class="delete-button">
-                    삭제
-                </button>
-                <div v-else class="delete-mode-buttons">
-                    <button @click="confirmDelete" class="confirm-button">확인</button>
-                    <button @click="cancelDelete" class="cancel-button">취소</button>
-                </div>
-            </div>
             <table class="board-table">
                 <thead>
                     <tr>
-                        <th v-if="isDeleteMode" class="col-checkbox">
+                        <th class="col-checkbox">
                             <input 
                                 type="checkbox" 
                                 :checked="isAllSelected" 
@@ -32,14 +20,12 @@
                 <tbody>
                     <tr v-for="notification in notifications" 
                         :key="notification.id"
-                        @click="isDeleteMode ? toggleNotificationSelection(notification.id) : handleNotificationClick(notification)"
+                        @click="handleNotificationClick(notification)"
                         :class="{ 'unread': !notification.read }">
-                        <td v-if="isDeleteMode" class="col-checkbox">
+                        <td class="col-checkbox" @click.stop="toggleNotificationSelection(notification.id)">
                             <input 
                                 type="checkbox" 
-                                v-model="selectedNotifications" 
-                                :value="notification.id"
-                                @click.stop
+                                :checked="selectedNotifications.includes(notification.id)"
                             >
                         </td>
                         <td class="col-type">{{ notification.type }}</td>
@@ -52,20 +38,46 @@
                         </td>
                     </tr>
                     <tr v-if="notifications.length === 0">
-                        <td :colspan="isDeleteMode ? 5 : 4" class="no-data">등록된 알림이 없습니다.</td>
+                        <td colspan="5" class="no-data">등록된 알림이 없습니다.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <div class="pagination">
-            <button 
-                v-for="page in totalPages" 
-                :key="page"
-                @click="changePage(page - 1)"
-                :class="{ 'active': currentPage === page - 1 }"
-                class="page-button">
-                {{ page }}
-            </button>
+        
+        <div class="bottom-actions">
+            <div class="pagination">
+                <button 
+                    @click="changePage(currentPage - 10)"
+                    :disabled="currentPage < 10"
+                    class="page-button">
+                    &lt;
+                </button>
+                <div class="page-numbers">
+                    <span 
+                        v-for="pageNum in visiblePageNumbers" 
+                        :key="pageNum"
+                        @click="changePage(pageNum - 1)"
+                        :class="{ 'active': currentPage === pageNum - 1 }"
+                        class="page-number">
+                        {{ pageNum }}
+                    </span>
+                </div>
+                <button 
+                    @click="changePage(currentPage + 10)"
+                    :disabled="currentPage + 10 >= totalPages"
+                    class="page-button">
+                    &gt;
+                </button>
+            </div>
+            
+            <div class="delete-actions">
+                <button 
+                    @click="confirmDelete" 
+                    class="delete-button"
+                    :disabled="selectedNotifications.length === 0">
+                    삭제
+                </button>
+            </div>
         </div>
 
         <!-- 결재 상세 모달 -->
@@ -118,8 +130,6 @@ const currentPage = ref(0)
 const totalPages = ref(1)
 const showDetailModal = ref(false)
 const selectedApproval = ref(null)
-const isDeleteMode = ref(false)
-const selectedNotifications = ref([])
 const showDeleteConfirmModal = ref(false)
 
 const fetchNotifications = async (page) => {
@@ -158,35 +168,52 @@ const formatDateTime = (dateTimeString) => {
 }
 
 const handleNotificationClick = async (notification) => {
+    console.log('클릭된 알림 정보:', notification);
     try {
-        // notification store의 markAsRead 함수 사용
-        await notificationStore.markAsRead(notification.id)
-        
-        // 알림 목록에서 해당 알림의 read 상태 업데이트
-        const index = notifications.value.findIndex(n => n.id === notification.id)
-        if (index !== -1) {
-            notifications.value[index].read = true
+        // 읽지 않은 알림일 경우에만 읽음 처리
+        if (!notification.read) {
+            await notificationStore.markAsRead(notification.id)
+            const index = notifications.value.findIndex(n => n.id === notification.id)
+            if (index !== -1) {
+                notifications.value[index].read = true
+            }
         }
 
-        // 알림 타입에 따라 해당 페이지로 라우팅
         if (notification.url) {
-            // URL에서 결재 ID 추출 (예: /approval/1 -> 1)
-            const approvalId = notification.url.split('/').pop()
-            
-            // 결재 상세 정보 가져오기
-            const response = await api.get(`/approval/${approvalId}`, {
-                headers: {
-                    'Authorization': `Bearer ${authStore.accessToken}`
+            switch (notification.type) {
+                case '공지사항':
+                case '문의사항':
+                    router.push(notification.url)
+                    break
+                case '결재': {
+                    const approvalId = notification.url.split('/').pop()
+                    const response = await api.get(`/approval/${approvalId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authStore.accessToken}`
+                        }
+                    })
+                    selectedApproval.value = response.data
+                    showDetailModal.value = true
+                    break
                 }
-            })
-            
-            // 모달에 데이터 표시
-            selectedApproval.value = response.data
-            showDetailModal.value = true
+                default:
+                    // 기타 알림 유형에 대한 기본 동작 (예: 라우팅)
+                    if (notification.url) {
+                        router.push(notification.url)
+                    }
+                    break
+            }
         }
     } catch (error) {
         console.error('알림 처리 중 오류 발생:', error)
-        console.error('에러 상세:', error.response?.data || error.message)
+        const errorMessage = error.response?.data || error.message
+        console.error('에러 상세:', errorMessage)
+
+        if (errorMessage === '해당 결재를 찾을 수 없습니다.' || (error.response && error.response.status === 404)) {
+            alert('연결된 문서를 찾을 수 없습니다. 이미 삭제되었을 수 있습니다.')
+        } else {
+            alert('알림을 처리하는 중 오류가 발생했습니다.')
+        }
     }
 }
 
@@ -215,15 +242,17 @@ const isAllSelected = computed(() => {
     return notifications.value.length > 0 && selectedNotifications.value.length === notifications.value.length
 })
 
-const enterDeleteMode = () => {
-    isDeleteMode.value = true
-    selectedNotifications.value = []
-}
-
-const cancelDelete = () => {
-    isDeleteMode.value = false
-    selectedNotifications.value = []
-}
+const visiblePageNumbers = computed(() => {
+    const startPage = Math.floor(currentPage.value / 10) * 10 + 1
+    const endPage = Math.min(startPage + 9, totalPages.value)
+    const pages = []
+    
+    for (let i = startPage; i <= endPage; i++) {
+        pages.push(i)
+    }
+    
+    return pages
+})
 
 const toggleSelectAll = (event) => {
     if (event.target.checked) {
@@ -253,7 +282,6 @@ const executeDelete = async () => {
         
         await notificationStore.deleteNotifications(selectedNotifications.value)
         showDeleteConfirmModal.value = false
-        isDeleteMode.value = false
         selectedNotifications.value = []
         // 목록 새로고침
         fetchNotifications(currentPage.value)
@@ -271,6 +299,8 @@ const toggleNotificationSelection = (notificationId) => {
         selectedNotifications.value.splice(index, 1)
     }
 }
+
+const selectedNotifications = ref([])
 
 onMounted(() => {
     fetchNotifications(0)
@@ -295,14 +325,15 @@ onMounted(() => {
 
 .board-container {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
     margin-bottom: 20px;
 }
 
 .board-table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 14px;
     
     th, td {
         padding: 15px;
@@ -319,6 +350,7 @@ onMounted(() => {
     tbody tr {
         cursor: pointer;
         transition: background-color 0.2s;
+        background-color: #ffffff;
 
         &:hover {
             background-color: #f8f9fa;
@@ -337,7 +369,7 @@ onMounted(() => {
         }
 
         &:not(.unread) {
-            background-color: #f8f9fa;
+            background-color: #ffffff;
             
             .col-type, .col-content {
                 font-weight: normal;
@@ -349,23 +381,24 @@ onMounted(() => {
         text-align: center;
         color: #6c757d;
         padding: 30px;
+        background-color: #ffffff;
     }
 }
 
 .col-type {
-    width: 15%;
+    width: 10%;
 }
 
 .col-content {
-    width: 55%;
+    width: 60%;
 }
 
 .col-date {
-    width: 20%;
+    width: 15%;
 }
 
 .col-status {
-    width: 10%;
+    width: 15%;
     text-align: center;
 }
 
@@ -386,33 +419,61 @@ onMounted(() => {
 .pagination {
     display: flex;
     justify-content: center;
-    gap: 5px;
+    align-items: center;
+    gap: 10px;
     margin-top: 20px;
+}
 
-    .page-button {
-        min-width: 32px;
-        height: 32px;
-        padding: 0 6px;
+.page-numbers {
+    display: flex;
+    gap: 4px;
+}
+
+.page-number {
+    cursor: pointer;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    color: #495057;
+    font-size: 14px;
+    font-weight: normal;
+    background-color: transparent;
+
+    &:hover {
         border: 1px solid #dee2e6;
-        background-color: white;
-        color: #495057;
-        font-size: 14px;
-        cursor: pointer;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    }
 
-        &:hover {
-            background-color: #e9ecef;
-            border-color: #dee2e6;
-        }
+    &.active {
+        background-color: transparent;
+        font-weight: bold;
+        color: #000000;
+    }
+}
 
-        &.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
+.page-button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    border: none;
+    background-color: transparent;
+    color: #495057;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+
+    &:hover:not(:disabled) {
+        background-color: transparent;
+        border: 1px solid #dee2e6;
+    }
+
+    &:disabled {
+        background-color: transparent;
+        color: #adb5bd;
+        cursor: not-allowed;
     }
 }
 
@@ -488,7 +549,7 @@ onMounted(() => {
 
     .confirm-button {
         padding: 8px 20px;
-        background-color: #dc3545;
+        background-color: #e53935;
         color: white;
         border: none;
         border-radius: 4px;
@@ -496,13 +557,13 @@ onMounted(() => {
         font-size: 14px;
 
         &:hover {
-            background-color: #c82333;
+            background-color: #c62828;
         }
     }
 
     .cancel-button {
         padding: 8px 20px;
-        background-color: #6c757d;
+        background-color: #adb5bd;
         color: white;
         border: none;
         border-radius: 4px;
@@ -510,7 +571,7 @@ onMounted(() => {
         font-size: 14px;
 
         &:hover {
-            background-color: #5a6268;
+            background-color: #9fa6b1;
         }
     }
 }
@@ -531,8 +592,14 @@ onMounted(() => {
     cursor: pointer;
     font-size: 14px;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background-color: #c82333;
+    }
+
+    &:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
     }
 }
 
@@ -543,7 +610,7 @@ onMounted(() => {
 
 .confirm-button {
     padding: 8px 16px;
-    background-color: #28a745;
+    background-color: #a6ce39;
     color: white;
     border: none;
     border-radius: 4px;
@@ -551,13 +618,13 @@ onMounted(() => {
     font-size: 14px;
 
     &:hover {
-        background-color: #218838;
+        background-color: #94b933;
     }
 }
 
 .cancel-button {
     padding: 8px 16px;
-    background-color: #6c757d;
+    background-color: #adb5bd;
     color: white;
     border: none;
     border-radius: 4px;
@@ -565,12 +632,28 @@ onMounted(() => {
     font-size: 14px;
 
     &:hover {
-        background-color: #5a6268;
+        background-color: #9fa6b1;
     }
 }
 
 .col-checkbox {
     width: 40px;
     text-align: center;
+}
+
+.bottom-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px 0;
+    position: relative;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 8px;
+    position: absolute;
+    right: 0;
 }
 </style>

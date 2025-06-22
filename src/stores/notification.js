@@ -3,6 +3,11 @@ import { ref } from 'vue'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 
+// SSE 연결용 BASE URL (API와 동일한 포트 사용)
+const SSE_BASE_URL = import.meta.env.MODE === 'development'
+  ? 'http://localhost:5001'
+  : 'http://salad-alb-240627784.ap-northeast-2.elb.amazonaws.com'
+
 export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
   const notifications = ref([])
@@ -75,8 +80,8 @@ export const useNotificationStore = defineStore('notification', () => {
       const subscribeToken = response.data
       console.log('[SSE] 구독 토큰 수신:', subscribeToken)
   
-      // 2️⃣ 해당 토큰으로 SSE 연결
-      const eventSource = new EventSource(`/notification/subscribe?token=${subscribeToken}`)
+      // 2️⃣ 해당 토큰으로 SSE 연결 (올바른 포트 사용)
+      const eventSource = new EventSource(`${SSE_BASE_URL}/notification/subscribe?token=${subscribeToken}`)
   
       eventSource.onopen = () => {
         console.log('[SSE] 연결 성공')

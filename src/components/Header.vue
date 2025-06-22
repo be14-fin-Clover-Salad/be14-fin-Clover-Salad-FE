@@ -31,7 +31,7 @@
         </div>
         <div class="info">
           <div class="team">{{ user.departmentName || '로딩 중...' }}</div>
-          <div class="name">{{ user.name || '사용자' }} {{ user.levelLabel || '' }}</div>
+          <div class="name">{{ user.levelLabel === '관리자' ? user.levelLabel : (user.name || '사용자') }} {{ user.levelLabel !== '관리자' ? (user.levelLabel || '') : '' }}</div>
           <!-- 드롭다운 메뉴 (토글) -->
           <div class="dropdown-menu" v-if="dropdownOpen">
             <div class="dropdown-arrow"></div>
@@ -42,7 +42,7 @@
               </div>
               <div class="dropdown-header-right">
                 <div class="dropdown-team">{{ user.departmentName || '로딩 중...' }}</div>
-                <div class="dropdown-employee">{{ user.name || '사용자' }} {{ user.levelLabel || '' }}</div>
+                <div class="dropdown-employee">{{ user.levelLabel === '관리자' ? user.levelLabel : (user.name || '사용자') }} {{ user.levelLabel !== '관리자' ? (user.levelLabel || '') : '' }}</div>
               </div>
             </div>
             <div class="dropdown-divider"></div>

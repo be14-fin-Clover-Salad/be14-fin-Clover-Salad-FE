@@ -1,6 +1,5 @@
 <template>
   <div class="qna-view">
-    <h1>문의사항</h1>
     <QnaList />
   </div>
 </template>

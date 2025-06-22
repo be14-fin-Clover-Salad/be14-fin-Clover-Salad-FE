@@ -2,8 +2,8 @@
   <section>
     <!-- 검색 필터 -->
     <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
-      <template #fields="{ filters }">
-        <ApprovalSearchFields :filters="filters" />
+      <template #fields="{ filters, expanded }">
+        <ApprovalSearchFields :filters="filters" :expanded="expanded" />
       </template>
     </SearchFilterShell>
 
