@@ -1,6 +1,6 @@
 <template>
   <section>
-    <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
+    <SearchFilterShell :initial="searchForm" :showToggle="false" @search="handleSearch" @reset="handleReset">
       <template #fields="{ filters }">
         <EmployeeGoalSearchFields :filters="filters" :employeeCode="employeeCode" :isAdmin="isAdmin"/>
       </template>
