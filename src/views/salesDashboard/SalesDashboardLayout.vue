@@ -105,17 +105,26 @@ watch([filterYear, filterPeriodType, filterPeriodValue], async ([year, type, val
 const donutOption = computed(() => ({
   color: teamColors,
   tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
-  legend: { show: false },
+  legend: {
+    orient: 'vertical',
+    right: '5%',
+    top: 'center',
+    textStyle: {
+      fontSize: 14
+    }
+  },
   series: [{
     name: '팀별 비중',
     type: 'pie',
-    radius: '90%',
+    radius: '70%',
+    center: ['40%', '50%'],
     label: {
       show: true,
       position: 'inside',
-      formatter: '{b}\n{d}%',
-      fontSize: 16,
-      fontWeight: 'bold'
+      formatter: '{d}%',
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: '#fff'
     },
     labelLine: { show: false },
     data: teamDonutData.value
@@ -150,8 +159,10 @@ function formatCurrency(val) {
   padding: 32px;
   display: flex;
   flex-direction: column;
-  height: 100%;
   box-sizing: border-box;
+  width: 1440px;
+  height: 900px;
+  margin: 0 auto;
 }
 
 /* 이하 기존 스타일 그대로 유지 */
@@ -164,11 +175,13 @@ function formatCurrency(val) {
 
 .dashboard-top {
   gap: 24px;
-  flex: 0.5 1 0;
+  flex: none;
+  height: 320px;
   min-height: 0;
 }
 .dashboard-bottom {
-  flex: 1 1 0;
+  flex: none;
+  height: 500px;
   min-height: 0;
   margin-top: 24px;
   gap: 24px;
@@ -181,7 +194,8 @@ function formatCurrency(val) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: 1 1 0;
+  flex: none;
+  width: 475px;
 }
 .year-sales {
   background: #fff;
@@ -191,7 +205,8 @@ function formatCurrency(val) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: 0.8 1 0;
+  flex: none;
+  width: 380px;
 }
 .dashboard-middle {
   display: flex;
@@ -201,13 +216,14 @@ function formatCurrency(val) {
   padding: 0;
   border-radius: 0;
   box-shadow: none;
+  justify-content: space-between;
 }
 .month-and-quarter-sales {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 24px;
-  margin-bottom: 8px;
+  min-height: 140px;
 }
 .filter-sales {
   display: flex;
@@ -225,7 +241,8 @@ function formatCurrency(val) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: 1 1 0;
+  flex: none;
+  width: 676px;
 }
 .filter-options-row {
   display: flex;

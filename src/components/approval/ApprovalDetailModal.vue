@@ -452,7 +452,7 @@ const formatDateTime = (dateStr) => {
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   padding: 16px;
-  min-height: 60px;
+  min-height: 28px;
   display: flex;
   align-items: center;
 }

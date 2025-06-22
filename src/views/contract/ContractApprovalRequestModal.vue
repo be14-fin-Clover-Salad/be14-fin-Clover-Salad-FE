@@ -1,51 +1,77 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
     <div class="modal-box">
-      <div class="form-grid">
-        <div class="field">
-          <label>계약 코드:</label>
-          <div class="input">{{ contractCode }}</div>
+      <!-- 모달 헤더 -->
+      <div class="modal-header">
+        <h2 class="modal-title">결재 요청</h2>
+        <button class="close-btn" @click="emit('close')">×</button>
+      </div>
+
+      <div class="modal-content">
+        <!-- 결재 정보 테이블 -->
+        <div class="table-container">
+          <table class="erp-table">
+            <tbody>
+              <tr>
+                <th class="th-label">계약 코드</th>
+                <td class="td-value">{{ contractCode }}</td>
+                <th class="th-label">요청자</th>
+                <td class="td-value">{{ requester }}</td>
+              </tr>
+              <tr>
+                <th class="th-label">결재 상태</th>
+                <td class="td-value">
+                  <span class="status-badge" :class="getStatusClass(contractState)">
+                    {{ contractState || '알 수 없음' }}
+                  </span>
+                </td>
+                <th class="th-label">-</th>
+                <td class="td-value">-</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="field">
-          <label>요청자:</label>
-          <div class="input">{{ requester }}</div>
+        <!-- 결재 제목 -->
+        <div class="section-container">
+          <h3 class="section-title">결재 제목</h3>
+          <div class="content-box editable">
+            <input 
+              v-model="form.title" 
+              class="content-input editable" 
+              placeholder="결재 제목을 입력하세요"
+            />
+          </div>
         </div>
 
-        <div class="field status-field">
-          <label>결재 상태:</label>
-          <span class="status-badge" :class="getStatusClass(contractState)">
-            {{ contractState || '알 수 없음' }}
-          </span>
-        </div>
-
-        <div class="field full">
-          <label>결재 제목:</label>
-          <input v-model="form.title" class="input editable" placeholder="결재 제목을 입력하세요" />
-        </div>
-
-        <!-- 결재 내용 textarea를 아래로 확장 -->
-        <div class="field full">
-          <label>결재 내용:</label>
-          <textarea
-            v-model="form.content"
-            rows="12"
-            class="content-textarea editable"
-            placeholder="결재 요청 내용을 입력하세요"
-          ></textarea>
+        <!-- 결재 내용 -->
+        <div class="section-container">
+          <h3 class="section-title">결재 내용</h3>
+          <div class="content-box editable">
+            <textarea 
+              v-model="form.content"
+              rows="8"
+              class="content-textarea editable"
+              placeholder="결재 요청 내용을 입력하세요"
+            ></textarea>
+          </div>
         </div>
 
         <!-- action buttons -->
-        <div class="field full action-buttons">
+        <div class="action-section">
           <div class="button-group">
             <button
               class="approve-btn"
               :disabled="isApproveDisabled"
               @click="handleSubmit"
             >
+              <span class="btn-icon">✓</span>
               {{ approveBtnLabel }}
             </button>
-            <button class="reject-btn" @click="emit('close')">취소</button>
+            <button class="reject-btn" @click="emit('close')">
+              <span class="btn-icon">✗</span>
+              취소
+            </button>
           </div>
         </div>
       </div>
@@ -138,195 +164,345 @@ async function handleSubmit() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .modal-box {
-  width: 900px;
+  width: 1000px;
   max-height: 90vh;
-  background: #fff;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 24px 32px;
-}
-
-.field {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.field.full {
-  grid-column: span 3;
-}
-
-.field.status-field {
-  flex-direction: row;
+.modal-header {
+  background: linear-gradient(135deg, #4A6741 0%, #8BA888 100%);
+  color: white;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: -30px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-.input {
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.table-container {
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.erp-table th,
+.erp-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.erp-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: 1px solid #e0e0e0;
+  width: 140px;
+}
+
+.erp-table td {
+  font-weight: 400;
+  color: #212529;
+  font-size: 14px;
+  background: white;
+}
+
+.erp-table tr:last-child th,
+.erp-table tr:last-child td {
+  border-bottom: none;
+}
+
+.erp-table tr:hover td {
+  background-color: #f8f9fa;
+}
+
+.section-container {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #495057;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  align-items: center;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: #4A6741;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.content-box {
   background: #f8f9fa;
   border: 1px solid #e0e0e0;
-  padding: 9.5px 16px;
   border-radius: 6px;
+  padding: 16px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.content-box.editable {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  min-height: 28px;
+}
+
+.content-input {
+  width: 100%;
+  border: none;
+  background: transparent;
   font-size: 14px;
-  color: #333;
-  min-height: 15px;
-}
-
-.input.editable {
-  background: #fff;
-}
-
-textarea {
+  color: #212529;
+  outline: none;
   font-family: inherit;
+  line-height: 1.6;
+  padding: 0;
+  min-height: 28px;
 }
 
 .content-textarea {
   width: 100%;
   border: none;
-  background: #f8f9fa;
-  padding: 20px;
+  background: transparent;
   font-size: 14px;
-  color: #333;
+  color: #212529;
   resize: none;
   outline: none;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  min-height: 180px;
-  /* 결재내용란 더 크게 */
+  font-family: inherit;
+  line-height: 1.6;
+  padding: 0;
+  min-height: 120px;
 }
 
-.editable {
-  background: #ffffff;
+.content-textarea::placeholder,
+.content-input::placeholder {
+  color: #6c757d;
+  font-style: italic;
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
-  min-width: 60px;
+  height: 16px;
+  min-width: 30px;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: white;
 }
 
 .status-badge.status-pending {
-  background-color: #fff3e0;
-  color: #f57c00;
-  border: 1px solid #ffcc02;
+  background-color: #ffc107;
 }
 
 .status-badge.status-inprogress {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  border: 1px solid #90caf9;
+  background-color: #4A90E2;
 }
 
 .status-badge.status-active {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #81c784;
+  background-color: #28a745;
 }
 
 .status-badge.status-rejected {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef5350;
+  background-color: #FF5D5D;
 }
 
 .status-badge.status-unknown {
-  background-color: #eeeeee;
-  color: #888;
-  border: 1px solid #ccc;
+  background-color: #6c757d;
 }
 
-.action-buttons {
+.action-section {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  padding-top: 20px;
+  padding: 20px 0;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
 }
 
 .button-group {
   display: flex;
   gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.approve-btn,
+.reject-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  min-width: 80px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .approve-btn {
-  background-color: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #4caf50;
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  height: 40px;
-  width: 100px;
-  box-sizing: border-box;
+  background: linear-gradient(135deg, #8BA888 0%, #6B8A68 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(139, 168, 136, 0.2);
 }
 
 .approve-btn:disabled {
-  background: #f1f1f1;
-  color: #aaa;
-  border: 1px solid #ddd;
+  background: #6c757d;
+  color: #fff;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .reject-btn {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef5350;
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  height: 40px;
-  width: 100px;
-  box-sizing: border-box;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.1);
 }
 
-.approve-btn:hover:enabled {
-  background-color: #c8e6c9;
+.approve-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7BA078 0%, #5A7957 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(139, 168, 136, 0.3);
 }
 
 .reject-btn:hover {
-  background-color: #ffcdd2;
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
 }
 
-@media (max-width: 1000px) {
+.btn-icon {
+  margin-right: 6px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+@media (max-width: 1024px) {
   .modal-box {
     width: 95%;
     margin: 0 auto;
-    padding: 24px;
   }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
+  
+  .erp-table th,
+  .erp-table td {
+    padding: 12px;
+    font-size: 13px;
   }
+  
+  .erp-table th {
+    width: 120px;
+  }
+}
 
-  .field.full {
-    grid-column: span 1;
+@media (max-width: 768px) {
+  .modal-box {
+    width: 98%;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+  }
+  
+  .erp-table {
+    font-size: 12px;
+  }
+  
+  .erp-table th,
+  .erp-table td {
+    padding: 10px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .approve-btn,
+  .reject-btn {
+    width: 100%;
   }
 }
 </style>
