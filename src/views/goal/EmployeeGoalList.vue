@@ -28,10 +28,15 @@
   import api from "@/api/auth.js";
   import { useAuthStore } from "@/stores/auth.js";
 
+  const router = useRouter();
   const authStore = useAuthStore();
+  const rows = reactive([]);
+  const isLoading = ref(false);
   const userId = ref(authStore.userInfo?.id);
   const employeeCode = ref(null);
   const isAdmin = ref(false);
+  const selectedRowCode = ref(null);
+  const selectedGoal = ref(null);
 
   const searchForm = reactive({
     employeeCode: 0,
@@ -49,6 +54,17 @@
     maxCustomerFeedbackScore: ''
   });
 
+  const columns = [
+    { label: '#', key: 'index' },
+    { label: '사원 코드', key: 'employeeCode' },
+    { label: '대상연월', key: 'targetDate' },
+    { label: '렌탈 상품 수', key: 'rentalProductCount' },
+    { label: '렌탈 유지율', key: 'rentalRetentionRate' },
+    { label: '신규 고객 수', key: 'newCustomerCount' },
+    { label: '총 렌탈료', key: 'totalRentalAmount' },
+    { label: '고객 만족도', key: 'customerFeedbackScore' },
+  ];
+
   onMounted(async () => {
     const response = await api.get(`/employee/detail?employeeId=${userId.value}`);
     employeeCode.value = Number(response.data.code) || undefined;
@@ -56,11 +72,6 @@
     isAdmin.value = response.data.level === "관리자";
   })
 
-  const router = useRouter();
-  const rows = reactive([]);
-  const isLoading = ref(false);
-  const selectedGoal = ref(null);
-  const selectedRowCode = ref(null);
 
   async function handleSearch(data) {
     try {
@@ -111,17 +122,6 @@
   function registerGoal() {
     router.push("/goal/register");
   }
-
-  const columns = [
-    { label: '#', key: 'index' },
-    { label: '사원 코드', key: 'employeeCode' },
-    { label: '대상연월', key: 'targetDate' },
-    { label: '렌탈 상품 수', key: 'rentalProductCount' },
-    { label: '렌탈 유지율', key: 'rentalRetentionRate' },
-    { label: '신규 고객 수', key: 'newCustomerCount' },
-    { label: '총 렌탈료', key: 'totalRentalAmount' },
-    { label: '고객 만족도', key: 'customerFeedbackScore' },
-  ];
 </script>
 
 <style scoped>
