@@ -91,8 +91,6 @@ const props = defineProps({
   contractState: String,
   approvalState: String,
 })
-console.log('props.contractState:', props.contractState)
-console.log('props.approvalState:', props.approvalState)
 
 const emit = defineEmits(['close', 'refresh'])
 
@@ -394,14 +392,14 @@ async function handleSubmit() {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px 0;
+  padding: 16px 0;
   border-top: 1px solid #e0e0e0;
   margin-top: 20px;
 }
 
 .button-group {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
 }
@@ -412,52 +410,43 @@ async function handleSubmit() {
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-  min-width: 80px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  min-width: 70px;
 }
 
 .approve-btn {
-  background: linear-gradient(135deg, #8BA888 0%, #6B8A68 100%);
+  background: #6c757d;
   color: white;
-  box-shadow: 0 2px 4px rgba(139, 168, 136, 0.2);
 }
 
 .approve-btn:disabled {
-  background: #6c757d;
+  background: #adb5bd;
   color: #fff;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 .reject-btn {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f8f9fa;
   color: #6c757d;
   border: 1px solid #dee2e6;
-  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.1);
 }
 
 .approve-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7BA078 0%, #5A7957 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(139, 168, 136, 0.3);
+  background: #5a6268;
 }
 
 .reject-btn:hover {
-  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+  background: #e9ecef;
 }
 
 .btn-icon {
-  margin-right: 6px;
-  font-size: 16px;
+  margin-right: 5px;
+  font-size: 13px;
   font-weight: bold;
 }
 

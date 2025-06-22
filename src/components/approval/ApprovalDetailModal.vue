@@ -541,16 +541,18 @@ const formatDateTime = (dateStr) => {
 
 .action-section {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  padding: 20px 0;
+  padding: 16px 0;
   border-top: 1px solid #e0e0e0;
   margin-top: 20px;
 }
 
 .button-group {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .approve-btn,
@@ -558,45 +560,37 @@ const formatDateTime = (dateStr) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-  min-width: 100px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  min-width: 70px;
 }
 
 .approve-btn {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: #28a745;
   color: white;
-  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
 }
 
 .reject-btn {
-  background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+  background: #dc3545;
   color: white;
-  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
 }
 
 .approve-btn:hover {
-  background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  background: #218838;
 }
 
 .reject-btn:hover {
-  background: linear-gradient(135deg, #c82333 0%, #c0392b 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  background: #c82333;
 }
 
 .btn-icon {
-  margin-right: 6px;
-  font-size: 16px;
+  margin-right: 5px;
+  font-size: 13px;
   font-weight: bold;
 }
 

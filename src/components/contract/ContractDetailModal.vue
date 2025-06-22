@@ -147,7 +147,7 @@
 
       <!-- 결재 요청 모달 -->
       <ContractApprovalRequestModal v-if="showApprovalModal" :isOpen="showApprovalModal" :contractId="props.contractId"
-        :contractCode="props.contractCode" :contractState="props.contractStatus" :approvalState="currentApprovalState" @close="showApprovalModal = false" />
+        :contractCode="props.contractCode" :contractState="contractState" :approvalState="currentApprovalState" @close="showApprovalModal = false" />
     </div>
   </div>
 </template>
@@ -173,10 +173,38 @@ const showPreview = ref(false)
 // 현재 결재 상태 계산 (가장 최근 결재의 상태)
 const currentApprovalState = computed(() => {
   if (!contract.value.approvalList || contract.value.approvalList.length === 0) {
-    return null
+    return '결재전'  // 결재 내역이 없으면 '결재전' 반환
   }
   // 가장 최근 결재의 상태 반환
-  return contract.value.approvalList[contract.value.approvalList.length - 1]?.state || null
+  return contract.value.approvalList[contract.value.approvalList.length - 1]?.state || '결재전'
+})
+
+// 계약 상태 추론 (API 응답에서 상태를 찾거나 기본값 사용)
+const contractState = computed(() => {
+  // API 응답에서 가능한 상태 필드들을 확인
+  const possibleStatusFields = ['status', 'contractStatus', 'state', 'contractState']
+  
+  for (const field of possibleStatusFields) {
+    if (contract.value[field]) {
+      return contract.value[field]
+    }
+  }
+  
+  // 상태 필드가 없으면 결재 내역을 기반으로 추론
+  if (!contract.value.approvalList || contract.value.approvalList.length === 0) {
+    return '결재전'
+  }
+  
+  const latestApproval = contract.value.approvalList[contract.value.approvalList.length - 1]
+  if (latestApproval?.state === '반려') {
+    return '반려'
+  } else if (latestApproval?.state === '승인') {
+    return '계약중'
+  } else if (latestApproval?.state === '요청') {
+    return '결재중'
+  }
+  
+  return '결재전'
 })
 
 // S3 BASE URL
@@ -205,8 +233,6 @@ function formatDateTime(dateStr) {
 onMounted(async () => {
   const res = await api.get(`/api/query/contract/${props.contractId}/info`)
   contract.value = res.data
-  console.log('Contract data:', contract.value)
-  console.log('Current approval state:', currentApprovalState.value)
 })
 </script>
 
