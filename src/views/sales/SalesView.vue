@@ -80,7 +80,6 @@ function checkUserRole() {
       userRole.value = 'user'
     }
   } catch (error) {
-    console.error('사용자 정보를 가져오는 중 오류 발생:', error)
     userRole.value = 'user' // 기본값으로 일반 사용자 설정
   }
 }
@@ -92,7 +91,6 @@ onMounted(async () => {
     try {
       await authStore.fetchUserInfo()
     } catch (error) {
-      console.error('사용자 정보를 가져오는데 실패했습니다:', error)
     }
   }
   checkUserRole()
@@ -109,7 +107,6 @@ const searchForm = reactive({
 })
 
 async function handleSearch(data) {
-  console.log('검색 조건:', data)
   
   // API 요청 body 구성
   const requestBody = {
@@ -125,7 +122,6 @@ async function handleSearch(data) {
   try {
     isLoading.value = true
     const response = await api.post('/sales/search', requestBody)
-    console.log('검색 결과:', response.data)
     
     // 백엔드 응답 데이터를 테이블 형태로 변환
     if (response.data && Array.isArray(response.data)) {
@@ -139,7 +135,6 @@ async function handleSearch(data) {
       }))
     }
   } catch (error) {
-    console.error('검색 API 호출 실패:', error)
     alert('검색 중 오류가 발생했습니다.')
   } finally {
     isLoading.value = false
@@ -147,7 +142,6 @@ async function handleSearch(data) {
 }
 
 function handleReset() {
-  console.log('검색 조건 초기화됨')
   
   // 모든 검색 조건 초기화
   searchForm.startDate = ''
@@ -160,12 +154,10 @@ function handleReset() {
 }
 
 function handleRegister() {
-  console.log('등록 버튼 클릭')
   showRegisterModal.value = true
 }
 
 function handleDelete() {
-  console.log('삭제 버튼 클릭')
   isDeleteMode.value = true
   selectedRowIndex.value = null
   selectedRow.value = null
@@ -198,7 +190,6 @@ async function confirmDelete() {
   
   try {
     // 실제 삭제 API 호출 (백엔드 구현에 따라 수정 필요)
-    console.log('삭제할 데이터:', selectedRow.value)
     // const response = await axios.delete(`http://localhost:8080/sales/${selectedRow.value.id}`)
     
     // 삭제 성공 시 테이블에서 해당 행 제거
@@ -211,18 +202,15 @@ async function confirmDelete() {
     cancelDeleteMode()
     
   } catch (error) {
-    console.error('삭제 API 호출 실패:', error)
     alert('삭제 중 오류가 발생했습니다.')
   }
 }
 
 function closeRegisterModal() {
-  console.log('등록 모달 닫기')
   showRegisterModal.value = false
 }
 
 function handleRegisterSuccess(data) {
-  console.log('매출 등록 성공:', data)
   // 등록 성공 후 테이블 새로고침
   handleSearch(searchForm)
 }
