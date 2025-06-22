@@ -164,13 +164,13 @@ function handleReplaceSuccess(updatedContract) {
 
 const columns = [
   { label: '계약 번호', key: 'code', width: '120px' },
-  { label: '렌탈 비용', key: 'amount', width: '100px' },
+  { label: '렌탈 비용 (원/월)', key: 'amount', width: '100px' },
   { label: '계약 상태', key: 'status', width: '100px' },
   { label: '고객 명', key: 'customerName', width: '130px' },
   { label: '담당 영업사원', key: 'employeeName', width: '130px' },
   { label: '계약 시작일', key: 'startDate', width: '120px' },
   { label: '계약 만료일', key: 'endDate', width: '120px' },
-  { label: '납입 일자', key: 'paymentDay', width: '100px' },
+  { label: '납입 일자 (일)', key: 'paymentDay', width: '100px' },
   { label: '등록일', key: 'createdAt', width: '120px' },
   { label: '상품 명', key: 'productNames', width: '200px' },
   { label: '비고', key: 'etc', width: '150px' }

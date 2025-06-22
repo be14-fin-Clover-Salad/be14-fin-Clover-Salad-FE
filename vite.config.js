@@ -15,19 +15,20 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080', // Spring Boot 서버 주소
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '/api'),
-      },
-      '/notification/subscribe': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        ws: true,
-        rewrite: path => path.replace(/^\/notification/, '/notification')
-      },
-    },
+    port: 8080,
+    // proxy: {
+    //   '/api': {
+    //     target: 'http://localhost:8080', // Spring Boot 서버 주소
+    //     changeOrigin: true,
+    //     rewrite: path => path.replace(/^\/api/, '/api'),
+    //   },
+    //   '/notification/subscribe': {
+    //     target: 'http://localhost:8080',
+    //     changeOrigin: true,
+    //     ws: true,
+    //     rewrite: path => path.replace(/^\/notification/, '/notification')
+    //   },
+    // },
   },
 })
     
