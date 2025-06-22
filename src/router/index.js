@@ -96,7 +96,17 @@ routes.push({
   meta: {
     title: "고객 상세",
     basePath: "/customer",
-  }            
+  },
+});
+
+// 상담 등록 화면
+routes.push({
+  path: "/consult/register",
+  component: () => import("@/views/consult/ConsultRegister.vue"),
+  meta: {
+    title: "상담 등록",
+    basePath: "/consult",
+  },
 });
 
 // 마이페이지 라우트 추가
@@ -127,8 +137,8 @@ routes.push({
   component: () => import("@/views/product/ProductList.vue"),
   meta: {
     title: "상품 목록",
-    basePath: "/product/list"
-  }
+    basePath: "/product/list",
+  },
 });
 
 // 상품 상세 조회
@@ -137,8 +147,8 @@ routes.push({
   component: () => import("@/views/product/ProductDetail.vue"),
   meta: {
     title: "상품 상세 조회",
-    basePath: "/product/list"
-  }
+    basePath: "/product/list",
+  },
 });
 
 // 상품 등록
@@ -147,8 +157,8 @@ routes.push({
   component: () => import("@/views/product/ProductRegister.vue"),
   meta: {
     title: "상품 등록",
-    basePath: "/product/list"
-  }
+    basePath: "/product/list",
+  },
 });
 
 // 상품 수정
@@ -157,8 +167,8 @@ routes.push({
   component: () => import("@/views/product/ProductUpdate.vue"),
   meta: {
     title: "상품 등록",
-    basePath: "/product/list"
-  }
+    basePath: "/product/list",
+  },
 });
 
 const router = createRouter({
@@ -172,32 +182,32 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
     if (!authStore.accessToken) {
       try {
-        await authStore.refreshToken()
-        next()
+        await authStore.refreshToken();
+        next();
       } catch {
-        next('/login')
+        next("/login");
       }
     } else if (!authStore.userInfo) {
       // 토큰은 있지만 사용자 정보가 없는 경우 (유실된 경우)
       try {
-        console.warn('[Router] 사용자 정보가 유실됨, 복구 시도 중...')
-        await authStore.recoverUserInfo()
-        console.log('[Router] 사용자 정보 복구 성공')
-        next()
+        console.warn("[Router] 사용자 정보가 유실됨, 복구 시도 중...");
+        await authStore.recoverUserInfo();
+        console.log("[Router] 사용자 정보 복구 성공");
+        next();
       } catch (error) {
-        console.error('[Router] 사용자 정보 복구 실패:', error)
+        console.error("[Router] 사용자 정보 복구 실패:", error);
         // 복구 실패 시 토큰도 클리어하고 로그인 페이지로
-        authStore.clearToken()
-        next('/login')
+        authStore.clearToken();
+        next("/login");
       }
     } else {
-      next()
+      next();
     }
   } else {
-    if (to.path === '/login' && authStore.accessToken) {
-      next('/')
+    if (to.path === "/login" && authStore.accessToken) {
+      next("/");
     } else {
-      next()
+      next();
     }
   }
 });
