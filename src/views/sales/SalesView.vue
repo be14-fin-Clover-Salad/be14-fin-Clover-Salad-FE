@@ -1,8 +1,8 @@
 <template>
   <section>
     <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
-      <template #fields="{ filters }">
-        <SalesSearchFields :filters="filters" />
+      <template #fields="{ filters, expanded }">
+        <SalesSearchFields :filters="filters" :expanded="expanded" />
       </template>
     </SearchFilterShell>
 
@@ -19,12 +19,12 @@
         :selectedCode="selectedRowIndex"
         @row-click="handleRowClick"
       />
-    </div>
-
-    <!-- 등록/삭제 버튼 -->
-    <div class="action-buttons">
-      <button v-if="userRole === 'admin'" type="button" class="register-btn" @click="handleRegister">등록</button>
-      <button v-if="userRole === 'admin'" type="button" class="delete-btn" @click="handleDelete">삭제</button>
+      
+      <!-- 등록/삭제 버튼을 테이블 하단으로 이동 -->
+      <div class="action-buttons">
+        <button v-if="userRole === 'admin'" type="button" class="register-btn" @click="handleRegister">등록</button>
+        <button v-if="userRole === 'admin'" type="button" class="delete-btn" @click="handleDelete">삭제</button>
+      </div>
     </div>
 
     <!-- 매출 등록 모달 -->
@@ -269,20 +269,32 @@ section {
 .delete-btn {
   padding: 8px 16px;
   border-radius: 6px;
-  font-weight: bold;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  color: white;
+  transition: all 0.2s ease;
 }
 
 .register-btn {
-  background-color: #cbe86b;
-  color: #1a1a1a;
+  background-color: #27ae60;
+}
+
+.register-btn:hover {
+  background-color: #229954;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
 }
 
 .delete-btn {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #e74c3c;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .sales-search-fields {
@@ -335,13 +347,11 @@ section {
 }
 
 .action-buttons {
-  position: fixed;
-  bottom: 20px;
-  left: 280px;
   display: flex;
   gap: 12px;
-  z-index: 1000;
-  margin-left: 30px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding: 12px 0;
 }
 
 .no-data-message {
@@ -455,68 +465,93 @@ section {
 
 .modal-content {
   background: white;
-  padding: 24px;
-  border-radius: 8px;
-  min-width: 400px;
-  max-width: 500px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  border-radius: 12px;
+  min-width: 480px;
+  max-width: 600px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e1e5e9;
 }
 
 .modal-content h3 {
   margin: 0 0 16px 0;
-  color: #333;
-  font-size: 18px;
+  color: #2c3e50;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .modal-content p {
-  margin: 8px 0;
-  color: #666;
+  margin: 0 0 24px 0;
+  color: #5a6c7d;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .selected-row-info {
   background-color: #f8f9fa;
-  padding: 12px;
-  border-radius: 4px;
-  margin: 16px 0;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 0 0 24px 0;
+  border: 1px solid #e9ecef;
 }
 
 .selected-row-info p {
-  margin: 4px 0;
-  font-size: 14px;
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #495057;
+  line-height: 1.4;
+}
+
+.selected-row-info p:last-child {
+  margin-bottom: 0;
+}
+
+.selected-row-info strong {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-right: 8px;
 }
 
 .modal-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
-  margin-top: 20px;
+  justify-content: center;
+  margin-top: 0;
 }
 
 .confirm-delete-btn,
 .cancel-modal-btn {
   padding: 8px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  min-width: 70px;
 }
 
 .confirm-delete-btn {
-  background-color: #e53935;
+  background-color: #e74c3c;
   color: white;
 }
 
 .confirm-delete-btn:hover {
-  background-color: #c62828;
+  background-color: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .cancel-modal-btn {
-  background-color: #6c757d;
+  background-color: #95a5a6;
   color: white;
 }
 
 .cancel-modal-btn:hover {
-  background-color: #5a6268;
+  background-color: #7f8c8d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
 }
 
 .table-wrapper table {

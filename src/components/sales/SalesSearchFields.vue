@@ -1,22 +1,53 @@
 <template>
   <div class="sales-search-fields">
-    <!-- 모든 필드를 1행에 배치 -->
+    <!-- 첫 번째 행 - 항상 보임 -->
     <div class="row">
-      <div class="field" v-for="(item, index) in allFields" :key="index">
-        <label :for="item.key">{{ item.label }}</label>
-        <input
-          v-model="filters[item.key]"
-          :placeholder="item.placeholder"
-          :type="item.type || 'text'"
-        />
+      <div class="field">
+        <label>부서명</label>
+        <input v-model="filters.department" placeholder="예: 영업부" type="text" />
+      </div>
+      <div class="field">
+        <label>직원명</label>
+        <input v-model="filters.employeeName" placeholder="예: 김영업" type="text" />
+      </div>
+      <div class="field">
+        <label>계약 코드</label>
+        <input v-model="filters.contractCode" placeholder="예: C-20240101" type="text" />
+      </div>
+      <div class="field">
+        <label></label>
+        <div></div>
       </div>
     </div>
+    
+    <!-- 두 번째 행 - expanded가 true일 때만 보임 -->
+    <template v-if="expanded">
+      <div class="row">
+        <div class="field">
+          <label>매출 날짜 (시작)</label>
+          <input v-model="filters.startDate" type="date" />
+        </div>
+        <div class="field">
+          <label>매출 날짜 (종료)</label>
+          <input v-model="filters.endDate" type="date" />
+        </div>
+        <div class="field">
+          <label>최소 금액</label>
+          <input v-model="filters.minAmount" placeholder="예: 1000000" type="number" />
+        </div>
+        <div class="field">
+          <label>최대 금액</label>
+          <input v-model="filters.maxAmount" placeholder="예: 10000000" type="number" />
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup>
 const props = defineProps({
-  filters: Object
+  filters: Object,
+  expanded: { type: Boolean, default: false }
 })
 
 const allFields = [
@@ -38,17 +69,19 @@ const allFields = [
 }
 
 .row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
   margin-bottom: 10px;
+}
+
+.row:last-child {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  min-width: 50px;
-  flex: 1;
 }
 
 .field label {
@@ -71,5 +104,10 @@ const allFields = [
   line-height: 1.5;
   width: 100%;
   box-sizing: border-box;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #007bff;
 }
 </style> 

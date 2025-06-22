@@ -10,65 +10,75 @@
         <div class="form-fields">
           <div class="field">
             <label>매출 날짜 <span class="required">*</span></label>
-            <input 
-              v-model="registerForm.salesDate" 
-              type="date" 
-              required
-              min="0001-01-01"
-              max="9999-12-31"
-              :class="{ 'error': errors.salesDate }"
-            />
-            <span v-if="errors.salesDate" class="error-message">{{ errors.salesDate }}</span>
+            <div class="input-container">
+              <input 
+                v-model="registerForm.salesDate" 
+                type="date" 
+                required
+                min="0001-01-01"
+                max="9999-12-31"
+                :class="{ 'error': errors.salesDate }"
+              />
+              <span v-if="errors.salesDate" class="error-message">{{ errors.salesDate }}</span>
+            </div>
           </div>
           
           <div class="field">
             <label>부서명 <span class="required">*</span></label>
-            <input 
-              v-model="registerForm.department" 
-              type="text" 
-              placeholder="예: 영업부"
-              required
-              :class="{ 'error': errors.department }"
-            />
-            <span v-if="errors.department" class="error-message">{{ errors.department }}</span>
+            <div class="input-container">
+              <input 
+                v-model="registerForm.department" 
+                type="text" 
+                placeholder="예: 영업부"
+                required
+                :class="{ 'error': errors.department }"
+              />
+              <span v-if="errors.department" class="error-message">{{ errors.department }}</span>
+            </div>
           </div>
           
           <div class="field">
             <label>직원명 <span class="required">*</span></label>
-            <input 
-              v-model="registerForm.employeeName" 
-              type="text" 
-              placeholder="예: 김영업"
-              required
-              :class="{ 'error': errors.employeeName }"
-            />
-            <span v-if="errors.employeeName" class="error-message">{{ errors.employeeName }}</span>
+            <div class="input-container">
+              <input 
+                v-model="registerForm.employeeName" 
+                type="text" 
+                placeholder="예: 김영업"
+                required
+                :class="{ 'error': errors.employeeName }"
+              />
+              <span v-if="errors.employeeName" class="error-message">{{ errors.employeeName }}</span>
+            </div>
           </div>
           
           <div class="field">
             <label>매출 금액 <span class="required">*</span></label>
-            <input 
-              v-model="formattedAmount" 
-              type="text" 
-              placeholder="예: 1,000,000"
-              required
-              @input="handleAmountInput"
-              :class="{ 'error': errors.amount }"
-            />
-            <span v-if="errors.amount" class="error-message">{{ errors.amount }}</span>
+            <div class="input-container">
+              <input 
+                v-model="formattedAmount" 
+                type="text" 
+                placeholder="예: 1,000,000"
+                required
+                @input="handleAmountInput"
+                :class="{ 'error': errors.amount }"
+              />
+              <span v-if="errors.amount" class="error-message">{{ errors.amount }}</span>
+            </div>
           </div>
           
           <div class="field">
             <label>계약 ID <span class="required">*</span></label>
-            <input 
-              v-model="registerForm.contractId" 
-              type="number" 
-              placeholder="예: 1001"
-              required
-              min="1"
-              :class="{ 'error': errors.contractId }"
-            />
-            <span v-if="errors.contractId" class="error-message">{{ errors.contractId }}</span>
+            <div class="input-container">
+              <input 
+                v-model="registerForm.contractId" 
+                type="number" 
+                placeholder="예: 1001"
+                required
+                min="1"
+                :class="{ 'error': errors.contractId }"
+              />
+              <span v-if="errors.contractId" class="error-message">{{ errors.contractId }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -303,9 +313,12 @@ function handleOverlayClick() {
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
+  min-height: 400px;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -348,21 +361,22 @@ function handleOverlayClick() {
 
 .modal-body {
   padding: 24px;
-  max-height: 60vh;
+  flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   margin-left: -100px;
 }
 
 .field {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   justify-content: center;
 }
@@ -373,11 +387,19 @@ function handleOverlayClick() {
   color: #333;
   min-width: 80px;
   text-align: right;
+  margin-top: 6px;
 }
 
 .required {
   color: #dc3545;
   font-weight: 700;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  flex-shrink: 0;
 }
 
 .field input {
@@ -387,8 +409,8 @@ function handleOverlayClick() {
   border-radius: 4px;
   background-color: white;
   transition: border-color 0.2s;
-  width: 300px;
-  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .field input:focus {
@@ -409,8 +431,10 @@ function handleOverlayClick() {
 .error-message {
   color: #dc3545;
   font-size: 11px;
-  margin-top: 2px;
+  margin-top: 4px;
   font-weight: 500;
+  line-height: 1.2;
+  min-height: 16px;
 }
 
 .field input::placeholder {
@@ -468,12 +492,12 @@ function handleOverlayClick() {
 }
 
 .reset-btn {
-  background-color: #dc3545;
+  background-color: #e74c3c;
   color: white;
 }
 
 .reset-btn:hover {
-  background-color: #c82333;
+  background-color: #c0392b;
 }
 
 @media (max-width: 768px) {
