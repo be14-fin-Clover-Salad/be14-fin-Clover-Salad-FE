@@ -123,6 +123,8 @@
               <th>결재 상태</th>
               <th>요청 담당자</th>
               <th>승인 담당자</th>
+              <th>요청일시</th>
+              <th>승인일시</th>
             </tr>
           </thead>
           <tbody>
@@ -132,9 +134,11 @@
               <td>{{ item.state }}</td>
               <td>{{ item.reqName || '-' }}</td>
               <td>{{ item.aprvName || '-' }}</td>
+              <td>{{ formatDateTime(item.reqDate) || '-' }}</td>
+              <td>{{ formatDateTime(item.aprvDate) || '-' }}</td>
             </tr>
             <tr v-if="!contract.approvalList || contract.approvalList.length === 0">
-              <td colspan="5" style="text-align: center;">결재 정보가 없습니다.</td>
+              <td colspan="7" style="text-align: center;">결재 정보가 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -143,7 +147,7 @@
 
       <!-- 결재 요청 모달 -->
       <ContractApprovalRequestModal v-if="showApprovalModal" :isOpen="showApprovalModal" :contractId="props.contractId"
-        :contractCode="props.contractCode" :contractState="props.contractStatus" @close="showApprovalModal = false" />
+        :contractCode="props.contractCode" :contractState="props.contractStatus" :approvalState="currentApprovalState" @close="showApprovalModal = false" />
     </div>
   </div>
 </template>
@@ -166,6 +170,15 @@ const tab = ref('info')
 const showApprovalModal = ref(false)
 const showPreview = ref(false)
 
+// 현재 결재 상태 계산 (가장 최근 결재의 상태)
+const currentApprovalState = computed(() => {
+  if (!contract.value.approvalList || contract.value.approvalList.length === 0) {
+    return null
+  }
+  // 가장 최근 결재의 상태 반환
+  return contract.value.approvalList[contract.value.approvalList.length - 1]?.state || null
+})
+
 // S3 BASE URL
 const S3_BASE = 'https://saladerp-bucket.s3.ap-northeast-2.amazonaws.com/'
 
@@ -183,9 +196,17 @@ function formatAmount(val) {
   return val?.toLocaleString() || '0'
 }
 
+function formatDateTime(dateStr) {
+  if (!dateStr) return null
+  const date = new Date(dateStr)
+  return date.toLocaleString()
+}
+
 onMounted(async () => {
   const res = await api.get(`/api/query/contract/${props.contractId}/info`)
   contract.value = res.data
+  console.log('Contract data:', contract.value)
+  console.log('Current approval state:', currentApprovalState.value)
 })
 </script>
 
@@ -420,5 +441,35 @@ label {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  min-width: 50px;
+}
+
+.status-badge-pending {
+  background-color: #ffd700;
+  color: #333;
+}
+
+.status-badge-approved {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.status-badge-rejected {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.status-badge-default {
+  background-color: #9e9e9e;
+  color: #fff;
 }
 </style>

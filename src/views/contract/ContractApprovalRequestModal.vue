@@ -89,8 +89,10 @@ const props = defineProps({
   contractId: Number,
   contractCode: String,
   contractState: String,
+  approvalState: String,
 })
 console.log('props.contractState:', props.contractState)
+console.log('props.approvalState:', props.approvalState)
 
 const emit = defineEmits(['close', 'refresh'])
 
@@ -110,7 +112,11 @@ const approveBtnLabel = computed(() => {
 })
 
 const isApproveDisabled = computed(() => {
-  // 결재중(혹은 '완료' 등 비활성화할 상태)에는 버튼 비활성화
+  // 결재중이지만 반려 상태인 경우는 활성화
+  if (props.contractState === '결재중' && props.approvalState === '반려') {
+    return false
+  }
+  // 결재중이고 반려가 아닌 경우는 비활성화
   return props.contractState === '결재중'
 })
 
