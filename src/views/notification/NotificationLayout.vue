@@ -22,12 +22,10 @@
                         :key="notification.id"
                         @click="handleNotificationClick(notification)"
                         :class="{ 'unread': !notification.read }">
-                        <td class="col-checkbox">
+                        <td class="col-checkbox" @click.stop="toggleNotificationSelection(notification.id)">
                             <input 
                                 type="checkbox" 
-                                v-model="selectedNotifications" 
-                                :value="notification.id"
-                                @click.stop
+                                :checked="selectedNotifications.includes(notification.id)"
                             >
                         </td>
                         <td class="col-type">{{ notification.type }}</td>
@@ -267,6 +265,15 @@ const executeDelete = async () => {
     }
 }
 
+const toggleNotificationSelection = (notificationId) => {
+    const index = selectedNotifications.value.indexOf(notificationId)
+    if (index === -1) {
+        selectedNotifications.value.push(notificationId)
+    } else {
+        selectedNotifications.value.splice(index, 1)
+    }
+}
+
 const selectedNotifications = ref([])
 
 onMounted(() => {
@@ -502,7 +509,7 @@ onMounted(() => {
 
     .cancel-button {
         padding: 8px 20px;
-        background-color: #6c757d;
+        background-color: #adb5bd;
         color: white;
         border: none;
         border-radius: 4px;
@@ -510,7 +517,7 @@ onMounted(() => {
         font-size: 14px;
 
         &:hover {
-            background-color: #5a6268;
+            background-color: #9fa6b1;
         }
     }
 }
@@ -563,7 +570,7 @@ onMounted(() => {
 
 .cancel-button {
     padding: 8px 16px;
-    background-color: #6c757d;
+    background-color: #adb5bd;
     color: white;
     border: none;
     border-radius: 4px;
@@ -571,7 +578,7 @@ onMounted(() => {
     font-size: 14px;
 
     &:hover {
-        background-color: #5a6268;
+        background-color: #9fa6b1;
     }
 }
 
