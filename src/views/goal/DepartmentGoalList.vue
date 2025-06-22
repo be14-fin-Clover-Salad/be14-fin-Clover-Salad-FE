@@ -2,17 +2,17 @@
   <section>
     <SearchFilterShell :initial="searchForm" @search="handleSearch" @reset="handleReset">
       <template #fields="{ filters }">
-        <EmployeeGoalSearchFields :filters="filters"/>
+        <DepartmentGoalSearchFields :filters="filters" :departmentName="departmentName" :isAdmin="isAdmin"/>
       </template>
     </SearchFilterShell>
     <div class="action-buttons">
-      <button class="register-btn" @click="registerProduct">등록</button>
     </div>
     <BaseDataTable
       :rows="rows"
       :columns="columns"
       :isLoading="isLoading"
-      @row-dblclick="handleRowClick"
+      :selectedCode="selectedRowCode"
+      @row-click="handleRowClick"
     />
   </section>
 </template>
@@ -20,39 +20,66 @@
 <script setup>
   import BaseDataTable from "@/components/BaseDataTable.vue";
   import SearchFilterShell from "@/components/common/SearchFilterShell.vue";
-  import EmployeeGoalSearchFields from "@/components/goal/EmployeeGoalSearchFields.vue";
-  import { reactive, ref } from "vue";
-  import { useRouter } from 'vue-router'
+  import DepartmentGoalSearchFields from "@/components/goal/DepartmentGoalSearchFields.vue";
+  import { onMounted, reactive, ref } from "vue";
   import api from "@/api/auth.js";
+  import { useAuthStore } from "@/stores/auth.js";
+
+  const authStore = useAuthStore();
+  const rows = reactive([]);
+  const isLoading = ref(false);
+  const userId = ref(authStore.userInfo?.id);
+  const isAdmin = ref(false);
+  const departmentName = ref(null);
+  const selectedRowCode = ref(null);
+  const selectedGoal = ref(null);
 
   const searchForm = reactive({
-    productCode: '',
-    category: '',
-    name: '',
-    serialNumber: '',
-    company: '',
-    originCostStart: '',
-    originCostEnd: '',
-    rentalCostStart: '',
-    rentalCostEnd: ''
+    departmentName: '',
+    startDate: '',
+    endDate: '',
+    minRentalProductCount: '',
+    maxRentalProductCount: '',
+    minRentalRetentionRate: '',
+    maxRentalRetentionRate: '',
+    minNewCustomerCount: '',
+    maxNewCustomerCount: '',
+    minTotalRentalAmount: '',
+    maxTotalRentalAmount: '',
+    minCustomerFeedbackScore: '',
+    maxCustomerFeedbackScore: ''
   });
 
-  const router = useRouter()
-  const rows = reactive([])
-  const isLoading = ref(false)
-  const productId = ref(null)
+  const columns = [
+    { label: '대상연월', key: 'targetDate' },
+    { label: '렌탈 상품 수', key: 'rentalProductCount' },
+    { label: '렌탈 유지율', key: 'rentalRetentionRate' },
+    { label: '신규 고객 수', key: 'newCustomerCount' },
+    { label: '총 렌탈료', key: 'totalRentalAmount' },
+    { label: '고객 만족도', key: 'customerFeedbackScore' },
+  ];
+
+  onMounted(async () => {
+    const response = await api.get(`/employee/detail?employeeId=${userId.value}`);
+    departmentName.value = response.data.departmentName || undefined;
+    searchForm.departmentName = departmentName.value;
+    isAdmin.value = response.data.level === "관리자";
+  })
 
   async function handleSearch(data) {
     try {
+      console.log(data)
       isLoading.value = true
-      const response = await api.get('/api/product/list', {
+      const response = await api.get('/api/goal/department', {
         params: data
       })
       // index 부여
       const indexedData = response.data.map((item, idx) => ({
         ...item,
-        index: idx + 1
-      }))
+        id: idx + 1,
+        rentalRetentionRate: formatNumber2(item.rentalRetentionCount * 100 / item.totalRentalCount),
+        customerFeedbackScore: item.customerFeedbackScore / 10      })
+      )
       rows.splice(0, rows.length, ...indexedData)
     } catch (error) {
       console.error('검색 실패:', error);
@@ -61,33 +88,18 @@
     }
   }
 
+  function formatNumber2(num) {
+    return num.toFixed(1);
+  }
+
   function handleReset() {
     Object.keys(searchForm).forEach(key => searchForm[key] = '')
   }
 
-  function handleRowClick(product) {
-    productId.value = product.id;
-    if (productId.value) {
-      router.push(`/product/detail/${productId.value}`);
-    } else {
-      console.warn('선택된 상품이 없습니다.');
-    }
+  function handleRowClick(goal) {
+    selectedRowCode.value = goal.id;
+    selectedGoal.value = goal;
   }
-
-  function registerProduct() {
-    router.push("/product/register");
-  }
-
-  const columns = [
-    { label: '#', key: 'index' },
-    { label: '상품 코드', key: 'productCode' },
-    { label: '카테고리', key: 'category' },
-    { label: '상품명', key: 'name' },
-    { label: '모델명', key: 'serialNumber' },
-    { label: '제조사', key: 'company' },
-    { label: '원가', key: 'originCost' },
-    { label: '월 렌탈료', key: 'rentalCost' }
-  ]
 </script>
 
 <style scoped>
