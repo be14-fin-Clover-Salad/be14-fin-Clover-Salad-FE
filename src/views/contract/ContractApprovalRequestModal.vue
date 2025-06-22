@@ -420,7 +420,7 @@ async function handleSubmit() {
 }
 
 .approve-btn {
-  background: #6c757d;
+  background: #6A7F64;
   color: white;
 }
 
@@ -437,7 +437,7 @@ async function handleSubmit() {
 }
 
 .approve-btn:hover:not(:disabled) {
-  background: #5a6268;
+  background: #5A6F54;
 }
 
 .reject-btn:hover {
