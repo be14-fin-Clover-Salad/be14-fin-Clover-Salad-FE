@@ -1,114 +1,96 @@
 <template>
-  <div class="table-box">
-    <div class="table-header">
-      <div class="row-count">총 {{ customers.length }}건</div>
+  <div>
+    <BaseDataTable
+      :columns="headers"
+      :rows="customers"
+      :is-loading="loading"
+      @row-dblclick="handleRowDoubleClick"
+    >
+    </BaseDataTable>
+    <div v-if="error" class="error-message">
+      {{ error }}
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>고객명</th>
-          <th>생년월일</th>
-          <th>연락처</th>
-          <th>주소</th>
-          <th>이메일</th>
-          <th>고객등록일</th>
-          <th>비고</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(customer, index) in customers"
-          :key="customer.id"
-          @dblclick="goToDetail(customer.id)"
-          class="clickable-row"
-        >
-          <td>{{ index + 1 }}</td>
-          <td>{{ customer.name }}</td>
-          <td>{{ customer.birth }}</td>
-          <td>{{ customer.phone }}</td>
-          <td>{{ customer.address }}</td>
-          <td>{{ customer.email }}</td>
-          <td>{{ customer.createdAt }}</td>
-          <td>{{ customer.note }}</td>
-        </tr>
-        <tr v-if="customers.length === 0">
-          <td colspan="8" style="text-align: center; color: #aaa">
-            조회된 고객이 없습니다.
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import BaseDataTable from "@/components/BaseDataTable.vue";
+import { searchCustomers } from "@/api/customer.js";
 
 const router = useRouter();
 const customers = ref([]);
+const loading = ref(false);
+const error = ref(null);
+let currentSearchConditions = {};
 
-const loadData = async (conditions) => {
-  console.log("검색 조건:", conditions);
-  customers.value = [
-    {
-      id: 1,
-      name: "홍길동",
-      birth: "1990-01-01",
-      phone: "010-1234-5678",
-      address: "서울시 강남구",
-      email: "hong@example.com",
-      createdAt: "2023-01-01",
-      note: "VIP 고객",
-    },
-  ];
+const headers = ref([
+  { text: "No", value: "customerNo", label: "No", key: "customerNo" },
+  { text: "고객명", value: "name", label: "고객명", key: "name" },
+  { text: "고객 타입", value: "type", label: "고객 타입", key: "type" },
+  { text: "생년월일", value: "birthdate", label: "생년월일", key: "birthdate" },
+  { text: "연락처", value: "phone", label: "연락처", key: "phone" },
+  { text: "등록일", value: "registerAt", label: "등록일", key: "registerAt" },
+]);
+
+const emit = defineEmits(["row-click"]);
+
+const fetchData = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const response = await searchCustomers();
+    customers.value = response.data.content.map((c, index) => ({
+      ...c,
+      customerNo: index + 1,
+      type: formatCustomerType(c.type),
+      registerAt: formatDate(c.registerAt),
+    }));
+  } catch (err) {
+    error.value = "고객 정보를 불러오는 데 실패했습니다.";
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
 };
 
-const goToDetail = (id) => {
-  router.push(`/customer/${id}`);
+const loadData = (conditions) => {
+  currentSearchConditions = conditions;
+  fetchData();
 };
 
-defineExpose({ loadData });
+const handleRowDoubleClick = (customer) => {
+  emit("row-click", customer);
+  router.push({ name: "CustomerDetail", params: { id: customer.id } });
+};
+
+const formatCustomerType = (type) => {
+  const types = {
+    CUSTOMER: "고객",
+    PROSPECT: "리드",
+  };
+  return types[type] || type;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ko-KR");
+};
+
+onMounted(() => {
+  fetchData();
+});
+
+defineExpose({
+  loadData,
+});
 </script>
 
 <style scoped>
-.table-box {
-  background-color: white;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  padding: 16px;
-}
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.row-count {
-  font-size: 14px;
-  color: #666;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-th,
-td {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-}
-th {
-  background-color: #f8f8f8;
-  font-weight: 600;
-  color: #333;
-}
-.clickable-row {
-  cursor: pointer;
-}
-.clickable-row:hover {
-  background-color: #f6f6f6;
+.error-message {
+  color: red;
+  margin-top: 1rem;
 }
 </style>

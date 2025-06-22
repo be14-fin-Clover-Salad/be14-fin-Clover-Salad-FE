@@ -89,16 +89,6 @@ routes.push({
   },
 });
 
-// 고객 상세 화면
-routes.push({
-  path: "/customer/:id",
-  component: () => import("@/views/customer/CustomerDetail.vue"),
-  meta: {
-    title: "고객 상세",
-    basePath: "/customer",
-  },
-});
-
 // 상담 등록 화면
 routes.push({
   path: "/consult/register",
@@ -168,6 +158,17 @@ routes.push({
   meta: {
     title: "상품 등록",
     basePath: "/product/list",
+  },
+});
+
+// 고객 상세 화면
+routes.push({
+  path: "/customer/:id",
+  name: "CustomerDetail",
+  component: () => import("@/views/customer/CustomerDetail.vue"),
+  meta: {
+    title: "고객 상세",
+    basePath: "/customer",
   },
 });
 

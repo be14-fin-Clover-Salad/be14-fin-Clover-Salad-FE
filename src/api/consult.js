@@ -15,12 +15,17 @@ export const getMyConsults = () => {
   return api.get("/api/consult/my");
 };
 
-// 로그인한 사원의 상담 단건 조회
-export const getMyConsultById = (id) => {
-  return api.get(`/api/consult/my/${id}`);
-};
-
 // 상담 등록
 export const createConsult = (consultData) => {
   return api.post("/api/consult", consultData);
+};
+
+// 상담 삭제
+export const deleteConsult = (id) => {
+  return api.delete(`/api/consult/${id}`);
+};
+
+// 특정 고객의 상담 목록 조회
+export const getConsultsByCustomerId = (customerId) => {
+  return api.get(`/api/customer/${customerId}/consults`);
 };

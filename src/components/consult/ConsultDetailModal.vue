@@ -25,7 +25,7 @@
             </div>
           </div>
 
-          <div class="detail-row">
+          <div class.detail-row>
             <div class="detail-label">피드백 점수</div>
             <div class="detail-value">
               <span v-if="consult.feedbackScore" class="feedback-score">
@@ -39,32 +39,7 @@
             <div class="detail-label">비고</div>
             <div class="detail-value">{{ consult.etc || "-" }}</div>
           </div>
-
-          <div class="detail-row">
-            <div class="detail-label">상태</div>
-            <div class="detail-value">
-              <span
-                :class="[
-                  'status-badge',
-                  consult.isDeleted ? 'deleted' : 'active',
-                ]"
-              >
-                {{ consult.isDeleted ? "삭제됨" : "활성" }}
-              </span>
-            </div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">사원 ID</div>
-            <div class="detail-value">{{ consult.employeeId }}</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">고객 ID</div>
-            <div class="detail-value">{{ consult.customerId }}</div>
-          </div>
         </div>
-
         <div v-else class="loading">
           <div class="loading-spinner"></div>
           <p>데이터를 불러오는 중...</p>
@@ -73,13 +48,6 @@
 
       <div class="modal-footer">
         <button class="btn-secondary" @click="closeModal">닫기</button>
-        <button
-          v-if="!consult?.isDeleted"
-          class="btn-danger"
-          @click="handleDelete"
-        >
-          삭제
-        </button>
       </div>
     </div>
   </div>
@@ -99,16 +67,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close", "delete"]);
+const emit = defineEmits(["close"]);
 
 const closeModal = () => {
   emit("close");
-};
-
-const handleDelete = () => {
-  if (confirm("정말로 이 상담을 삭제하시겠습니까?")) {
-    emit("delete", props.consult.id);
-  }
 };
 
 const formatDate = (dateString) => {
@@ -123,6 +85,7 @@ const formatDate = (dateString) => {
 </script>
 
 <style scoped>
+/* 여기에 기존 모달 스타일을 그대로 유지합니다. */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -135,7 +98,6 @@ const formatDate = (dateString) => {
   justify-content: center;
   z-index: 1000;
 }
-
 .modal-content {
   background-color: white;
   border-radius: 8px;
@@ -146,7 +108,6 @@ const formatDate = (dateString) => {
   display: flex;
   flex-direction: column;
 }
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -154,14 +115,12 @@ const formatDate = (dateString) => {
   padding: 20px;
   border-bottom: 1px solid #eee;
 }
-
 .modal-header h3 {
   margin: 0;
   color: #333;
   font-size: 18px;
   font-weight: 600;
 }
-
 .close-btn {
   background: none;
   border: none;
@@ -175,41 +134,34 @@ const formatDate = (dateString) => {
   align-items: center;
   justify-content: center;
 }
-
 .close-btn:hover {
   color: #333;
 }
-
 .modal-body {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
-
 .consult-detail {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .detail-row {
   display: flex;
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 12px;
 }
-
 .detail-label {
   width: 120px;
   font-weight: 600;
   color: #333;
   flex-shrink: 0;
 }
-
 .detail-value {
   flex: 1;
   color: #666;
 }
-
 .content-text {
   white-space: pre-wrap;
   line-height: 1.5;
@@ -219,7 +171,6 @@ const formatDate = (dateString) => {
   padding: 12px;
   border-radius: 4px;
 }
-
 .feedback-score {
   background-color: #e8f5e8;
   color: #2e7d32;
@@ -227,57 +178,10 @@ const formatDate = (dateString) => {
   border-radius: 4px;
   font-weight: 500;
 }
-
 .no-score {
   color: #999;
   font-style: italic;
 }
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-badge.active {
-  background-color: #e8f5e8;
-  color: #2e7d32;
-}
-
-.status-badge.deleted {
-  background-color: #ffebee;
-  color: #c62828;
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  color: #666;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #86b649;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -285,9 +189,7 @@ const formatDate = (dateString) => {
   padding: 20px;
   border-top: 1px solid #eee;
 }
-
-.btn-secondary,
-.btn-danger {
+.btn-secondary {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -295,24 +197,32 @@ const formatDate = (dateString) => {
   font-size: 14px;
   font-weight: 500;
   transition: background-color 0.2s;
-}
-
-.btn-secondary {
   background-color: #f5f5f5;
   color: #666;
   border: 1px solid #ddd;
 }
-
 .btn-secondary:hover {
   background-color: #e8e8e8;
 }
-
-.btn-danger {
-  background-color: #f44336;
-  color: white;
+.loading {
+  text-align: center;
+  padding: 40px 0;
 }
-
-.btn-danger:hover {
-  background-color: #d32f2f;
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #a6ce39;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
