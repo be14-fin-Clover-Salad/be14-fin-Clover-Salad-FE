@@ -98,7 +98,6 @@ watch([filterYear, filterPeriodType, filterPeriodValue], async ([year, type, val
       : []
   } catch (e) {
     teamDonutData.value = []
-    console.error('팀 비중 요청 에러:', e)
   }
 }, { immediate: true })
 

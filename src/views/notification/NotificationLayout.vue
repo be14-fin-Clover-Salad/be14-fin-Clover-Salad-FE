@@ -121,9 +121,9 @@ const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
 
 // 스토어 디버깅
-console.log('Notification Store:', notificationStore)
-console.log('Store Methods:', Object.keys(notificationStore))
-console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
+// console.log('Notification Store:', notificationStore)
+// console.log('Store Methods:', Object.keys(notificationStore))
+// console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
 
 const notifications = ref([])
 const currentPage = ref(0)
@@ -142,8 +142,8 @@ const fetchNotifications = async (page) => {
         notifications.value = response.data
         notificationStore.unreadCount = response.data.filter(n => !n.read).length
     } catch (error) {
-        console.error('알림 목록을 불러오는데 실패했습니다:', error)
-        console.error('에러 상세:', error.response?.data || error.message)
+        // console.error('알림 목록을 불러오는데 실패했습니다:', error)
+        // console.error('에러 상세:', error.response?.data || error.message)
     }
 }
 
@@ -168,7 +168,7 @@ const formatDateTime = (dateTimeString) => {
 }
 
 const handleNotificationClick = async (notification) => {
-    console.log('클릭된 알림 정보:', notification);
+    // console.log('클릭된 알림 정보:', notification);
     try {
         // 읽지 않은 알림일 경우에만 읽음 처리
         if (!notification.read) {
@@ -205,9 +205,9 @@ const handleNotificationClick = async (notification) => {
             }
         }
     } catch (error) {
-        console.error('알림 처리 중 오류 발생:', error)
+        // console.error('알림 처리 중 오류 발생:', error)
         const errorMessage = error.response?.data || error.message
-        console.error('에러 상세:', errorMessage)
+        // console.error('에러 상세:', errorMessage)
 
         if (errorMessage === '해당 결재를 찾을 수 없습니다.' || (error.response && error.response.status === 404)) {
             alert('연결된 문서를 찾을 수 없습니다. 이미 삭제되었을 수 있습니다.')
@@ -272,9 +272,9 @@ const confirmDelete = () => {
 
 const executeDelete = async () => {
     try {
-        console.log('삭제 실행 전:', selectedNotifications.value)
-        console.log('Store Methods:', Object.keys(notificationStore))
-        console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
+        // console.log('삭제 실행 전:', selectedNotifications.value)
+        // console.log('Store Methods:', Object.keys(notificationStore))
+        // console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
         
         if (typeof notificationStore.deleteNotifications !== 'function') {
             throw new Error('deleteNotifications 함수를 찾을 수 없습니다.')
@@ -286,7 +286,7 @@ const executeDelete = async () => {
         // 목록 새로고침
         fetchNotifications(currentPage.value)
     } catch (error) {
-        console.error('알림 삭제 중 오류 발생:', error)
+        // console.error('알림 삭제 중 오류 발생:', error)
         alert('알림 삭제에 실패했습니다.')
     }
 }

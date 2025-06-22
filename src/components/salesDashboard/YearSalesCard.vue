@@ -25,11 +25,9 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     const resYear = await api.get('/dashboard/sales/total?period=year')
-    console.log('올해 매출 응답:', resYear.data)
     currentYear.value = resYear.data.totalAmount
     
     const resLastYear = await api.get('/dashboard/sales/total?period=lastyear')
-    console.log('작년 매출 응답:', resLastYear.data)
     lastYear.value = resLastYear.data.totalAmount
   } catch (e) {
     currentYear.value = 0
