@@ -16,13 +16,13 @@ app.use(express.static(path.join(__dirname, 'dist')))
 
 // 👉 API 프록시 설정 (Spring Boot 서버 주소로 변경!)
 app.use('/api', createProxyMiddleware({
-  target: 'http://localhost:5001',
+  target: 'http://localhost:5000',
   changeOrigin: true,
 }))
 
 // 👉 SSE 구독용 프록시 (웹소켓 포함)
 app.use('/notification/subscribe', createProxyMiddleware({
-  target: 'http://localhost:5001',
+  target: 'http://localhost:5000',
   changeOrigin: true,
   ws: true
 }))
