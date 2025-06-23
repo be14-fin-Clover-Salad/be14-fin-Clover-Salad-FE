@@ -129,11 +129,15 @@ function handleRowClick(t) {
   selectedRowCode.value = t.id
   selectedTemplate.value = t
 }
+
 function handleRowDblClick(t) {
-  selectedTemplate.value = t
+  selectedTemplate.value = {
+    ...t,
+    uploadFilePath: t.uploadFilePath,
+    thumbnailPath: t.thumbnailPath
+  }
   showDetailModal.value = true
 }
-
 async function handleEdit() {
   if (!selectedTemplate.value) return
   try {
@@ -166,23 +170,30 @@ async function handleDelete() {
   }
 }
 
-
 async function handleUploadSuccess(uploadResp) {
   showUploadModal.value = false
-  
-  await handleSearch({ ...searchForm })
+    await handleSearch({ ...searchForm })
 
-  const templateId = (uploadResp && uploadResp.id)
-    ? uploadResp.id
-    : (selectedTemplate.value && selectedTemplate.value.id)
+  const templateId = uploadResp?.id ?? selectedTemplate.value?.id
 
   try {
     const token = useAuthStore().accessToken
-    const res = await api.get(
+    const { data: dto } = await api.get(
       `/api/query/documentTemplate/${templateId}`,
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
     )
-    selectedTemplate.value = res.data
+
+    selectedTemplate.value = {
+      id:               dto.id,
+      name:             dto.name,
+      description:      dto.description,
+      version:          dto.version,
+      createdAt:        dto.createdAt,
+      uploadFilePath:   dto.uploadFilePath,   // S3 PDF URL
+      thumbnailPath:    dto.thumbnailPath     // S3 썸네일 URL
+      // note 필드가 있다면 추가로 넣으세요: note: dto.note
+    }
+
     selectedRowCode.value = templateId
     showDetailModal.value = true
   } catch (e) {
@@ -190,6 +201,7 @@ async function handleUploadSuccess(uploadResp) {
     alert('정상 등록/수정되었으나 상세 정보를 불러오지 못했습니다.')
   }
 }
+
 
 function closeUploadModal() { showUploadModal.value = false }
 function closeDetailModal() { showDetailModal.value = false }
