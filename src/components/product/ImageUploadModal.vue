@@ -4,10 +4,10 @@
       <h2 class="modal-title">사진 업로드</h2>
       <div class="upload-box">
         <p class="upload-instruction">해당 제품에 해당하는 사진을 첨부해 주세요!</p>
-        <p class="upload-subtext"></p>
+        <p class="upload-subtext">상품 등록 시 실제로 업로드됩니다</p>
         <label class="upload-label">
           <input type="file" accept="image/png, image/jpeg" @change="handleFileChange" hidden />
-          <span class="upload-button">사진 업로드</span>
+          <span class="upload-button">사진 선택</span>
         </label>
       </div>
     </div>
@@ -15,8 +15,6 @@
 </template>
 
 <script setup>
-import api from '@/api/auth.js'
-
 const props = defineProps({ isOpen: Boolean })
 const emit = defineEmits(['close', 'upload-success'])
 
@@ -26,21 +24,31 @@ const handleFileChange = async (e) => {
   const file = e.target.files[0]
   if (!file) return
 
-  const formData = new FormData()
-  formData.append('file', file)
-
   try {
-    console.log(formData);
-    // 아직 api 없음
-    const response = await api.post('/api/product/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    })
-    emit('upload-success', response.data) // 업로드 성공 시 생성된 이미지 id와 경로를 전달
+    console.log('선택된 파일:', file);
+    
+    // 파일을 Base64로 변환하여 미리보기용 URL 생성
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const fileData = {
+        file: file,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        previewUrl: event.target.result, // Base64 데이터 URL
+        fileUploadId: null, // 실제 업로드 시 생성될 ID
+        fileUrl: null // 실제 업로드 시 생성될 URL
+      };
+      
+      console.log('파일 데이터:', fileData);
+      emit('upload-success', fileData);
+      emit('close');
+    };
+    
+    reader.readAsDataURL(file);
   } catch (err) {
-    alert('업로드 실패')
-    console.error(err)
+    alert('파일 선택 실패');
+    console.error('파일 선택 에러:', err);
   }
 }
 </script>
