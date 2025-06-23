@@ -109,13 +109,13 @@ async function submitUpload() {
     let res
     if (props.editMode && props.initialData.id) {
       res = await api.patch(
-        `/api/command/documentTemplate/${props.initialData.id}`,
+        `/command/documentTemplate/${props.initialData.id}`,
         formData,
         config
       )
     } else {
       res = await api.post(
-        '/api/command/documentTemplate/upload',
+        '/command/documentTemplate/upload',
         formData,
         config
       )
