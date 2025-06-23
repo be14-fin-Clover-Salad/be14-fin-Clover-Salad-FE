@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-container" v-if="notices.length">
+  <div class="notice-container">
     <div class="board-container">
       <table class="board-table">
         <thead>
@@ -10,7 +10,7 @@
             <th class="notice-date">등록일자</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody v-if="notices.length">
           <tr
             v-for="(notice, index) in pagedNotices"
             :key="notice.id"
@@ -39,11 +39,21 @@
             <td class="notice-date">{{ formatDate(notice.createdAt) }}</td>
           </tr>
         </tbody>
+        <tbody v-else>
+          <tr>
+            <td class="notice-index"></td>
+            <td class="notice-title empty-message">
+              등록된 공지사항이 없습니다.
+            </td>
+            <td class="notice-author"></td>
+            <td class="notice-date"></td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
     <div class="bottom-actions">
-      <div class="pagination">
+      <div class="pagination" v-if="notices.length">
         <button 
           @click="changePage(currentPage - 10)"
           :disabled="currentPage < 10"
@@ -163,9 +173,21 @@ onMounted(async () => {
     const res = await axios.get(`/support/notice`, { headers });
     const data = res.data || [];
 
+    // 관리자가 아닌 경우: 삭제되지 않은 공지사항 중에서 현재 사용자가 대상자로 포함된 것만 필터링
     notices.value = isAdmin.value
       ? data
-      : data.filter(n => !n.isDeleted);
+      : data.filter(n => {
+          // 삭제된 공지사항 제외
+          if (n.isDeleted) return false;
+          
+          // checkList가 없거나 비어있으면 모든 사용자에게 보임
+          if (!n.checkList || n.checkList.length === 0) return true;
+          
+          // 현재 사용자가 대상자 목록에 포함되어 있는지 확인
+          return n.checkList.some(check => 
+            Number(check.employeeId) === Number(loginUserId.value)
+          );
+        });
   } catch (err) {
     console.error("📛 공지사항 조회 실패", err);
   }
@@ -366,5 +388,12 @@ strong {
   &:hover {
     background-color: #94b933;
   }
+}
+
+.empty-message {
+  text-align: center;
+  padding: 40px 15px;
+  color: #6c757d;
+  font-size: 14px;
 }
 </style>
