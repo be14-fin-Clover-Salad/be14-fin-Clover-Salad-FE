@@ -2,8 +2,8 @@
   <div class="login-wrapper">
     <div class="left-section">
       <div class="text-container">
-        <h1>SALAD</h1>
-        <h2>SELLERED</h2>
+        <h1>BY SALAD</h1>
+        <h2>BE SELLERED</h2>
       </div>
     </div>
 

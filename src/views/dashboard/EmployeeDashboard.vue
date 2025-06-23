@@ -147,7 +147,6 @@ async function fetchEmployeePerformance() {
 
   const startDate = Math.min(...dateRange);
   const endDate = Math.max(...dateRange);
-  const targetYear = Math.floor(startDate / 100);
 
   try {
     const perfRes = await api.get(`/api/performance/employee/${employeeCode.value}`, {
@@ -155,7 +154,7 @@ async function fetchEmployeePerformance() {
     });
 
     const goalRes = await api.get(`/api/goal/employee`, {
-      params: { employeeCode: employeeCode.value, targetYear }
+      params: { employeeCode: employeeCode.value, startDate, endDate }
     });
 
     const performanceList = perfRes.data ?? [];
