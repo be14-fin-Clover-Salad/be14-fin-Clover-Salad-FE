@@ -68,8 +68,7 @@ export const useNotificationStore = defineStore('notification', () => {
       const unreadNotifications = notifications.value.filter(n => !n.read)
       if (unreadNotifications.length === 0) return
 
-      const notificationIds = unreadNotifications.map(n => n.id)
-      await api.patch('/notification/read', notificationIds, {
+      await api.patch('/notification/read-all', null, {
         headers: {
           'Authorization': `Bearer ${auth.accessToken}`
         }
