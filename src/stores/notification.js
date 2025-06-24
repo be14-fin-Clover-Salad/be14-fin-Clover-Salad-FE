@@ -5,8 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 
 const SSE_BASE_URL = 
   //  'http://localhost:5000'
-  //  'http://localhost:5001'
-   'https://api.saladerp.com'
+   'http://localhost:5001'
+  //  'https://api.saladerp.com'
 
 let eventSource = null
 let reconnectTimeout = null
@@ -59,6 +59,31 @@ export const useNotificationStore = defineStore('notification', () => {
       }
     } catch (error) {
 
+    }
+  }
+
+  async function markAllAsRead() {
+    try {
+      const auth = useAuthStore()
+      const unreadNotifications = notifications.value.filter(n => !n.read)
+      if (unreadNotifications.length === 0) return
+
+      const notificationIds = unreadNotifications.map(n => n.id)
+      await api.patch('/notification/read', notificationIds, {
+        headers: {
+          'Authorization': `Bearer ${auth.accessToken}`
+        }
+      })
+      
+      // 모든 읽지 않은 알림을 읽음 상태로 변경
+      notifications.value.forEach(notification => {
+        if (!notification.read) {
+          notification.read = true
+        }
+      })
+      unreadCount.value = 0
+    } catch (error) {
+      console.error('모든 알림을 읽음 처리하는 중 오류 발생:', error)
     }
   }
 
@@ -154,6 +179,7 @@ export const useNotificationStore = defineStore('notification', () => {
     fetchUnreadCount,
     fetchNotifications,
     markAsRead,
+    markAllAsRead,
     deleteNotifications,
     setupSse,
   }

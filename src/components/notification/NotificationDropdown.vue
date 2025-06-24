@@ -3,7 +3,10 @@
     <div class="dropdown-arrow"></div>
     <div class="dropdown-header">
       <h3>알림</h3>
-      <button class="view-all-btn" @click="goToNotificationList">전체보기</button>
+      <div class="header-buttons">
+        <button class="mark-all-read-btn" @click="handleMarkAllAsRead" :disabled="unreadNotifications.length === 0">모두 읽기</button>
+        <button class="view-all-btn" @click="goToNotificationList">전체보기</button>
+      </div>
     </div>
     <div class="dropdown-content">
       <div v-if="unreadNotifications.length === 0" class="no-notifications">
@@ -64,6 +67,14 @@ const handleNotificationClick = async (notification) => {
 
 const goToNotificationList = () => {
   router.push('/notification/list')
+}
+
+const handleMarkAllAsRead = async () => {
+  try {
+    await notificationStore.markAllAsRead()
+  } catch (error) {
+    console.error('모든 알림을 읽음 처리하는 중 오류 발생:', error)
+  }
 }
 
 // isOpen prop이 변경될 때마다 알림 목록을 새로고침
@@ -150,6 +161,31 @@ const calculateTimeAgo = (dateString) => {
   font-size: 16px;
   font-weight: 600;
   color: #333;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mark-all-read-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.mark-all-read-btn:hover:not(:disabled) {
+  background-color: #f5f5f5;
+}
+
+.mark-all-read-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
 }
 
 .view-all-btn {
