@@ -1,6 +1,6 @@
 <template>
-  <div class="qna-container" v-if="filteredQnas.length">
-    <div class="top-area">
+  <div class="qna-container">
+    <div class="top-area" v-if="filteredQnas.length">
       <div class="filter-area">
         <select v-model="selectedStatus">
           <option value="">모든 상태</option>
@@ -24,7 +24,7 @@
             <th class="qna-date">등록일자</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody v-if="filteredQnas.length">
           <tr
             v-for="(qna, index) in paginatedQnas"
             :key="qna.id"
@@ -53,10 +53,21 @@
             <td class="qna-date">{{ formatDate(qna.createdAt) }}</td>
           </tr>
         </tbody>
+        <tbody v-else>
+          <tr>
+            <td class="qna-index"></td>
+            <td class="qna-title empty-message">
+              등록된 문의사항이 없습니다.
+            </td>
+            <td class="qna-status"></td>
+            <td class="qna-author"></td>
+            <td class="qna-date"></td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
-    <div class="bottom-actions">
+    <div class="bottom-actions" v-if="filteredQnas.length">
       <div class="pagination">
         <button 
           @click="changePage(currentPage - 10)"
@@ -80,6 +91,12 @@
           class="page-button">
           &gt;
         </button>
+      </div>
+    </div>
+    
+    <div class="bottom-actions" v-else>
+      <div class="qna-actions" v-if="!isAdmin">
+        <button class="ask-btn" @click="goToCreatePage">문의하기</button>
       </div>
     </div>
   </div>
@@ -399,5 +416,12 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
   margin-top: 20px;
   padding: 15px 0;
   position: relative;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 40px 15px;
+  color: #6c757d;
+  font-size: 14px;
 }
 </style>
