@@ -29,7 +29,7 @@ api.interceptors.request.use(
 
 // 인터셉터 미적용된 리프레시 토큰 재발급용 (리프레시 토큰 재발급 요청 무한 루프 방지)
 const rawApi = axios.create({
-  baseURL: "BASE_URL",
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 

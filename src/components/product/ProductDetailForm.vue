@@ -1,54 +1,84 @@
 <template>
-  <div v-if="form" class="form-grid">
-    <div class="form-item">
-      <label>사진</label>
-      <img style="width: 100%" :src="path" :alt="form.name + '의 사진'">
+  <div v-if="form" class="form-content">
+    <!-- 이미지 섹션 -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">상품 이미지</h3>
+      </div>
+      <div class="image-display-container">
+        <img :src="path" :alt="form.name + '의 사진'" class="product-image">
+      </div>
     </div>
-    <div style="display: flex; flex-direction: column; justify-content: space-between">
-      <div class="form-item">
-        <label>상품 코드</label>
-        <input type="text" v-model="form.productCode" readonly/>
+
+    <!-- 기본 정보 섹션 -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">기본 정보</h3>
       </div>
-      <div style="display: flex; flex-direction: row; justify-content: space-between">
+      <div class="form-grid">
         <div class="form-item">
-          <label>제조사</label>
-          <input type="text" v-model="form.company" readonly/>
+          <label class="form-label">상품 코드</label>
+          <input type="text" v-model="form.productCode" class="form-input" :readonly="!isAdmin"/>
         </div>
         <div class="form-item">
-          <label>카테고리</label>
-          <input type="text" v-model="form.category" readonly/>
+          <label class="form-label">상품명</label>
+          <input type="text" v-model="form.name" class="form-input" :readonly="!isAdmin"/>
         </div>
         <div class="form-item">
-          <label>모델명</label>
-          <input type="text" v-model="form.serialNumber" readonly/>
+          <label class="form-label">제조사</label>
+          <input type="text" v-model="form.company" class="form-input" :readonly="!isAdmin"/>
+        </div>
+        <div class="form-item">
+          <label class="form-label">카테고리</label>
+          <input type="text" v-model="form.category" class="form-input" :readonly="!isAdmin"/>
+        </div>
+        <div class="form-item">
+          <label class="form-label">모델명</label>
+          <input type="text" v-model="form.serialNumber" class="form-input" :readonly="!isAdmin"/>
         </div>
       </div>
-      <div class="form-item">
-        <label>상품명</label>
-        <input type="text" v-model="form.name" readonly/>
+    </div>
+
+    <!-- 가격 정보 섹션 -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">가격 정보</h3>
       </div>
-      <div class="form-item">
-        <label>상품 원가</label>
-        <input type="number" v-model="form.originCost" readonly/>
-      </div>
-      <div class="form-item" style="display: flex; flex-direction: row; justify-content: space-between">
-        <div class="form-item" style="flex: 1;">
-          <label>기간</label>
-          <select v-model="type">
-            <option value = "1">1년</option>
-            <option value = "3">3년</option>
-            <option value = "5">5년</option>
+      <div class="form-grid">
+        <div class="form-item">
+          <label class="form-label">상품 원가</label>
+          <div class="input-with-unit">
+            <input type="number" v-model="form.originCost" class="form-input" :readonly="!isAdmin"/>
+            <span class="unit">원</span>
+          </div>
+        </div>
+        <div class="form-item">
+          <label class="form-label">기간</label>
+          <select v-model="type" class="form-input" :disabled="!isAdmin">
+            <option value="1">1년</option>
+            <option value="3">3년</option>
+            <option value="5">5년</option>
           </select>
         </div>
-        <div class="form-item" style="flex: 2;">
-          <label>렌탈료</label>
-          <input type="number" v-model="calcRentalCost" readonly/>
+        <div class="form-item">
+          <label class="form-label">렌탈료</label>
+          <div class="input-with-unit">
+            <input type="number" v-model="calcRentalCost" class="form-input" readonly/>
+            <span class="unit">원</span>
+          </div>
         </div>
       </div>
     </div>
-    <div class="form-item full-width">
-      <label>설명</label>
-      <textarea rows="3" v-model="form.description" readonly />
+
+    <!-- 상품 설명 섹션 -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">상품 설명</h3>
+      </div>
+      <div class="form-item full-width">
+        <label class="form-label">상품 설명</label>
+        <textarea rows="4" v-model="form.description" class="form-textarea" :readonly="!isAdmin" />
+      </div>
     </div>
   </div>
 </template>
@@ -60,12 +90,16 @@ const props = defineProps({
   form: {
     type: Object,
     required: true
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
   }
 })
 
 const type = ref("1");
 const calcRentalCost = ref(null);
-const path = ref(props.form.fileUrl + '/' + props.form.fileName);
+const path = ref(props.form.fileUrl);
 
 watch(() => type.value, (newType) => {
   const years = parseInt(newType) || 1;
@@ -83,40 +117,148 @@ watch(() => type.value, (newType) => {
 }, { immediate: true })
 </script>
 
-<style scoped>
-/* 입력 영역 그리드 */
+<style lang="scss" scoped>
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #F8FDF2;
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #495057;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
 .form-grid {
-  width: 80%;
-  justify-self: center;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
-  margin-top: 20px;
 }
 
 .form-item {
   display: flex;
   flex-direction: column;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
 }
 
-.form-item label {
+.form-label {
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 14px;
-  color: #444;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.form-item input,
-.form-item select,
-.form-item textarea {
-  padding: 8px 10px;
+.form-input,
+.form-textarea {
+  padding: 12px 16px;
   font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
   background-color: #fff;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: #495057;
+
+  &:read-only {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  &:not(:read-only) {
+    background-color: #fff;
+    color: #495057;
+  }
 }
 
-.full-width {
-  grid-column: span 4;
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.input-with-unit {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .form-input {
+    flex: 1;
+    padding-right: 40px;
+  }
+
+  .unit {
+    position: absolute;
+    right: 12px;
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* 이미지 표시 스타일 */
+.image-display-container {
+  display: flex;
+  justify-content: center;
+}
+
+.product-image {
+  max-width: 300px;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .form-section {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .product-image {
+    max-width: 250px;
+    max-height: 250px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 </style>
+
