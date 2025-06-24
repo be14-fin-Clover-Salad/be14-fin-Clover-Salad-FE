@@ -2,8 +2,8 @@
   <div class="login-wrapper">
     <div class="left-section">
       <div class="text-container">
-        <h1>SALAD</h1>
-        <h2>SELLERED</h2>
+        <h1>BY SALAD</h1>
+        <h2>BE SELLERED</h2>
       </div>
     </div>
 
@@ -48,12 +48,14 @@
 import { ref } from 'vue'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notification'
 import { useRouter } from 'vue-router'
 
 const code = ref('')
 const password = ref('')
 const router = useRouter()
 const auth = useAuthStore()
+const notificationStore = useNotificationStore()
 
 // Reset Password 관련 상태
 const showResetModal = ref(false)
@@ -95,6 +97,13 @@ const login = async () => {
 
     auth.setAccessToken(token);
     auth.setUserInfo(res.data);
+
+    try {
+      await notificationStore.setupSse()
+    } catch (err) {
+      console.warn('SSE 설정 중 오류 발생 (무시):', err)
+    }
+
     router.push('/');
   } catch (e) {
     const msg = e.response?.data?.message || '로그인 요청에 실패하였습니다.';
