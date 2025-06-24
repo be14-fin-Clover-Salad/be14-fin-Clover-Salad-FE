@@ -3,7 +3,10 @@
     <div class="dropdown-arrow"></div>
     <div class="dropdown-header">
       <h3>알림</h3>
-      <button class="view-all-btn" @click="goToNotificationList">전체보기</button>
+      <div class="header-buttons">
+        <button class="mark-all-read-btn" @click="handleMarkAllAsRead" :disabled="unreadNotifications.length === 0">모두 읽기</button>
+        <button class="view-all-btn" @click="goToNotificationList">전체보기</button>
+      </div>
     </div>
     <div class="dropdown-content">
       <div v-if="unreadNotifications.length === 0" class="no-notifications">
@@ -50,12 +53,30 @@ const handleNotificationClick = async (notification) => {
     if (notification.type === '결재' && notification.url) {
       // URL에서 결재 ID 추출 (예: /approval/1 -> 1)
       const approvalId = notification.url.split('/').pop()
-      router.push({
+      const targetRoute = {
         path: '/approval',
         query: { showDetail: 'true', approvalId }
-      })
+      }
+      
+      // 현재 라우트와 같은지 확인
+      if (router.currentRoute.value.path === targetRoute.path && 
+          router.currentRoute.value.query.showDetail === targetRoute.query.showDetail &&
+          router.currentRoute.value.query.approvalId === targetRoute.query.approvalId) {
+        // 같은 라우트인 경우 강제로 새로고침
+        router.go(0)
+      } else {
+        // 다른 라우트인 경우 일반 라우팅
+        await router.replace(targetRoute)
+      }
     } else if (notification.url) {
-      router.push(notification.url)
+      // 현재 라우트와 같은지 확인
+      if (router.currentRoute.value.path === notification.url) {
+        // 같은 라우트인 경우 강제로 새로고침
+        router.go(0)
+      } else {
+        // 다른 라우트인 경우 일반 라우팅
+        await router.replace(notification.url)
+      }
     }
   } catch (error) {
     console.error('알림 처리 중 오류 발생:', error)
@@ -64,6 +85,14 @@ const handleNotificationClick = async (notification) => {
 
 const goToNotificationList = () => {
   router.push('/notification/list')
+}
+
+const handleMarkAllAsRead = async () => {
+  try {
+    await notificationStore.markAllAsRead()
+  } catch (error) {
+    console.error('모든 알림을 읽음 처리하는 중 오류 발생:', error)
+  }
 }
 
 // isOpen prop이 변경될 때마다 알림 목록을 새로고침
@@ -150,6 +179,31 @@ const calculateTimeAgo = (dateString) => {
   font-size: 16px;
   font-weight: 600;
   color: #333;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mark-all-read-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.mark-all-read-btn:hover:not(:disabled) {
+  background-color: #f5f5f5;
+}
+
+.mark-all-read-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
 }
 
 .view-all-btn {
