@@ -61,8 +61,7 @@ export const deleteCustomer = async (customerId) => {
 // 고객 검색 (현재는 내 고객 전체 조회)
 export const searchCustomers = async (params) => {
   try {
-    // TODO: 백엔드에 검색 API 구현 후 파라미터 사용하도록 수정 필요
-    const response = await api.get("/api/customer/my");
+    const response = await api.get("/api/customer/my", { params });
     const customers = response.data;
     // BaseDataTable 컴포넌트 형식에 맞추기 위해 임시로 페이징 객체 생성
     return {

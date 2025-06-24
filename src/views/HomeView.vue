@@ -1,8 +1,10 @@
 <template>
-  <div class="home-page">홈입니다.</div>
+  <EmployeeDashboard />
 </template>
 
-<script setup></script>
+<script setup>
+  import EmployeeDashboard from '@/views/dashboard/EmployeeDashboard.vue'
+</script>
 
 <style scoped>
 .home-page {
