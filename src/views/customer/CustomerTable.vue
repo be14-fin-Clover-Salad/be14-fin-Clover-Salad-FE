@@ -28,10 +28,15 @@ let currentSearchConditions = {};
 const headers = ref([
   { text: "No", value: "customerNo", label: "No", key: "customerNo" },
   { text: "고객명", value: "name", label: "고객명", key: "name" },
-  { text: "고객 타입", value: "type", label: "고객 타입", key: "type" },
+  { text: "고객 유형", value: "type", label: "고객 유형", key: "type" },
   { text: "생년월일", value: "birthdate", label: "생년월일", key: "birthdate" },
   { text: "연락처", value: "phone", label: "연락처", key: "phone" },
-  { text: "등록일", value: "registerAt", label: "등록일", key: "registerAt" },
+  {
+    text: "고객 등록일",
+    value: "registerAt",
+    label: "고객 등록일",
+    key: "registerAt",
+  },
 ]);
 
 const emit = defineEmits(["row-click"]);

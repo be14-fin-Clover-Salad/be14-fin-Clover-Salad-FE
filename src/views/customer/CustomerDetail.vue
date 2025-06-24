@@ -32,7 +32,12 @@
         </div>
         <div class="form-item">
           <label>구분</label>
-          <select v-model="customer.type">
+          <select
+            v-model="customer.type"
+            readonly
+            disabled
+            class="readonly-select"
+          >
             <option value="CUSTOMER">고객</option>
             <option value="PROSPECT">리드</option>
           </select>
@@ -74,7 +79,7 @@
           <tr
             v-for="consult in consults"
             :key="consult.id"
-            @click="openConsultModal(consult)"
+            @dblclick="handleConsultRowDblClick(consult)"
             class="clickable-row"
           >
             <td>{{ consult.consultAt }}</td>
@@ -106,9 +111,11 @@ import {
   getCustomerConsults,
 } from "@/api/customer.js";
 import ConsultDetailModal from "@/components/consult/ConsultDetailModal.vue";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const customer = ref(null);
 const consults = ref([]);
@@ -135,10 +142,8 @@ const formattedRegisterAt = computed(() => {
 onMounted(async () => {
   const state = history.state;
   if (state && state.customerData) {
-    console.log("History state에서 고객 데이터 로드:", state.customerData);
     customer.value = state.customerData;
   } else {
-    console.log("API를 통해 고객 데이터 로드:", customerId);
     customer.value = await getMyCustomerById(customerId);
   }
 
@@ -146,9 +151,7 @@ onMounted(async () => {
   if (customer.value) {
     try {
       consults.value = await getCustomerConsults(customer.value.id);
-    } catch (error) {
-      console.error("상담 내역 조회 중 에러 발생:", error);
-    }
+    } catch (error) {}
   }
 });
 
@@ -174,6 +177,19 @@ const handleDelete = async () => {
     }
   }
 };
+
+const handleConsultRowDblClick = (consult) => {
+  // 관리자 여부 확인
+  const isAdmin = ["관리자", "admin", "Admin"].includes(
+    authStore.userInfo?.levelLabel
+  );
+  // 권한 분기: 관리자이거나 상담 직원이 본인일 때만 이동
+  if (isAdmin || consult.employeeName === authStore.userInfo?.name) {
+    router.push({ name: "ConsultDetail", params: { id: consult.id } });
+  } else {
+    alert("본인이 작성한 상담만 상세 조회할 수 있습니다.");
+  }
+};
 </script>
 
 <style scoped>
@@ -185,11 +201,9 @@ const handleDelete = async () => {
 
 /* 공통 섹션 박스 */
 .section {
-  background-color: #fff;
   border-radius: 6px;
   padding: 24px;
   margin-bottom: 32px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.03);
 }
 
 /* 섹션 제목 및 버튼 영역 */
@@ -278,7 +292,8 @@ const handleDelete = async () => {
   background-color: #fff;
 }
 
-.form-item input[readonly] {
+.form-item input[readonly],
+.form-item select.readonly-select {
   background-color: #f5f5f5;
   color: #888;
   cursor: not-allowed;
