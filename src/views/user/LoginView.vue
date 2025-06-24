@@ -98,10 +98,9 @@ const login = async () => {
     auth.setAccessToken(token);
     auth.setUserInfo(res.data);
 
-    // 기존 SSE 연결 해제 후 새로 설정
+    // 로그아웃 후 재로그인 시 확실한 SSE 재연결을 위해 forceReconnectSse 사용
     try {
-      notificationStore.disconnectSse()
-      await notificationStore.setupSse()
+      await notificationStore.forceReconnectSse()
     } catch (err) {
       console.warn('SSE 설정 중 오류 발생 (무시):', err)
     }

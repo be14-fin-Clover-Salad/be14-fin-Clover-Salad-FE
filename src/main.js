@@ -34,14 +34,15 @@ async function tryRefreshAndLoadUser() {
 async function bootstrap() {
   await tryRefreshAndLoadUser()
 
-  // 로그인된 사용자가 있을 때만 SSE 설정
-  // 중복 호출 방지를 위해 main.js에서는 제거하고 로그인 시에만 설정
-  // if (auth.userInfo) {
-  //   try {
-  //     await notificationStore.setupSse()
-  //   } catch (e) {
-  //   }
-  // }
+  // 로그인된 사용자가 있을 때 SSE 설정
+  // 브라우저 새로고침이나 앱 재시작 시에도 연결 보장
+  if (auth.userInfo && auth.accessToken) {
+    try {
+      await notificationStore.forceReconnectSse()
+    } catch (e) {
+      console.warn('앱 시작 시 SSE 설정 실패:', e)
+    }
+  }
 
   app.mount('#app')
 }

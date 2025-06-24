@@ -12,6 +12,7 @@ let eventSource = null
 let reconnectTimeout = null
 let isConnecting = false // 연결 중 상태 플래그
 let reconnectAttempts = 0 // 재연결 시도 횟수
+let currentUserId = null // 현재 연결된 사용자 ID
 const MAX_RECONNECT_ATTEMPTS = 5 // 최대 재연결 시도 횟수
 
 export const useNotificationStore = defineStore('notification', () => {
@@ -114,6 +115,7 @@ export const useNotificationStore = defineStore('notification', () => {
 
   // SSE 연결 해제 함수
   function disconnectSse() {
+    console.log('SSE 연결 해제 중...')
     if (eventSource) {
       eventSource.close()
       eventSource = null
@@ -124,30 +126,50 @@ export const useNotificationStore = defineStore('notification', () => {
     }
     isConnecting = false
     reconnectAttempts = 0
+    currentUserId = null
+    console.log('SSE 연결 해제 완료')
+  }
+
+  // 강제 재연결 함수 (로그아웃 후 재로그인 시 사용)
+  async function forceReconnectSse() {
+    console.log('SSE 강제 재연결 시작...')
+    disconnectSse()
+    await setupSse()
   }
 
   const setupSse = async () => {
     if (typeof window === 'undefined') return
 
     const auth = useAuthStore()
-
-    // 이미 연결 중이거나 연결되어 있으면 중복 호출 방지
-    if (isConnecting || eventSource) {
-      console.log('SSE 이미 연결 중이거나 연결되어 있습니다.')
-      return
-    }
-
-    // 기존 연결 정리
-    disconnectSse()
+    const userId = auth.userInfo?.id
 
     if (!auth.accessToken) {
       console.log('액세스 토큰이 없어 SSE 연결을 건너뜁니다.')
       return
     }
 
+    if (!userId) {
+      console.log('사용자 정보가 없어 SSE 연결을 건너뜁니다.')
+      return
+    }
+
+    // 이미 같은 사용자로 연결되어 있으면 중복 호출 방지
+    if (currentUserId === userId && eventSource && !isConnecting) {
+      console.log('이미 같은 사용자로 SSE가 연결되어 있습니다.')
+      return
+    }
+
+    // 다른 사용자로 연결되어 있거나 연결 중이면 기존 연결 정리
+    if (currentUserId !== userId || isConnecting) {
+      console.log('기존 SSE 연결을 정리하고 새로 연결합니다.')
+      disconnectSse()
+    }
+
     isConnecting = true
+    currentUserId = userId
 
     try {
+      console.log(`사용자 ${userId}로 SSE 연결 시도 중...`)
       const response = await api.get('/notification/subscribe-token', {
         headers: {
           'Authorization': `Bearer ${auth.accessToken}`
@@ -161,10 +183,11 @@ export const useNotificationStore = defineStore('notification', () => {
         const data = JSON.parse(event.data)
         notifications.value.unshift({ ...data, read: false })
         unreadCount.value++
+        console.log('새 알림 수신:', data)
       })
 
       eventSource.onopen = () => {
-        console.log('SSE 연결 성공')
+        console.log(`사용자 ${userId}로 SSE 연결 성공`)
         isConnecting = false
         reconnectAttempts = 0 // 연결 성공 시 재연결 시도 횟수 초기화
         
@@ -175,7 +198,7 @@ export const useNotificationStore = defineStore('notification', () => {
       }
 
       eventSource.onerror = (error) => {
-        console.error('SSE 연결 오류:', error)
+        console.error(`사용자 ${userId} SSE 연결 오류:`, error)
         isConnecting = false
         
         if (eventSource) {
@@ -186,7 +209,7 @@ export const useNotificationStore = defineStore('notification', () => {
         // 재연결 시도 횟수 제한
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
           reconnectAttempts++
-          console.log(`SSE 재연결 시도 ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`)
+          console.log(`사용자 ${userId} SSE 재연결 시도 ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`)
           
           if (!reconnectTimeout) {
             reconnectTimeout = setTimeout(() => {
@@ -195,18 +218,19 @@ export const useNotificationStore = defineStore('notification', () => {
             }, 5000 * reconnectAttempts) // 점진적으로 대기 시간 증가
           }
         } else {
-          console.error('SSE 최대 재연결 시도 횟수 초과. 수동 재연결이 필요합니다.')
+          console.error(`사용자 ${userId} SSE 최대 재연결 시도 횟수 초과. 수동 재연결이 필요합니다.`)
+          currentUserId = null // 연결 실패 시 사용자 ID 초기화
         }
       }
 
     } catch (err) {
-      console.error('SSE 토큰 발급 실패:', err)
+      console.error(`사용자 ${userId} SSE 토큰 발급 실패:`, err)
       isConnecting = false
       
       // 재연결 시도 횟수 제한
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         reconnectAttempts++
-        console.log(`SSE 재연결 시도 ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`)
+        console.log(`사용자 ${userId} SSE 재연결 시도 ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`)
         
         if (!reconnectTimeout) {
           reconnectTimeout = setTimeout(() => {
@@ -215,7 +239,8 @@ export const useNotificationStore = defineStore('notification', () => {
           }, 5000 * reconnectAttempts)
         }
       } else {
-        console.error('SSE 최대 재연결 시도 횟수 초과. 수동 재연결이 필요합니다.')
+        console.error(`사용자 ${userId} SSE 최대 재연결 시도 횟수 초과. 수동 재연결이 필요합니다.`)
+        currentUserId = null // 연결 실패 시 사용자 ID 초기화
       }
     }
   }
@@ -229,6 +254,7 @@ export const useNotificationStore = defineStore('notification', () => {
     markAllAsRead,
     deleteNotifications,
     setupSse,
-    disconnectSse, // 연결 해제 함수 추가
+    disconnectSse,
+    forceReconnectSse, // 강제 재연결 함수 추가
   }
 })
