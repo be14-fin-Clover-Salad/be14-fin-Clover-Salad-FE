@@ -72,6 +72,12 @@
             
             <div class="delete-actions">
                 <button 
+                    @click="handleMarkAllAsRead" 
+                    class="mark-all-read-button"
+                    :disabled="selectedNotifications.length === 0">
+                    읽음
+                </button>
+                <button 
                     @click="confirmDelete" 
                     class="delete-button"
                     :disabled="selectedNotifications.length === 0">
@@ -288,6 +294,38 @@ const executeDelete = async () => {
     } catch (error) {
         // console.error('알림 삭제 중 오류 발생:', error)
         alert('알림 삭제에 실패했습니다.')
+    }
+}
+
+const handleMarkAllAsRead = async () => {
+    try {
+        if (selectedNotifications.value.length === 0) {
+            alert('읽음 처리할 알림을 선택해주세요.')
+            return
+        }
+
+        const auth = useAuthStore()
+        await api.patch('/notification/read', selectedNotifications.value, {
+            headers: {
+                'Authorization': `Bearer ${auth.accessToken}`
+            }
+        })
+        
+        // 선택된 알림들을 읽음 상태로 변경
+        notifications.value.forEach(notification => {
+            if (selectedNotifications.value.includes(notification.id)) {
+                notification.read = true
+            }
+        })
+        
+        // 선택 해제
+        selectedNotifications.value = []
+        
+        // 목록 새로고침
+        fetchNotifications(currentPage.value)
+    } catch (error) {
+        console.error('선택된 알림을 읽음 처리하는 중 오류 발생:', error)
+        alert('선택된 알림을 읽음 처리하는 중 오류가 발생했습니다.')
     }
 }
 
@@ -594,6 +632,26 @@ onMounted(() => {
 
     &:hover:not(:disabled) {
         background-color: #c82333;
+    }
+
+    &:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+}
+
+.mark-all-read-button {
+    padding: 8px 16px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover:not(:disabled) {
+        background-color: #357abd;
     }
 
     &:disabled {
