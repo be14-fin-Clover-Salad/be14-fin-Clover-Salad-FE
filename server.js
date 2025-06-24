@@ -9,8 +9,8 @@ const port = process.env.PORT || 8080
 
 const API_TARGET = 
   //  'http://localhost:5000'
-   'http://localhost:5001'
-  //  'https://api.saladerp.com'
+  //  'http://localhost:5001'
+   'https://api.saladerp.com'
 
 // __dirname 설정 (ESM 환경용)
 const __filename = fileURLToPath(import.meta.url)
