@@ -1,25 +1,38 @@
 <template>
-  <div class="consult-register-view">
+  <div class="consult-detail-view">
     <div class="form-container">
       <form @submit.prevent="handleSubmit">
         <div class="section">
           <div class="section-header">
-            <h2 class="section-title">
-              기본 정보 <span class="required">*</span>
-            </h2>
+            <h2 class="section-title">상담 상세</h2>
           </div>
           <div class="form-grid">
             <div class="form-item">
               <label>고객명</label>
-              <input type="text" v-model="form.customerName" required />
+              <input
+                type="text"
+                v-model="form.customerName"
+                readonly
+                class="readonly"
+              />
             </div>
             <div class="form-item">
               <label>생년월일</label>
-              <input type="date" v-model="form.customerBirthdate" />
+              <input
+                type="date"
+                v-model="form.customerBirthdate"
+                readonly
+                class="readonly"
+              />
             </div>
             <div class="form-item">
               <label>연락처</label>
-              <input type="text" v-model="form.customerPhone" />
+              <input
+                type="text"
+                v-model="form.customerPhone"
+                readonly
+                class="readonly"
+              />
             </div>
             <div class="form-item">
               <label>이메일</label>
@@ -37,7 +50,6 @@
               </select>
             </div>
             <div class="form-item">
-              ₩ㅐㅐㅣ₩8
               <label>고객 등록일</label>
               <input
                 type="date"
@@ -53,9 +65,7 @@
           </div>
         </div>
         <div class="section">
-          <h2 class="section-title">
-            상담 내용 <span class="required">*</span>
-          </h2>
+          <h2 class="section-title">상담 내용</h2>
           <div class="form-group">
             <textarea
               id="content"
@@ -74,7 +84,7 @@
             취소
           </button>
           <button type="submit" class="submit-btn" :disabled="isSubmitting">
-            {{ isSubmitting ? "등록 중..." : "등록" }}
+            {{ isSubmitting ? "수정 중..." : "수정" }}
           </button>
         </div>
       </form>
@@ -83,17 +93,20 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import { useRouter } from "vue-router";
-import { createConsult } from "@/api/consult.js";
+import { ref, reactive, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { getConsultById } from "@/api/consult.js";
+import { getMyCustomerById } from "@/api/customer.js";
+import { useAuthStore } from "@/stores/auth";
+import { updateConsult } from "@/api/consult.js";
+// import { getConsultDetail, updateConsult } from "@/api/consult.js";
+// 실제 API 함수로 교체 필요
 
 const router = useRouter();
-
-const getTodayKST = () => {
-  const now = new Date();
-  now.setHours(now.getHours() + 9);
-  return now.toISOString().slice(0, 10);
-};
+const route = useRoute();
+const isSubmitting = ref(false);
+const errorMessage = ref("");
+const authStore = useAuthStore();
 
 const form = reactive({
   customerName: "",
@@ -102,48 +115,74 @@ const form = reactive({
   customerEmail: "",
   customerAddress: "",
   customerType: "PROSPECT",
-  customerRegisterAt: getTodayKST(),
+  customerRegisterAt: "",
   customerEtc: "",
   content: "",
+  customerId: null,
 });
 
-const isSubmitting = ref(false);
-const errorMessage = ref("");
+onMounted(async () => {
+  const consultId = route.params.id;
+  const isAdmin = authStore.userInfo?.levelLabel === "관리자";
+  try {
+    const { data: consult } = await getConsultById(consultId, isAdmin);
+    Object.assign(form, {
+      content: consult.content || "",
+      customerName: consult.customerName || "",
+      customerId: consult.customerId || null,
+      customerBirthdate: consult.customerBirthdate || "",
+      customerPhone: consult.customerPhone || "",
+      customerEmail: consult.customerEmail || "",
+      customerAddress: consult.customerAddress || "",
+      customerType: consult.customerType || "PROSPECT",
+      customerRegisterAt: consult.customerRegisterAt || "",
+      customerEtc: consult.etc || "",
+    });
+    // 고객 상세 정보 추가 조회
+    if (consult.customerId) {
+      try {
+        const customer = await getMyCustomerById(consult.customerId);
+        Object.assign(form, {
+          customerBirthdate: customer.birthdate || "",
+          customerPhone: customer.phone || "",
+          customerEmail: customer.email || "",
+          customerAddress: customer.address || "",
+          customerType: customer.type || "PROSPECT",
+          customerRegisterAt: customer.registerAt || "",
+          customerEtc: customer.etc || "",
+        });
+      } catch (e) {
+        // 고객 정보 조회 실패 시 무시
+      }
+    }
+  } catch (e) {
+    errorMessage.value = "상담 상세 정보를 불러오지 못했습니다.";
+  }
+});
 
 const handleSubmit = async () => {
-  if (!form.content) {
-    errorMessage.value = "상담 내용은 필수 항목입니다.";
-    return;
-  }
-
   isSubmitting.value = true;
   errorMessage.value = "";
-
   try {
-    await createConsult(form);
-    // 등록 성공 후 상담 목록 페이지로 이동
+    const consultId = route.params.id;
+    const isAdmin = authStore.userInfo?.levelLabel === "관리자";
+    await updateConsult(consultId, form, isAdmin);
+    alert("상담 정보가 저장되었습니다.");
     router.push("/consult");
-  } catch (error) {
-    console.error("상담 등록 실패:", error);
-    if (error.response && error.response.data && error.response.data.message) {
-      errorMessage.value = `상담 등록에 실패했습니다: ${error.response.data.message}`;
-    } else {
-      errorMessage.value =
-        "상담 등록 중 오류가 발생했습니다. 입력 내용을 확인해주세요.";
-    }
+  } catch (e) {
+    errorMessage.value = "저장 중 오류가 발생했습니다.";
   } finally {
     isSubmitting.value = false;
   }
 };
 
 const handleCancel = () => {
-  // 이전 페이지 (상담 목록)으로 이동
-  router.push("/consult");
+  router.back();
 };
 </script>
 
 <style scoped>
-.consult-register-view {
+.consult-detail-view {
   padding: 24px;
 }
 .form-container {
