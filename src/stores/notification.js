@@ -5,11 +5,14 @@ import { useAuthStore } from '@/stores/auth'
 
 const SSE_BASE_URL = 
   //  'http://localhost:5000'
-  //  'http://localhost:5001'
-   'https://api.saladerp.com'
+   'http://localhost:5001'
+  //  'https://api.saladerp.com'
 
 let eventSource = null
 let reconnectTimeout = null
+let isConnecting = false // 연결 중 상태 플래그
+let reconnectAttempts = 0 // 재연결 시도 횟수
+const MAX_RECONNECT_ATTEMPTS = 5 // 최대 재연결 시도 횟수
 
 export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
@@ -109,12 +112,8 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
-  const setupSse = async () => {
-    if (typeof window === 'undefined') return
-
-    const auth = useAuthStore()
-
-
+  // SSE 연결 해제 함수
+  function disconnectSse() {
     if (eventSource) {
       eventSource.close()
       eventSource = null
@@ -123,8 +122,30 @@ export const useNotificationStore = defineStore('notification', () => {
       clearTimeout(reconnectTimeout)
       reconnectTimeout = null
     }
+    isConnecting = false
+    reconnectAttempts = 0
+  }
 
-    if (!auth.accessToken) return
+  const setupSse = async () => {
+    if (typeof window === 'undefined') return
+
+    const auth = useAuthStore()
+
+    // 이미 연결 중이거나 연결되어 있으면 중복 호출 방지
+    if (isConnecting || eventSource) {
+      console.log('SSE 이미 연결 중이거나 연결되어 있습니다.')
+      return
+    }
+
+    // 기존 연결 정리
+    disconnectSse()
+
+    if (!auth.accessToken) {
+      console.log('액세스 토큰이 없어 SSE 연결을 건너뜁니다.')
+      return
+    }
+
+    isConnecting = true
 
     try {
       const response = await api.get('/notification/subscribe-token', {
@@ -143,34 +164,58 @@ export const useNotificationStore = defineStore('notification', () => {
       })
 
       eventSource.onopen = () => {
+        console.log('SSE 연결 성공')
+        isConnecting = false
+        reconnectAttempts = 0 // 연결 성공 시 재연결 시도 횟수 초기화
+        
         if (reconnectTimeout) {
           clearTimeout(reconnectTimeout)
           reconnectTimeout = null
         }
-
       }
 
-      eventSource.onerror = () => {
+      eventSource.onerror = (error) => {
+        console.error('SSE 연결 오류:', error)
+        isConnecting = false
+        
+        if (eventSource) {
+          eventSource.close()
+          eventSource = null
+        }
 
-        eventSource.close()
-        eventSource = null
-
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(() => {
-            reconnectTimeout = null
-            setupSse()
-          }, 5000)
+        // 재연결 시도 횟수 제한
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts++
+          console.log(`SSE 재연결 시도 ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`)
+          
+          if (!reconnectTimeout) {
+            reconnectTimeout = setTimeout(() => {
+              reconnectTimeout = null
+              setupSse()
+            }, 5000 * reconnectAttempts) // 점진적으로 대기 시간 증가
+          }
+        } else {
+          console.error('SSE 최대 재연결 시도 횟수 초과. 수동 재연결이 필요합니다.')
         }
       }
 
     } catch (err) {
-
-      eventSource = null
-      if (!reconnectTimeout) {
-        reconnectTimeout = setTimeout(() => {
-          reconnectTimeout = null
-          setupSse()
-        }, 5000)
+      console.error('SSE 토큰 발급 실패:', err)
+      isConnecting = false
+      
+      // 재연결 시도 횟수 제한
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts++
+        console.log(`SSE 재연결 시도 ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`)
+        
+        if (!reconnectTimeout) {
+          reconnectTimeout = setTimeout(() => {
+            reconnectTimeout = null
+            setupSse()
+          }, 5000 * reconnectAttempts)
+        }
+      } else {
+        console.error('SSE 최대 재연결 시도 횟수 초과. 수동 재연결이 필요합니다.')
       }
     }
   }
@@ -184,5 +229,6 @@ export const useNotificationStore = defineStore('notification', () => {
     markAllAsRead,
     deleteNotifications,
     setupSse,
+    disconnectSse, // 연결 해제 함수 추가
   }
 })
