@@ -10,7 +10,6 @@
         <option value="quarter">분기별</option>
         <option value="year">연별</option>
       </select>
-      <!-- 월/분기 드롭다운만 표시 -->
       <select v-if="filterType==='month'" v-model="filterValue">
         <option v-for="m in 12" :key="m" :value="m">{{ m }}월</option>
       </select>
@@ -21,11 +20,11 @@
 
     <!-- ── 1) 게이지 카드 ── -->
     <div class="icon-stats-row">
-      <div class="icon-card" v-for="(s, i) in gaugeStats" :key="i">
+      <div class="icon-card" v-for="(s,i) in gaugeStats" :key="i">
         <div class="gauge-wrapper">
-          <v-chart :option="s.option" autoresize style="width:80px;height:80px;" />
-          <div v-if="s.percent > 1" class="gauge-over">
-            +{{ ((s.percent - 1) * 100).toFixed(0) }}%
+          <v-chart :option="s.option" autoresize style="width:80px;height:80px;"/>
+          <div v-if="s.percent>1" class="gauge-over">
+            +{{ ((s.percent-1)*100).toFixed(0) }}%
           </div>
         </div>
         <div class="icon-content">
@@ -38,24 +37,33 @@
 
     <!-- ── 2) 메인 라인 차트 ── -->
     <div class="card main-chart">
-      <div class="card-header">
-        <h4 class="card-title">{{ mainTitle }}</h4>
-        <p class="card-category">계약 전체 렌탈료</p>
+      <div class="card-header with-gauge">
+        <div class="title-block">
+          <h4 class="card-title">{{ mainTitle }}</h4>
+          <p class="card-category">계약 전체 렌탈료</p>
+        </div>
+        <div class="total-gauge">
+          <v-chart :option="totalGaugeOption" autoresize style="width:50px;height:50px;"/>
+          <div class="total-label">
+            <p>총 매출</p>
+            <h3>{{ totalSales }}</h3>
+          </div>
+        </div>
       </div>
       <div class="card-body">
-        <v-chart :option="mainOption" autoresize style="height:260px;" />
+        <v-chart :option="mainOption" autoresize style="height:260px;"/>
       </div>
     </div>
 
     <!-- ── 3) 미니 통계 차트 ── -->
     <div class="stats-row">
-      <div class="card stat-card" v-for="(s, i) in miniStats" :key="i">
+      <div class="card stat-card" v-for="(s,i) in miniStats" :key="i">
         <div class="card-header">
           <p class="card-category">{{ s.title }}</p>
           <h3 class="card-title">{{ s.display }}</h3>
         </div>
         <div class="card-body padded-chart">
-          <v-chart :option="s.option" autoresize style="height:120px;" />
+          <v-chart :option="s.option" autoresize style="height:120px;"/>
         </div>
       </div>
     </div>
@@ -67,7 +75,7 @@
           <h4 class="card-title">렌탈 상품 카테고리</h4>
         </div>
         <div class="card-body padded-chart">
-          <v-chart :option="statusOption" autoresize style="height:260px;" />
+          <v-chart :option="statusOption" autoresize style="height:260px;"/>
         </div>
       </div>
       <div class="card half-card">
@@ -75,7 +83,7 @@
           <h4 class="card-title">{{ compareTitle }}</h4>
         </div>
         <div class="card-body padded-chart">
-          <v-chart :option="compareOption" autoresize style="height:260px;" />
+          <v-chart :option="compareOption" autoresize style="height:260px;"/>
         </div>
       </div>
     </div>
@@ -86,33 +94,29 @@
 import { ref, computed, watch } from 'vue'
 import * as echarts from 'echarts'
 
-// ── 초기 설정 ──
-const thisYear   = new Date().getFullYear()
-const yearList   = Array.from({ length: thisYear - 2019 + 1 }, (_, i) => thisYear - i)
+// ── 필터 상태 ──
+const thisYear    = new Date().getFullYear()
+const yearList    = Array.from({ length: thisYear - 2019 + 1 }, (_, i) => thisYear - i)
 const filterYear  = ref(thisYear)
-const filterType  = ref('month')       // 'month' | 'quarter' | 'year'
+const filterType  = ref('month')  // 'month' | 'quarter' | 'year'
 const filterValue = ref(1)
+watch(filterType, () => { filterValue.value = 1 })
 
-// 타입 변경 시 값 초기화
-watch(filterType, () => {
-  filterValue.value = 1
-})
-
-// ── 더미 데이터 ──
+// ── 더미 데이터 (모든 월/분기/연도에 기본값 제공) ──
 const statsDummy = {
   month: {
-    1:  { product:150, productPct:0.95, retentionPct:0.70, newCust:4,  satPct:0.80 },
-    2:  { product:180, productPct:1.10, retentionPct:0.65, newCust:9,  satPct:0.75 },
-    3:  { product:170, productPct:1.05, retentionPct:0.67, newCust:6,  satPct:0.82 },
-    4:  { product:200, productPct:1.15, retentionPct:0.66, newCust:7,  satPct:0.79 },
-    5:  { product:160, productPct:0.90, retentionPct:0.64, newCust:5,  satPct:0.77 },
-    6:  { product:140, productPct:0.85, retentionPct:0.62, newCust:4,  satPct:0.74 },
-    7:  { product:180, productPct:1.12, retentionPct:0.69, newCust:8,  satPct:0.83 },
-    8:  { product:175, productPct:1.08, retentionPct:0.68, newCust:7,  satPct:0.80 },
-    9:  { product:165, productPct:1.02, retentionPct:0.65, newCust:6,  satPct:0.78 },
-    10: { product:155, productPct:0.98, retentionPct:0.63, newCust:5,  satPct:0.76 },
-    11: { product:185, productPct:1.18, retentionPct:0.70, newCust:10, satPct:0.85 },
-    12: { product:190, productPct:1.20, retentionPct:0.71, newCust:11, satPct:0.86 }
+    1: { product:150, productPct:0.95, retentionPct:0.70, newCust:4, satPct:0.80 },
+    2: { product:180, productPct:1.10, retentionPct:0.65, newCust:9, satPct:0.75 },
+    3: { product:170, productPct:1.05, retentionPct:0.67, newCust:6, satPct:0.82 },
+    4: { product:200, productPct:1.15, retentionPct:0.66, newCust:7, satPct:0.79 },
+    5: { product:160, productPct:0.90, retentionPct:0.64, newCust:5, satPct:0.77 },
+    6: { product:140, productPct:0.85, retentionPct:0.62, newCust:4, satPct:0.74 },
+    7: { product:180, productPct:1.12, retentionPct:0.69, newCust:8, satPct:0.83 },
+    8: { product:175, productPct:1.08, retentionPct:0.68, newCust:7, satPct:0.80 },
+    9: { product:165, productPct:1.02, retentionPct:0.65, newCust:6, satPct:0.78 },
+    10:{ product:155, productPct:0.98, retentionPct:0.63, newCust:5, satPct:0.76 },
+    11:{ product:185, productPct:1.18, retentionPct:0.70, newCust:10,satPct:0.85 },
+    12:{ product:190, productPct:1.20, retentionPct:0.71, newCust:11,satPct:0.86 }
   },
   quarter: {
     1: { product:500, productPct:1.20, retentionPct:0.68, newCust:12, satPct:0.85 },
@@ -126,45 +130,41 @@ const statsDummy = {
   }
 }
 
-const monthlySales = {
-  1:2732, 2:3113, 3:2458, 4:2848,
-  5:2649, 6:2191, 7:2794, 8:2700,
-  9:2609,10:2270,11:2297,12:3395
+const monthlySales = { 1:2732,2:3113,3:2458,4:2848,5:2649,6:2191,7:2794,8:2700,9:2609,10:2270,11:2297,12:3395 }
+const weeklySales  = {
+  1:[150,160,155,158],  2:[160,170,165,162],
+  3:[155,158,160,157],  4:[158,160,162,159],
+  5:[150,152,151,153],  6:[148,149,150,151],
+  7:[155,157,156,158],  8:[160,162,161,163],
+  9:[158,159,157,160], 10:[155,156,154,157],
+ 11:[162,164,163,165], 12:[170,172,171,173]
 }
-
-const weeklySales = {
-  1: [150,160,155,158], 2: [160,170,165,162],
-  3: [155,158,160,157], 4: [158,160,162,159]
-}
-
 const quarterSales = [
-  (2732+3113+2458),
-  (2649+2191+2794),
-  (2700+2609+2270),
-  (2297+3395+1000)
+  monthlySales[1]+monthlySales[2]+monthlySales[3],
+  monthlySales[4]+monthlySales[5]+monthlySales[6],
+  monthlySales[7]+monthlySales[8]+monthlySales[9],
+  monthlySales[10]+monthlySales[11]+monthlySales[12]
 ]
 
+// 카테고리 더미(rawStatus)
+const rawStatusData = [
+  { name:'전자레인지', value:20 },
+  { name:'TV',        value:15 },
+  { name:'에어컨',     value:25 },
+  { name:'냉장고',     value:10 },
+  { name:'세탁기',     value:20 },
+  { name:'기타',       value:10 }
+]
 const statusDummy = {
-  month: {
-    1:  [{name:'전자레인지',value:20},{name:'TV',value:15},{name:'에어컨',value:25}],
-    2:  [{name:'전자레인지',value:22},{name:'TV',value:18},{name:'에어컨',value:20}],
-    // ...월별 데이터
-  },
-  quarter: {
-    1: [{name:'전자레인지',value:18},{name:'TV',value:12},{name:'에어컨',value:30}],
-    2: [{name:'전자레인지',value:20},{name:'TV',value:14},{name:'에어컨',value:26}],
-    // ...분기별 데이터
-  },
-  year: {
-    [thisYear]:   [{name:'전자레인지',value:22},{name:'TV',value:13},{name:'에어컨',value:25}],
-    [thisYear-1]: [{name:'전자레인지',value:19},{name:'TV',value:14},{name:'에어컨',value:27}]
-  }
+  month: Object.fromEntries(yearList.map((_,i)=>[i+1, rawStatusData])),
+  quarter: {1:rawStatusData,2:rawStatusData,3:rawStatusData,4:rawStatusData},
+  year: { [thisYear]:rawStatusData, [thisYear-1]:rawStatusData }
 }
 
 // ── 1) 게이지 카드 ──
 const gaugeStats = computed(() => {
-  const st = filterType.value === 'year'
-    ? statsDummy.year[filterYear.value] ?? statsDummy.year[thisYear]
+  const st = filterType.value==='year'
+    ? statsDummy.year[filterYear.value]   ?? statsDummy.year[thisYear]
     : statsDummy[filterType.value][filterValue.value] ?? statsDummy[filterType.value][1]
 
   return [
@@ -173,15 +173,9 @@ const gaugeStats = computed(() => {
       display: st.product,
       subtitle: '전체 건수',
       percent: st.productPct,
-      color: '#f5365c',
       option: {
-        series: [{
-          type:'gauge', startAngle:90, endAngle:-270,
-          min:0, max:1, splitNumber:5,
-          axisLine:{ lineStyle:{
-            width:8,
-            color:[[Math.min(st.productPct,1),'#f5365c'],[1,'#eee']]
-          }},
+        series:[{ type:'gauge', startAngle:90, endAngle:-270, min:0, max:1, splitNumber:5,
+          axisLine:{ lineStyle:{ width:8, color:[[Math.min(st.productPct,1),'#f5365c'],[1,'#eee']] }},
           pointer:{show:false}, detail:{show:false},
           axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false},
           data:[{value:Math.min(st.productPct,1)}]
@@ -193,15 +187,9 @@ const gaugeStats = computed(() => {
       display: `${(st.retentionPct*100).toFixed(0)}%`,
       subtitle: '계약 무효·만료 제외',
       percent: st.retentionPct,
-      color: '#5e72e4',
       option: {
-        series: [{
-          type:'gauge', startAngle:90, endAngle:-270,
-          min:0, max:1, splitNumber:5,
-          axisLine:{ lineStyle:{
-            width:8,
-            color:[[st.retentionPct,'#5e72e4'],[1,'#eee']]
-          }},
+        series:[{ type:'gauge', startAngle:90, endAngle:-270, min:0, max:1, splitNumber:5,
+          axisLine:{ lineStyle:{ width:8, color:[[st.retentionPct,'#5e72e4'],[1,'#eee']] }},
           pointer:{show:false}, detail:{show:false},
           axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false},
           data:[{value:st.retentionPct}]
@@ -212,16 +200,10 @@ const gaugeStats = computed(() => {
       title: '신규 고객수',
       display: st.newCust,
       subtitle: '본인 기준',
-      percent: st.newCust > 0 ? 1 : 0,
-      color: '#11cdef',
+      percent: st.newCust>0?1:0,
       option: {
-        series: [{
-          type:'gauge', startAngle:90, endAngle:-270,
-          min:0, max:1, splitNumber:5,
-          axisLine:{ lineStyle:{
-            width:8,
-            color:[[1,'#11cdef'],[1,'#eee']]
-          }},
+        series:[{ type:'gauge', startAngle:90, endAngle:-270, min:0, max:1, splitNumber:5,
+          axisLine:{ lineStyle:{ width:8, color:[[1,'#11cdef'],[1,'#eee']] }},
           pointer:{show:false}, detail:{show:false},
           axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false},
           data:[{value:1}]
@@ -233,15 +215,9 @@ const gaugeStats = computed(() => {
       display: `${(st.satPct*100).toFixed(0)}%`,
       subtitle: '상담 별점',
       percent: st.satPct,
-      color: '#fb6340',
       option: {
-        series: [{
-          type:'gauge', startAngle:90, endAngle:-270,
-          min:0, max:1, splitNumber:5,
-          axisLine:{ lineStyle:{
-            width:8,
-            color:[[st.satPct,'#fb6340'],[1,'#eee']]
-          }},
+        series:[{ type:'gauge', startAngle:90, endAngle:-270, min:0, max:1, splitNumber:5,
+          axisLine:{ lineStyle:{ width:8, color:[[st.satPct,'#fb6340'],[1,'#eee']] }},
           pointer:{show:false}, detail:{show:false},
           axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false},
           data:[{value:st.satPct}]
@@ -251,23 +227,40 @@ const gaugeStats = computed(() => {
   ]
 })
 
+// ── 총 매출 게이지 ──
+const totalSales = computed(() =>
+  mainOption.value.series[0].data.reduce((a,b)=>a+b,0)
+)
+const totalGaugeOption = computed(() => ({
+  series:[{ type:'gauge', startAngle:90, endAngle:-270, min:0, max:1, splitNumber:5,
+    axisLine:{ lineStyle:{ width:6, color:[[1,'#11cdef'],[1,'#eee']] }},
+    pointer:{show:false}, detail:{show:false},
+    axisTick:{show:false}, splitLine:{show:false}, axisLabel:{show:false},
+    data:[{value:1}]
+  }]
+}))
+
 // ── 2) 메인 라인 차트 ──
 const mainTitle = computed(() => {
-  if (filterType.value==='month')   return `${filterYear.value}년 ${filterValue.value}월 매출 (주차별)`
+  if (filterType.value==='month')   return `${filterYear.value}년 ${filterValue.value}월 매출 (주차)`
   if (filterType.value==='quarter') return `${filterYear.value}년 ${filterValue.value}분기 매출`
   return `${filterYear.value}년 전체 매출`
 })
 const mainOption = computed(() => {
   let xData = [], yData = []
-  if (filterType.value === 'month') {
+  if (filterType.value==='month') {
     xData = ['1주차','2주차','3주차','4주차']
     yData = weeklySales[filterValue.value] ?? [0,0,0,0]
-  } else if (filterType.value === 'quarter') {
+  }
+  else if (filterType.value==='quarter') {
     xData = ['1분기','2분기','3분기','4분기']
     yData = quarterSales
-  } else {
+  }
+  else {
     xData = yearList
-    yData = xData.map(y => (statsDummy.year[y] ?? statsDummy.year[thisYear]).product)
+    yData = xData.map(y=>
+      (statsDummy.year[y] ?? statsDummy.year[thisYear]).product
+    )
   }
   return {
     grid:{ top:'10%', left:'5%', right:'5%', bottom:'10%', containLabel:true },
@@ -275,7 +268,8 @@ const mainOption = computed(() => {
     xAxis:{ type:'category', data:xData, axisLine:{lineStyle:{color:'#e9ecef'}}, axisLabel:{color:'#9fa9b1'}, axisTick:{show:false} },
     yAxis:{ type:'value', splitLine:{lineStyle:{color:'#e9ecef'}}, axisLine:{show:false}, axisLabel:{color:'#9fa9b1'} },
     series:[{
-      type:'line', smooth:true, data:yData, symbol:'circle', symbolSize:6,
+      type:'line', smooth:true, data:yData,
+      symbol:'circle', symbolSize:6,
       lineStyle:{width:2,color:'#55ce63'},
       areaStyle:{ color:new echarts.graphic.LinearGradient(0,0,0,1,[
         {offset:0,color:'rgba(85,206,99,0.4)'},
@@ -287,25 +281,28 @@ const mainOption = computed(() => {
 
 // ── 3) 미니 통계 차트 ──
 const miniStats = computed(() => {
-  const mainY = mainOption.value.series[0].data
-  const total = mainY.reduce((a,b)=>a+b,0)
-  const stY = statsDummy.year[filterYear.value] ?? statsDummy.year[thisYear]
-  const stO = filterType.value==='year'
-    ? stY
+  const yVals = mainOption.value.series[0].data
+  const total = yVals.reduce((a,b)=>a+b,0)
+  const stYear = statsDummy.year[filterYear.value] ?? statsDummy.year[thisYear]
+  const stOther = filterType.value==='year'
+    ? stYear
     : statsDummy[filterType.value][filterValue.value] ?? statsDummy[filterType.value][1]
-  const retention = stO.retentionPct
-  const customers = stO.newCust
+
+  const retention = stOther.retentionPct
+  const customers = stOther.newCust
 
   const miniX = filterType.value==='month'
     ? ['1주차','2주차','3주차','4주차']
     : filterType.value==='quarter'
       ? ['1월','2월','3월']
-      : yearList
+      : yearList.map(y=>`${y}년`)
   const miniY = filterType.value==='month'
     ? (weeklySales[filterValue.value] ?? [0,0,0,0])
     : filterType.value==='quarter'
       ? quarterSales
-      : yearList.map(y => (statsDummy.year[y] ?? statsDummy.year[thisYear]).product)
+      : yearList.map(y=>
+        (statsDummy.year[y] ?? statsDummy.year[thisYear]).product
+      )
 
   const opt = {
     grid:{ left:'10%', right:'10%', top:'10%', bottom:'15%', containLabel:true },
@@ -348,40 +345,33 @@ const compareTitle = computed(() => {
   return `${filterYear.value}년 전년·연·다음년`
 })
 const compareOption = computed(() => {
-  let raws = [], maxIdx
+  let raws = [], maxIdx = filterType.value==='quarter'?4:(filterType.value==='month'?12:thisYear)
   if (filterType.value==='month') {
     raws = [
-      { idx: filterValue.value-1, label:`${filterValue.value-1}월`, val: monthlySales[filterValue.value-1] ?? 0 },
-      { idx: filterValue.value,   label:`${filterValue.value}월`,   val: monthlySales[filterValue.value]   ?? 0 },
-      { idx: filterValue.value+1, label:`${filterValue.value+1}월`, val: monthlySales[filterValue.value+1] ?? 0 }
+      { idx:filterValue.value-1, label:`${filterValue.value-1}월`, val:monthlySales[filterValue.value-1] ?? 0 },
+      { idx:filterValue.value,   label:`${filterValue.value}월`,   val:monthlySales[filterValue.value]   ?? 0 },
+      { idx:filterValue.value+1, label:`${filterValue.value+1}월`, val:monthlySales[filterValue.value+1] ?? 0 }
     ]
-    maxIdx = 12
-  }
-  else if (filterType.value==='quarter') {
+  } else if (filterType.value==='quarter') {
     raws = [
-      { idx: filterValue.value-1, label:`${filterValue.value-1}분기`, val: quarterSales[filterValue.value-2] ?? 0 },
-      { idx: filterValue.value,   label:`${filterValue.value}분기`,   val: quarterSales[filterValue.value-1] ?? 0 },
-      { idx: filterValue.value+1, label:`${filterValue.value+1}분기`, val: quarterSales[filterValue.value]   ?? 0 }
+      { idx:filterValue.value-1, label:`${filterValue.value-1}분기`, val:quarterSales[filterValue.value-2] ?? 0 },
+      { idx:filterValue.value,   label:`${filterValue.value}분기`,   val:quarterSales[filterValue.value-1] ?? 0 },
+      { idx:filterValue.value+1, label:`${filterValue.value+1}분기`, val:quarterSales[filterValue.value]   ?? 0 }
     ]
-    maxIdx = 4
-  }
-  else {
+  } else {
     raws = [
-      { idx: filterYear.value-1, label:`${filterYear.value-1}년`, val: (statsDummy.year[filterYear.value-1] ?? {}).product ?? 0 },
-      { idx: filterYear.value,   label:`${filterYear.value}년`,   val: (statsDummy.year[filterYear.value]   ?? {}).product ?? 0 },
-      { idx: filterYear.value+1, label:`${filterYear.value+1}년`, val: (statsDummy.year[filterYear.value+1] ?? {}).product ?? 0 }
+      { idx:filterYear.value-1, label:`${filterYear.value-1}년`, val:(statsDummy.year[filterYear.value-1]?.product) ?? 0 },
+      { idx:filterYear.value,   label:`${filterYear.value}년`,   val:(statsDummy.year[filterYear.value]?.product)   ?? 0 },
+      { idx:filterYear.value+1, label:`${filterYear.value+1}년`, val:(statsDummy.year[filterYear.value+1]?.product) ?? 0 }
     ]
-    maxIdx = thisYear
   }
-  // 필터링: 정상 범위에 있는 것만
-  const filtered = raws.filter(r => r.idx >= (filterType.value==='year' ? yearList[yearList.length-1] : 1) && r.idx <= maxIdx)
-
+  const filtered = raws.filter(r => r.idx >= (filterType.value==='year'?yearList[yearList.length-1]:1) && r.idx <= maxIdx)
   return {
     grid:{ top:'10%', left:'10%', right:'10%', bottom:'15%', containLabel:true },
-    xAxis:{ type:'category', data: filtered.map(r=>r.label), axisLine:{lineStyle:{color:'#e9ecef'}}, axisTick:{show:false}, axisLabel:{color:'#9fa9b1'} },
+    xAxis:{ type:'category', data:filtered.map(r=>r.label), axisLine:{lineStyle:{color:'#e9ecef'}}, axisTick:{show:false}, axisLabel:{color:'#9fa9b1'} },
     yAxis:{ type:'value', splitLine:{lineStyle:{color:'#e9ecef'}}, axisLine:{show:false}, axisLabel:{color:'#9fa9b1'} },
     series:[{
-      type:'bar', data: filtered.map(r=>r.val), barWidth:'40%',
+      type:'bar', data:filtered.map(r=>r.val), barWidth:'40%',
       itemStyle:{ color:(p)=>['#ff7f7f','#ffe066','#a3e635'][p.dataIndex], borderRadius:[8,8,0,0] },
       label:{ show:true, position:'top', color:'#333' }
     }]
@@ -390,32 +380,36 @@ const compareOption = computed(() => {
 </script>
 
 <style scoped>
-.dashboard-page {
-  padding:24px; background:#f4f5f7; min-height:100vh; box-sizing:border-box;
-}
-.filter-row { display:flex; gap:1rem; margin-bottom:1rem; }
-.filter-row select { padding:.5rem; border:1px solid #ccc; border-radius:.25rem; background:#fff; font-size:1rem; }
+.dashboard-page { padding:24px; background:#f4f5f7; min-height:100vh; box-sizing:border-box }
+.filter-row { display:flex; gap:1rem; margin-bottom:1rem }
+.filter-row select { padding:.5rem; border:1px solid #ccc; border-radius:.25rem; background:#fff; font-size:1rem }
 
-.icon-stats-row { display:flex; gap:1rem; margin-bottom:24px; }
-.icon-card { flex:1; background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.1); display:flex; align-items:center; padding:1rem; }
-.gauge-wrapper { position:relative; width:80px; height:80px; margin-right:1rem; }
-.gauge-over { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:.75rem; font-weight:bold; color:red; }
-.icon-content .icon-title { margin:0; font-size:.875rem; color:#8898aa; }
-.icon-content .icon-value { margin:.25rem 0; font-size:1.25rem; font-weight:600; }
-.icon-content .icon-subtitle { font-size:.75rem; color:#adb5bd; }
+.icon-stats-row { display:flex; gap:1rem; margin-bottom:24px }
+.icon-card { flex:1; background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.1); display:flex; align-items:center; padding:1rem }
+.gauge-wrapper { position:relative; width:80px; height:80px; margin-right:1rem }
+.gauge-over { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:.75rem; font-weight:bold; color:red }
+.icon-content .icon-title { margin:0; font-size:.875rem; color:#8898aa }
+.icon-content .icon-value { margin:.25rem 0; font-size:1.25rem; font-weight:600 }
+.icon-content .icon-subtitle { font-size:.75rem; color:#adb5bd }
 
-.card { background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.1); margin-bottom:24px; }
-.card-header { padding:1rem; border-bottom:1px solid #e9ecef; }
-.card-title { font-size:1.25rem; font-weight:600; margin:0; }
-.card-category { font-size:.875rem; color:#8898aa; margin:0; }
-.card-body { padding:.5rem 1rem; }
+.card { background:#fff; border-radius:.75rem; box-shadow:0 1px 4px rgba(0,0,0,0.1); margin-bottom:24px }
+.card-header { padding:1rem; border-bottom:1px solid #e9ecef }
+.card-header.with-gauge { display:flex; justify-content:space-between; align-items:center }
+.title-block { display:flex; flex-direction:column }
+.total-gauge { display:flex; align-items:center }
+.total-label { margin-left:.5rem; text-align:right }
+.total-label p { margin:0; font-size:.75rem; color:#8898aa }
+.total-label h3 { margin:0; font-size:1rem }
 
-.main-chart .card-body { padding:0; }
+.card-title { font-size:1.25rem; font-weight:600; margin:0 }
+.card-category { font-size:.875rem; color:#8898aa; margin:0 }
+.card-body { padding:.5rem 1rem }
+.main-chart .card-body { padding:0 }
 
-.stats-row { display:flex; gap:1rem; }
-.stat-card { flex:1; }
-.padded-chart { padding-top:1rem; padding-bottom:1rem; }
+.stats-row { display:flex; gap:1rem }
+.stat-card { flex:1 }
+.padded-chart { padding-top:1rem; padding-bottom:1rem }
 
-.half-row { display:flex; gap:1rem; }
-.half-card { flex:1; }
+.half-row { display:flex; gap:1rem }
+.half-card { flex:1 }
 </style>
