@@ -8,7 +8,7 @@ const BASE_URL =
 
 // 일반 요청용 인스턴스
 const api = axios.create({
-  baseURL: "BASE_URL",
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
