@@ -102,6 +102,7 @@ routes.push({
 // 상담 상세 조회 화면
 routes.push({
   path: "/consult/detail/:id",
+  name: "ConsultDetail",
   component: () => import("@/views/consult/ConsultDetailView.vue"),
   meta: {
     title: "상담 상세",

@@ -30,17 +30,16 @@
             :key="qna.id"
             class="qna-row"
             :class="{ deleted: isAdmin && qna.is_deleted }"
+            @click="goToDetail(qna.id)"
           >
             <td class="qna-index">{{ calcQnaNumber(index) }}</td>
             <td class="qna-title">
-              <router-link :to="`/support/qna/${qna.id}`" class="qna-link">
-                <template v-if="isAdmin && qna.is_deleted">
-                  <del v-html="formatTitle(qna.title)" />
-                </template>
-                <template v-else>
-                  <span v-html="formatTitle(qna.title)" />
-                </template>
-              </router-link>
+              <template v-if="isAdmin && qna.is_deleted">
+                <del v-html="formatTitle(qna.title)" />
+              </template>
+              <template v-else>
+                <span v-html="formatTitle(qna.title)" />
+              </template>
             </td>
             <td class="qna-status">
               <span :class="['status-badge', qna.answerStatus === '대기' ? 'waiting' : 'done']">
@@ -55,13 +54,7 @@
         </tbody>
         <tbody v-else>
           <tr>
-            <td class="qna-index"></td>
-            <td class="qna-title empty-message">
-              등록된 문의사항이 없습니다.
-            </td>
-            <td class="qna-status"></td>
-            <td class="qna-author"></td>
-            <td class="qna-date"></td>
+            <td colspan="5" class="empty-message">등록된 문의사항이 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -198,6 +191,7 @@ const getEmployeeDisplayName = (id) => {
 
 const formatDate = (str) => str?.split('T')[0] || '-'
 const goToCreatePage = () => router.push('/support/qna/create')
+const goToDetail = (id) => router.push(`/support/qna/${id}`)
 const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong>')
 </script>
 
@@ -266,7 +260,7 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  
+
   th, td {
     padding: 15px;
     text-align: left;
@@ -277,6 +271,16 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
     background-color: #f8f9fa;
     font-weight: 600;
     color: #495057;
+  }
+
+  th.qna-title {
+    text-align: center;
+  }
+
+  td.qna-title {
+    padding-left: 24px;
+    padding-right: 24px;
+    text-align: left;
   }
 
   tbody tr {
@@ -419,7 +423,7 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
 }
 
 .empty-message {
-  text-align: center;
+  text-align: center !important;
   padding: 40px 15px;
   color: #6c757d;
   font-size: 14px;

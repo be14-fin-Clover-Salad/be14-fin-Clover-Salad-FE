@@ -37,8 +37,14 @@ export const useNotificationStore = defineStore('notification', () => {
           'Authorization': `Bearer ${auth.accessToken}`
         }
       })
-      notifications.value = response.data
-      unreadCount.value = response.data.filter(n => !n.read).length
+      
+      // 중복 알림 제거 (ID 기준)
+      const uniqueNotifications = response.data.filter((notification, index, self) => 
+        index === self.findIndex(n => n.id === notification.id)
+      )
+      
+      notifications.value = uniqueNotifications
+      unreadCount.value = uniqueNotifications.filter(n => !n.read).length
     } catch (error) {
 
     }
@@ -59,6 +65,30 @@ export const useNotificationStore = defineStore('notification', () => {
       }
     } catch (error) {
 
+    }
+  }
+
+  async function markAllAsRead() {
+    try {
+      const auth = useAuthStore()
+      const unreadNotifications = notifications.value.filter(n => !n.read)
+      if (unreadNotifications.length === 0) return
+
+      await api.patch('/notification/read-all', null, {
+        headers: {
+          'Authorization': `Bearer ${auth.accessToken}`
+        }
+      })
+      
+      // 모든 읽지 않은 알림을 읽음 상태로 변경
+      notifications.value.forEach(notification => {
+        if (!notification.read) {
+          notification.read = true
+        }
+      })
+      unreadCount.value = 0
+    } catch (error) {
+      console.error('모든 알림을 읽음 처리하는 중 오류 발생:', error)
     }
   }
 
@@ -108,11 +138,8 @@ export const useNotificationStore = defineStore('notification', () => {
 
       eventSource.addEventListener('notification', (event) => {
         const data = JSON.parse(event.data)
-        const exists = notifications.value.some(n => n.id === data.id)
-        if (!exists) {
-          notifications.value.unshift({ ...data, read: false })
-          unreadCount.value++
-        }
+        notifications.value.unshift({ ...data, read: false })
+        unreadCount.value++
       })
 
       eventSource.onopen = () => {
@@ -154,6 +181,7 @@ export const useNotificationStore = defineStore('notification', () => {
     fetchUnreadCount,
     fetchNotifications,
     markAsRead,
+    markAllAsRead,
     deleteNotifications,
     setupSse,
   }
