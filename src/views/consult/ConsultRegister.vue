@@ -145,18 +145,15 @@ const handleCancel = () => {
 .consult-register-view {
   padding: 24px;
 }
-.form-container {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  border: 1px solid #eee;
+.consult-register-view .section {
+  margin-bottom: 24px;
 }
 .section {
-  background-color: #fff;
-  border-radius: 6px;
-  padding: 24px;
-  margin-bottom: 32px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.03);
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .section-header {
   display: flex;

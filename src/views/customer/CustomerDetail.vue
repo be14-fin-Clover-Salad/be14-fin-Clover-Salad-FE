@@ -215,9 +215,11 @@ function formatDateTime(dateString) {
 
 /* 공통 섹션 박스 */
 .section {
-  border-radius: 6px;
-  padding: 24px;
-  margin-bottom: 32px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* 섹션 제목 및 버튼 영역 */
@@ -398,5 +400,9 @@ function formatDateTime(dateString) {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 24px;
+}
+
+.customer-detail > .section {
+  margin-bottom: 24px;
 }
 </style>

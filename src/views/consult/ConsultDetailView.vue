@@ -271,12 +271,14 @@ function formatDateTime(dateString) {
   padding: 24px;
 }
 .form-container {
-  border-radius: 8px;
+  gap: 24px;
 }
 .section {
-  border-radius: 6px;
-  padding: 24px;
-  margin-bottom: 32px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .section-header {
   display: flex;
@@ -398,12 +400,6 @@ function formatDateTime(dateString) {
   display: flex;
   align-items: center;
 }
-.section-consult-content {
-  background: #fafafa;
-  border-radius: 12px;
-  padding: 24px 24px 32px 24px;
-  margin-bottom: 32px;
-}
 .consult-title-row {
   display: flex;
   align-items: center;
@@ -443,5 +439,8 @@ function formatDateTime(dateString) {
 .delete-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+.consult-detail-view .section {
+  margin-bottom: 24px;
 }
 </style>
