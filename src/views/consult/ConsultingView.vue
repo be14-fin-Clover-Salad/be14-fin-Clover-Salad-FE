@@ -1,20 +1,27 @@
 <template>
   <div class="consulting-view">
-    <div class="page-header">
-      <h2>상담 관리</h2>
-      <p class="page-description">상담 내역을 조회하고 관리할 수 있습니다.</p>
+    <SearchFilterShell
+      :initial="searchFilters"
+      :show-toggle="false"
+      @search="handleSearch"
+      @reset="handleReset"
+    >
+      <template #fields="{ filters }">
+        <ConsultSearchFields :filters="filters" />
+      </template>
+    </SearchFilterShell>
+
+    <div class="table-wrapper">
+      <BaseDataTable
+        :columns="columns"
+        :rows="formattedConsults"
+        :is-loading="isLoading"
+        @row-dblclick="handleRowDblClick"
+      />
     </div>
-
-    <ConsultSearch @search="handleSearch" />
-
-    <ConsultTable ref="consultTableRef" @row-click="handleRowClick" />
 
     <div class="table-actions">
-      <button class="register-btn" @click="goToRegister">상담 등록</button>
-    </div>
-
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
+      <button class="register-btn" @click="goToRegister">등록</button>
     </div>
 
     <!-- 상담 상세 모달 -->
@@ -28,148 +35,123 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, reactive } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/api/auth.js";
 import { useAuthStore } from "@/stores/auth";
-import { getAllConsults, getMyConsults } from "@/api/consult.js";
-import ConsultSearch from "@/components/consult/ConsultSearch.vue";
-import ConsultTable from "@/components/consult/ConsultTable.vue";
+import { searchConsults } from "@/api/consult.js";
+import SearchFilterShell from "@/components/common/SearchFilterShell.vue";
+import BaseDataTable from "@/components/BaseDataTable.vue";
 import ConsultDetailModal from "@/components/consult/ConsultDetailModal.vue";
+import ConsultSearchFields from "@/components/consult/ConsultSearchFields.vue";
 
-const consultTableRef = ref(null);
-const errorMessage = ref("");
+const router = useRouter();
 const authStore = useAuthStore();
+
+const consults = ref([]);
+const isLoading = ref(false);
+const errorMessage = ref("");
 const showDetailModal = ref(false);
 const selectedConsult = ref(null);
-const router = useRouter();
+
+const searchFilters = reactive({
+  consultDateFrom: "",
+  consultDateTo: "",
+  content: "",
+  minScore: "",
+  maxScore: "",
+});
+
+const columns = ref([
+  { key: "consultAt", label: "상담 일자", width: "180px" },
+  { key: "content", label: "상담 내용", width: "300px" },
+  { key: "customerName", label: "고객명", width: "130px" },
+  { key: "feedbackScore", label: "피드백 점수", width: "120px" },
+  { key: "etc", label: "비고", width: "200px" },
+]);
+
+const formattedConsults = computed(() => {
+  return consults.value.map((c) => ({
+    ...c,
+    consultAt: c.consultAt
+      ? new Date(c.consultAt).toLocaleString("ko-KR")
+      : "-",
+    feedbackScore: c.feedbackScore ? c.feedbackScore.toFixed(1) : "-",
+    customerName: c.customerName || "-",
+  }));
+});
+
+const fetchConsults = async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const params = Object.fromEntries(
+      Object.entries(searchFilters).filter(([_, v]) => v)
+    );
+    const response = await searchConsults(params);
+    consults.value = response.data;
+  } catch (error) {
+    console.error("상담 목록 조회 실패:", error);
+    errorMessage.value = "상담 목록을 조회하는 중 오류가 발생했습니다.";
+    consults.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleSearch = (filters) => {
+  Object.assign(searchFilters, filters);
+  fetchConsults();
+};
+
+const handleReset = () => {
+  Object.keys(searchFilters).forEach((key) => {
+    searchFilters[key] = "";
+  });
+  fetchConsults();
+};
 
 const goToRegister = () => {
   router.push("/consult/register");
 };
 
-// 사용자 권한에 따른 상담 목록 조회
-const fetchConsultsByRole = async () => {
-  if (consultTableRef.value) {
-    consultTableRef.value.setLoading(true);
-  }
-  errorMessage.value = "";
-
-  try {
-    const userRole = authStore.userRole;
-    let response;
-
-    // 사용자 권한에 따라 적절한 API 함수 호출
-    if (userRole === "ROLE_ADMIN") {
-      response = await getAllConsults();
-    } else {
-      // ROLE_MANAGER와 ROLE_MEMBER 모두 사원별 API 사용
-      response = await getMyConsults();
-    }
-
-    if (consultTableRef.value) {
-      consultTableRef.value.loadData(response.data);
-    }
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      // 404 Not Found - 백엔드 엔드포인트가 구현되지 않았을 가능성
-      console.error(
-        "상담 API 엔드포인트를 찾을 수 없습니다:",
-        error.config.url
-      );
-      errorMessage.value =
-        "상담 목록을 조회할 수 없습니다. 백엔드 API가 구현되지 않았을 수 있습니다.";
-      if (consultTableRef.value) {
-        consultTableRef.value.loadData([]);
-      }
-    } else {
-      // 그 외의 에러는 오류 메시지 표시
-      console.error("상담 목록 조회 실패:", error);
-      errorMessage.value = "상담 목록을 조회하는 중 오류가 발생했습니다.";
-    }
-  } finally {
-    if (consultTableRef.value) {
-      consultTableRef.value.setLoading(false);
-    }
-  }
+const handleRowDblClick = (consult) => {
+  router.push(`/consult/detail/${consult.id}`);
 };
 
-const handleSearch = async (searchParams) => {
-  if (consultTableRef.value) {
-    consultTableRef.value.setLoading(true);
-  }
-  errorMessage.value = "";
-
-  try {
-    await fetchConsultsByRole();
-  } catch (error) {
-    console.error("상담 검색 실패:", error);
-    errorMessage.value = "상담 목록을 검색하는 중 오류가 발생했습니다.";
-  } finally {
-    if (consultTableRef.value) {
-      consultTableRef.value.setLoading(false);
-    }
-  }
-};
-
-// 행 클릭 이벤트 처리
-const handleRowClick = (consult) => {
-  selectedConsult.value = consult;
-  showDetailModal.value = true;
-};
-
-// 상세 모달 닫기
 const closeDetailModal = () => {
   showDetailModal.value = false;
   selectedConsult.value = null;
 };
 
-// 상담 삭제 처리
 const handleDeleteConsult = async (consultId) => {
   try {
-    const token = authStore.accessToken;
-    // 삭제 API는 ConsultationCommandController를 따름 (/api/consult)
-    await api.delete(`/api/consult/${consultId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    });
-
-    await fetchConsultsByRole();
+    await api.delete(`/api/consult/${consultId}`);
     closeDetailModal();
-    errorMessage.value = "";
+    fetchConsults();
   } catch (error) {
     console.error("상담 삭제 실패:", error);
     errorMessage.value = "상담 삭제 중 오류가 발생했습니다.";
   }
 };
 
-onMounted(() => {
-  fetchConsultsByRole();
-});
+onMounted(fetchConsults);
 </script>
 
 <style scoped>
 .consulting-view {
-  padding: 24px;
+  padding: 20px;
 }
 
-.page-header {
-  margin-bottom: 24px;
+.table-wrapper {
+  margin-top: 24px;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
-.page-header h2 {
-  margin: 0 0 8px 0;
-  color: #333;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.page-description {
-  margin: 0;
-  color: #666;
-  font-size: 14px;
+::v-deep(.data-table) {
+  width: 100%;
+  table-layout: auto;
 }
 
 .table-actions {
@@ -177,23 +159,15 @@ onMounted(() => {
   justify-content: flex-end;
   margin-top: 16px;
 }
-
 .register-btn {
-  padding: 8px 16px;
+  background-color: #6c87c1;
+  color: white;
   border: none;
   border-radius: 6px;
-  background-color: #86b649;
-  color: white;
+  padding: 8px 16px;
   font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
-
-.register-btn:hover {
-  background-color: #709e3a;
-}
-
 .error-message {
   background-color: #ffebee;
   color: #c62828;

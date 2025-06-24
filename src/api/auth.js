@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/auth";
 
 const BASE_URL =
   import.meta.env.MODE === "development"
+  // ? "http://localhost:5001"
     ? "http://localhost:5000"
     : "https://api.saladerp.com";
 
@@ -29,7 +30,7 @@ api.interceptors.request.use(
 
 // 인터셉터 미적용된 리프레시 토큰 재발급용 (리프레시 토큰 재발급 요청 무한 루프 방지)
 const rawApi = axios.create({
-  baseURL: "BASE_URL",
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
