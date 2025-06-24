@@ -11,6 +11,7 @@ import * as echarts from 'echarts'
 
 const app = createApp(App)
 app.component('v-chart', VueECharts)
+app.provide('echarts', echarts)
 app.use(createPinia({
   devtools: false
 }))
