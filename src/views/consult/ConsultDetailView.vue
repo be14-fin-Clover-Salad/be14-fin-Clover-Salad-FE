@@ -81,14 +81,10 @@
                         : "")
                 }}
               </span>
-              <span class="consult-meta-pill"
-                ><b>상담일:</b>
-                {{
-                  form.consultAt
-                    ? form.consultAt.split("T")[0].replace(/-/g, ". ")
-                    : "-"
-                }}</span
-              >
+              <span class="consult-meta-pill">
+                <b>상담 일시:</b>
+                {{ formatDateTime(form.consultAt) }}
+              </span>
             </div>
           </div>
           <div class="form-group">
@@ -255,6 +251,19 @@ const handleDelete = async () => {
     isSubmitting.value = false;
   }
 };
+
+function formatDateTime(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const HH = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const ddd = weekNames[date.getDay()];
+  return `${yyyy}-${MM}-${dd}(${ddd}) ${HH}:${mm}`;
+}
 </script>
 
 <style scoped>

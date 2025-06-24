@@ -37,7 +37,6 @@
               </select>
             </div>
             <div class="form-item">
-              ₩ㅐㅐㅣ₩8
               <label>고객 등록일</label>
               <input
                 type="date"
