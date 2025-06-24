@@ -99,6 +99,16 @@ routes.push({
   },
 });
 
+// 상담 상세 조회 화면
+routes.push({
+  path: "/consult/detail/:id",
+  component: () => import("@/views/consult/ConsultDetailView.vue"),
+  meta: {
+    title: "상담 상세",
+    basePath: "/consult",
+  },
+});
+
 // 마이페이지 라우트 추가
 routes.push({
   path: "/mypage",
