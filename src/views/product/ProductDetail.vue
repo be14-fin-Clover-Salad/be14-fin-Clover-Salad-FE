@@ -4,17 +4,12 @@
       <h2 class="section-title">상품 상세 조회</h2>
       <div class="section-actions">
         <button class="btn-print" @click="printProduct">인쇄</button>
-        <button v-if="isAdmin" class="btn-primary" @click="showProductUpdateConfirmModal = true">수정</button>
+        <button v-if="isAdmin" class="btn-primary" @click="updateProduct">수정</button>
         <button v-if="isAdmin" class="btn-danger" @click="showProductDeleteConfirmModal = true">삭제</button>
       </div>
     </div>
-    <ProductDetailForm v-if="productReady && !isLoading" :form="product" :isAdmin="isAdmin"/>
+    <ProductDetailForm v-if="productReady && !isLoading" :form="product"/>
     <div v-else class="loading">불러오는 중...</div>
-    <ProductUpdateConfirmModal
-      :isOpen="showProductUpdateConfirmModal"
-      @close="showProductUpdateConfirmModal = false"
-      @confirm="updateProduct"
-    />
     <ProductDeleteConfirmModal
       :isOpen="showProductDeleteConfirmModal"
       @close="showProductDeleteConfirmModal = false"
@@ -26,7 +21,6 @@
 <script setup>
   import ProductDetailForm from '@/components/product/ProductDetailForm.vue';
   import ProductDeleteConfirmModal from "@/components/product/ProductDeleteConfirmModal.vue";
-  import ProductUpdateConfirmModal from "@/components/product/ProductUpdateConfirmModal.vue";
   import { ref, onMounted, computed } from 'vue';
   import { useRoute } from 'vue-router';
   import { useRouter } from 'vue-router';
@@ -39,9 +33,13 @@
   const product = ref(null);
   const isLoading = ref(false);
   const productId = ref(route.params.productId);
-  const productReady = computed(() => product.value !== null);
   const showProductDeleteConfirmModal = ref(false);
-  const showProductUpdateConfirmModal = ref(false);
+
+  const productReady = computed(() =>
+    product.value !== null &&
+    typeof product.value === 'object' &&
+    !Array.isArray(product.value)
+  );
 
   // 관리자 권한 확인
   const isAdmin = computed(() => {
@@ -65,14 +63,7 @@
   }
 
   async function updateProduct() {
-    try {
-      const response = await api.put(`/api/product/update/${productId.value}`, product.value);
-      console.log('상품 수정 성공:', response.data);
-      showProductUpdateConfirmModal.value = false;
-      // 수정 후 페이지 새로고침 또는 성공 메시지 표시
-    } catch (error) {
-      console.error('상품 수정 실패:', error);
-    }
+    await router.push(`/product/update/${productId.value}`);
   }
 
   // 백엔드에서 관리자와 나머지 권한 분기 필요

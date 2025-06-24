@@ -3,13 +3,18 @@
     <div class="section-header">
       <h2 class="section-title">상품 수정</h2>
       <div class="section-actions">
-        <button class="button primary" @click="updateProduct">수정</button>
-        <button class="button danger" @click="showProductRegisterCancelModal = true">취소</button>
+        <button class="btn-primary" @click="showProductUpdateConfirmModal = true">수정</button>
+        <button class="btn-danger" @click="showProductRegisterCancelModal = true">취소</button>
       </div>
     </div>
     <ProductRegisterForm
       ref="formRef"
       v-model="form"
+    />
+    <ProductUpdateConfirmModal
+      :isOpen="showProductUpdateConfirmModal"
+      @close="showProductUpdateConfirmModal = false"
+      @confirm="updateProduct"
     />
     <ProductRegisterCancelModal
       :isOpen="showProductRegisterCancelModal"
@@ -23,6 +28,7 @@
 <script setup>
   import ProductRegisterForm from "@/components/product/ProductRegisterForm.vue";
   import ProductRegisterCancelModal from "@/components/product/ProductRegisterCancelModal.vue";
+  import ProductUpdateConfirmModal from "@/components/product/ProductUpdateConfirmModal.vue";
   import { onMounted, ref } from 'vue';
   import { useRoute } from 'vue-router';
   import { useRouter } from 'vue-router';
@@ -35,6 +41,7 @@
   const productId = ref(route.params.productId);
   const formRef = ref(null);
   const showProductRegisterCancelModal = ref(false);
+  const showProductUpdateConfirmModal = ref(false);
 
   const form = ref({
     productCode: '',
@@ -110,33 +117,53 @@ section {
   gap: 8px;
 }
 
-.section-actions .button {
-  padding: 6px 14px;
+.btn-primary {
+  padding: 10px 20px;
+  background: #4A6741;
+  color: white;
+  border: none;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  border-radius: 4px;
-  border: none;
-  color: #fff;
-  user-select: none;
-  outline: none;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: #3D5635;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 103, 65, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
-.section-actions .button.primary {
-  background-color: #a6ce39;
-}
+.btn-danger {
+  padding: 10px 20px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
-.section-actions .button.primary:hover {
-  background-color: #94b933;
-}
+  &:hover {
+    background: #c62828;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(229, 57, 53, 0.2);
+  }
 
-.section-actions .button.danger {
-  background-color: #e53935;
-}
-
-.section-actions .button.danger:hover {
-  background-color: #c62828;
-  color: #fbe9e7;
+  &:active {
+    transform: translateY(0);
+  }
 }
 </style>
