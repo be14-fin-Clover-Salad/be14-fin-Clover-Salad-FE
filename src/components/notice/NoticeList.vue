@@ -16,6 +16,7 @@
             :key="notice.id"
             class="notice-row"
             :class="{ deleted: notice.isDeleted }"
+            @click="goToDetail(notice.id)"
           >
             <td class="notice-index">
               <template v-if="isPinnedAdmin(notice)">🚩</template>
@@ -29,9 +30,7 @@
                 read: !isAdmin && notice.isChecked
               }"
             >
-              <router-link :to="`/support/notice/${notice.id}`" class="notice-link">
-                <span v-html="formatTitle(notice.title)" />
-              </router-link>
+              <span v-html="formatTitle(notice.title)" />
             </td>
             <td class="notice-author">
               {{ notice.writerName }} {{ notice.writerLevel || '' }}
@@ -42,11 +41,9 @@
         <tbody v-else>
           <tr>
             <td class="notice-index"></td>
-            <td class="notice-title empty-message">
+            <td class="notice-title empty-message" colspan="3">
               등록된 공지사항이 없습니다.
             </td>
-            <td class="notice-author"></td>
-            <td class="notice-date"></td>
           </tr>
         </tbody>
       </table>
@@ -139,11 +136,11 @@ const visiblePageNumbers = computed(() => {
   const startPage = Math.floor(currentPage.value / 10) * 10 + 1;
   const endPage = Math.min(startPage + 9, totalPages.value);
   const pages = [];
-  
+
   for (let i = startPage; i <= endPage; i++) {
     pages.push(i);
   }
-  
+
   return pages;
 });
 
@@ -165,6 +162,10 @@ const changePage = (page) => {
   }
 };
 
+const goToDetail = (noticeId) => {
+  router.push(`/support/notice/${noticeId}`);
+};
+
 onMounted(async () => {
   try {
     const headers = {
@@ -173,17 +174,11 @@ onMounted(async () => {
     const res = await axios.get(`/support/notice`, { headers });
     const data = res.data || [];
 
-    // 관리자가 아닌 경우: 삭제되지 않은 공지사항 중에서 현재 사용자가 대상자로 포함된 것만 필터링
     notices.value = isAdmin.value
       ? data
       : data.filter(n => {
-          // 삭제된 공지사항 제외
           if (n.isDeleted) return false;
-          
-          // checkList가 없거나 비어있으면 모든 사용자에게 보임
           if (!n.checkList || n.checkList.length === 0) return true;
-          
-          // 현재 사용자가 대상자 목록에 포함되어 있는지 확인
           return n.checkList.some(check => 
             Number(check.employeeId) === Number(loginUserId.value)
           );
@@ -248,6 +243,7 @@ onMounted(async () => {
 
 .notice-title {
   text-align: left;
+  padding-left: 20px;
 }
 
 th.notice-title {
@@ -395,5 +391,9 @@ strong {
   padding: 40px 15px;
   color: #6c757d;
   font-size: 14px;
-}
+  display: table-cell;     
+  vertical-align: middle;   
+  height: 100px;
+}             
 </style>
+
