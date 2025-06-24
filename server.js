@@ -19,13 +19,13 @@ const __dirname = dirname(__filename)
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'dist')))
 
-// 👉 API 프록시 설정 (Spring Boot 서버 주소로 변경!)
+// API 프록시 설정 (Spring Boot 서버 주소로 변경!)
 app.use('/api', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
 }))
 
-// 👉 SSE 구독용 프록시 (웹소켓 포함)
+// SSE 구독용 프록시 (웹소켓 포함)
 app.use('/notification/subscribe', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
