@@ -162,8 +162,7 @@ const submitEdit = async () => {
     await api.put(`/support/notice/edit/${noticeId}`, {
       title: title.value.trim(),
       content: content.value.trim(),
-      targetDepartments: selectedDepartments.value,
-      targetEmployees: selectedEmployees.value
+      targetEmployeeId: selectedEmployees.value.map(e => e.id)
     }, {
       headers: { Authorization: `Bearer ${authStore.accessToken}` }
     })

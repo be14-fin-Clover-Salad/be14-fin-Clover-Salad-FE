@@ -9,10 +9,7 @@
         🗑 삭제된 게시글입니다.
       </div>
 
-      <div v-if="isWriter && isEditing">
-        <input v-model="editTitle" class="edit-title" />
-      </div>
-      <h1 v-else class="qna-title">{{ qna.title }}</h1>
+      <h1 class="qna-title">{{ qna.title }}</h1>
 
       <div class="qna-info">
         <span>
@@ -30,20 +27,10 @@
         </span>
       </div>
 
-      <div v-if="isWriter && isEditing">
-        <textarea v-model="editContent" class="edit-content" rows="8" />
-      </div>
-      <div v-else class="qna-box">{{ qna.content }}</div>
+      <div class="qna-box">{{ qna.content }}</div>
 
       <div v-if="!qna.isDeleted && isWriter && !qna.answerContent" class="edit-btn-wrap">
-        <div class="btn-wrap-between">
-          <div class="left-buttons">
-            <button v-if="!isEditing" class="btn edit-btn" @click="startEdit">수정하기</button>
-            <button v-else class="btn answer-btn" @click="submitEdit">저장</button>
-            <button v-if="isEditing" class="btn cancel-btn" @click="cancelEdit">취소</button>
-          </div>
-          <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
-        </div>
+        <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
       </div>
 
       <div class="qna-answer" v-if="qna.answerContent || isAdmin">
@@ -92,9 +79,6 @@ const qnaId = Number(route.params.id)
 
 const qna = ref(null)
 const answerContent = ref('')
-const editTitle = ref('')
-const editContent = ref('')
-const isEditing = ref(false)
 const isEditingAnswer = ref(false)
 
 const userInfo = computed(() => authStore.userInfo || null)
@@ -111,8 +95,6 @@ const fetchQna = async () => {
     })
     qna.value = data
     answerContent.value = data?.answerContent || ''
-    editTitle.value = data?.title || ''
-    editContent.value = data?.content || ''
   } catch (e) {
     console.error('QNA 상세 데이터 조회 실패:', e)
   }
@@ -122,25 +104,6 @@ onMounted(fetchQna)
 
 const formatDate = (str) => str?.split('T')[0] || '-'
 const goBackToList = () => router.push('/support/qna')
-
-const startEdit = () => isEditing.value = true
-const cancelEdit = () => isEditing.value = false
-
-const submitEdit = async () => {
-  if (!editTitle.value.trim() || !editContent.value.trim()) {
-    alert('제목과 내용을 모두 입력해주세요.');
-    return;
-  }
-  await api.patch(`/support/qna/${qnaId}`, {
-    title: editTitle.value,
-    content: editContent.value
-  }, {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  })
-  alert('문의사항이 수정되었습니다.')
-  isEditing.value = false
-  await fetchQna()
-}
 
 const startAnswerEdit = () => isEditingAnswer.value = true
 const cancelAnswerEdit = () => isEditingAnswer.value = false
@@ -206,6 +169,8 @@ const deleteQna = async () => {
 .qna-content {
   max-width: 800px;
   width: 100%;
+  padding: 0 1rem; /* 제목이 너무 왼쪽에 붙는 현상 방지 */
+  box-sizing: border-box;
 }
 .back-btn {
   display: inline-flex;
@@ -228,6 +193,7 @@ const deleteQna = async () => {
   font-size: 1.6rem;
   font-weight: bold;
   margin-bottom: 1rem;
+  word-break: break-word; /* 제목 줄바꿈 */
 }
 .qna-info {
   display: flex;
@@ -244,6 +210,7 @@ const deleteQna = async () => {
   border-radius: 6px;
   line-height: 1.6;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 .qna-answer {
   margin-top: 2rem;
@@ -260,6 +227,7 @@ const deleteQna = async () => {
   border-radius: 6px;
   line-height: 1.6;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 .qna-answer-form textarea {
   width: 100%;
@@ -305,6 +273,7 @@ const deleteQna = async () => {
 }
 .edit-btn-wrap {
   margin-top: 0.5rem;
+  text-align: right;
 }
 .edit-btn {
   background-color: #4791ff;
