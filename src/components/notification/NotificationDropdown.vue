@@ -53,12 +53,30 @@ const handleNotificationClick = async (notification) => {
     if (notification.type === '결재' && notification.url) {
       // URL에서 결재 ID 추출 (예: /approval/1 -> 1)
       const approvalId = notification.url.split('/').pop()
-      router.push({
+      const targetRoute = {
         path: '/approval',
         query: { showDetail: 'true', approvalId }
-      })
+      }
+      
+      // 현재 라우트와 같은지 확인
+      if (router.currentRoute.value.path === targetRoute.path && 
+          router.currentRoute.value.query.showDetail === targetRoute.query.showDetail &&
+          router.currentRoute.value.query.approvalId === targetRoute.query.approvalId) {
+        // 같은 라우트인 경우 강제로 새로고침
+        router.go(0)
+      } else {
+        // 다른 라우트인 경우 일반 라우팅
+        await router.replace(targetRoute)
+      }
     } else if (notification.url) {
-      router.push(notification.url)
+      // 현재 라우트와 같은지 확인
+      if (router.currentRoute.value.path === notification.url) {
+        // 같은 라우트인 경우 강제로 새로고침
+        router.go(0)
+      } else {
+        // 다른 라우트인 경우 일반 라우팅
+        await router.replace(notification.url)
+      }
     }
   } catch (error) {
     console.error('알림 처리 중 오류 발생:', error)

@@ -37,8 +37,14 @@ export const useNotificationStore = defineStore('notification', () => {
           'Authorization': `Bearer ${auth.accessToken}`
         }
       })
-      notifications.value = response.data
-      unreadCount.value = response.data.filter(n => !n.read).length
+      
+      // 중복 알림 제거 (ID 기준)
+      const uniqueNotifications = response.data.filter((notification, index, self) => 
+        index === self.findIndex(n => n.id === notification.id)
+      )
+      
+      notifications.value = uniqueNotifications
+      unreadCount.value = uniqueNotifications.filter(n => !n.read).length
     } catch (error) {
 
     }
@@ -132,11 +138,8 @@ export const useNotificationStore = defineStore('notification', () => {
 
       eventSource.addEventListener('notification', (event) => {
         const data = JSON.parse(event.data)
-        const exists = notifications.value.some(n => n.id === data.id)
-        if (!exists) {
-          notifications.value.unshift({ ...data, read: false })
-          unreadCount.value++
-        }
+        notifications.value.unshift({ ...data, read: false })
+        unreadCount.value++
       })
 
       eventSource.onopen = () => {
