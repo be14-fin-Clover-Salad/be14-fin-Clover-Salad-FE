@@ -9,8 +9,8 @@ const port = process.env.PORT || 8080
 
 const API_TARGET = 
   //  'http://localhost:5000'
-  //  'http://localhost:5001'
-   'https://api.saladerp.com'
+   'http://localhost:5001'
+  //  'https://api.saladerp.com'
 
 // __dirname 설정 (ESM 환경용)
 const __filename = fileURLToPath(import.meta.url)
@@ -29,7 +29,11 @@ app.use('/api', createProxyMiddleware({
 app.use('/notification/subscribe', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
-  ws: true
+  ws: true,
+  selfHandleResponse: false,
+  onProxyRes: (proxyRes, req, res) => {
+    res.flushHeaders?.()
+  }
 }))
 
 // SPA 처리
