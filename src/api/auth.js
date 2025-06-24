@@ -3,7 +3,8 @@ import { useAuthStore } from "@/stores/auth";
 
 const BASE_URL =
   import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
+  // ? "http://localhost:5001"
+    ? "http://localhost:5000"
     : "https://api.saladerp.com";
 
 // 일반 요청용 인스턴스

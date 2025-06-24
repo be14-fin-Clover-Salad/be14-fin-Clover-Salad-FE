@@ -4,7 +4,8 @@ import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 
 const SSE_BASE_URL = import.meta.env.MODE === 'development'
-  ? 'http://localhost:5001'
+  ? 'http://localhost:5000'
+  // ? 'http://localhost:5001'
   : 'http://api.saladerp.com'
 
 let eventSource = null
