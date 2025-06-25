@@ -154,11 +154,14 @@ export const useNotificationStore = defineStore('notification', () => {
       }
     } catch (err) {
       console.warn('[SSE] 토큰 발급 실패:', err)
-      eventSource = null
-      reconnectTimeout = setTimeout(() => {
-        reconnectTimeout = null
-        setupSse()
-      }, 5000)
+      const auth = useAuthStore()
+      try {
+        await auth.refreshToken()
+        await setupSse()
+      } catch (refreshErr) {
+        auth.clearToken()
+        window.location.href = '/login'
+      }
     }
   }
 
@@ -281,10 +284,13 @@ export const useNotificationStore = defineStore('notification', () => {
 
   // 연결 상태 체크 함수
   const checkConnectionHealth = () => {
-    if (eventSource && eventSource.readyState === EventSource.CLOSED) {
-      console.warn('[SSE] 연결이 끊어진 것을 감지, 재연결 시도')
-      cleanupConnection()
-      setupSse()
+    if (eventSource) {
+      console.debug('[SSE] 연결 상태 체크:', eventSource.readyState)
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.warn('[SSE] 연결이 끊어진 것을 감지, 재연결 시도')
+        cleanupConnection()
+        setupSse()
+      }
     }
   }
 
@@ -322,8 +328,11 @@ export const useNotificationStore = defineStore('notification', () => {
 if (typeof window !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      console.debug('[SSE] 탭 다시 활성화됨 - SSE 재연결 시도')
-      useNotificationStore().setupSse()
+      console.debug('[SSE] 탭 다시 활성화됨 - SSE 강제 재연결 시도')
+      const store = useNotificationStore()
+      store.stopConnectionMonitoring()
+      store.cleanupConnection()
+      store.setupSse()
     } else {
       console.debug('[SSE] 탭 비활성화됨 - 연결 정리')
       useNotificationStore().stopConnectionMonitoring()
