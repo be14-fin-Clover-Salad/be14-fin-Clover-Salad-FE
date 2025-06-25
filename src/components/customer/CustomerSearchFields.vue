@@ -1,6 +1,6 @@
 <template>
   <div class="customer-search-fields">
-    <!-- 첫 번째 행: 고객명, 연락처, 고객 유형, 등록일(시작), 등록일(끝) -->
+    <!-- 첫 번째 행: 고객명, 연락처, 고객 유형, 고객 등록일(범위) -->
     <div class="row">
       <div class="field">
         <label>고객명</label>
@@ -19,23 +19,23 @@
         </select>
       </div>
       <div class="field">
-        <label>고객 등록일(시작)</label>
-        <input type="date" v-model="filters.registerAtFrom" />
-      </div>
-      <div class="field">
-        <label>고객 등록일(끝)</label>
-        <input type="date" v-model="filters.registerAtTo" />
+        <label>고객 등록일</label>
+        <div class="range-inputs">
+          <input type="date" v-model="filters.registerAtFrom" />
+          <span class="tilde">~</span>
+          <input type="date" v-model="filters.registerAtTo" />
+        </div>
       </div>
     </div>
-    <!-- 두 번째 행: 생년월일(시작), 생년월일(끝) -->
+    <!-- 두 번째 행: 생년월일(범위) -->
     <div class="row" v-if="expanded">
       <div class="field">
-        <label>생년월일(시작)</label>
-        <input type="date" v-model="filters.birthdateFrom" />
-      </div>
-      <div class="field">
-        <label>생년월일(끝)</label>
-        <input type="date" v-model="filters.birthdateTo" />
+        <label>생년월일</label>
+        <div class="range-inputs">
+          <input type="date" v-model="filters.birthdateFrom" />
+          <span class="tilde">~</span>
+          <input type="date" v-model="filters.birthdateTo" />
+        </div>
       </div>
     </div>
   </div>
@@ -89,6 +89,20 @@ select:focus {
   outline: none;
   border-color: #86b649;
   box-shadow: 0 0 0 2px rgba(134, 182, 73, 0.1);
+}
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.range-inputs input {
+  flex: 1;
+  min-width: 0;
+}
+.tilde {
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
 }
 @media (max-width: 1200px) {
   .row {
