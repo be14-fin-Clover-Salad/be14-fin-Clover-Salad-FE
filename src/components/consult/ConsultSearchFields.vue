@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="field">
-        <label>피드백 점수</label>
+        <label>만족도</label>
         <div class="star-radios">
           <label v-for="n in 5" :key="n" class="star-label">
             <input type="radio" :value="n" v-model="filters.feedbackScore" />

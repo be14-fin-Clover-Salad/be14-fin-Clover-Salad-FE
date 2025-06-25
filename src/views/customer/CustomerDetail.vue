@@ -4,10 +4,6 @@
     <div class="section" v-if="customer">
       <div class="section-header">
         <h2 class="section-title">기본 정보 <span class="required">*</span></h2>
-        <div class="section-actions">
-          <button class="button primary" @click="handleUpdate">수정</button>
-          <button class="button danger" @click="handleDelete">삭제</button>
-        </div>
       </div>
       <div class="form-grid">
         <div class="form-item">
@@ -56,6 +52,11 @@
           <textarea rows="3" v-model="customer.etc" />
         </div>
       </div>
+      <div class="form-actions">
+        <button class="submit-btn" @click="handleUpdate">수정</button>
+        <button class="delete-btn" @click="handleDelete">삭제</button>
+        <button class="cancel-btn" @click="handleCancel">취소</button>
+      </div>
     </div>
     <div v-else class="loading-message">고객 정보를 불러오는 중입니다...</div>
 
@@ -82,7 +83,7 @@
             @dblclick="handleConsultRowDblClick(consult)"
             class="clickable-row"
           >
-            <td>{{ consult.consultAt }}</td>
+            <td>{{ formatDateTime(consult.consultAt) }}</td>
             <td>{{ consult.employeeName }}</td>
             <td>{{ consult.content }}</td>
             <td>{{ consult.feedbackScore }}</td>
@@ -178,6 +179,10 @@ const handleDelete = async () => {
   }
 };
 
+const handleCancel = () => {
+  router.push("/customer");
+};
+
 const handleConsultRowDblClick = (consult) => {
   // 관리자 여부 확인
   const isAdmin = ["관리자", "admin", "Admin"].includes(
@@ -190,6 +195,15 @@ const handleConsultRowDblClick = (consult) => {
     alert("본인이 작성한 상담만 상세 조회할 수 있습니다.");
   }
 };
+
+function formatDateTime(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${MM}-${dd}`;
+}
 </script>
 
 <style scoped>
@@ -201,9 +215,11 @@ const handleConsultRowDblClick = (consult) => {
 
 /* 공통 섹션 박스 */
 .section {
-  border-radius: 6px;
-  padding: 24px;
-  margin-bottom: 32px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* 섹션 제목 및 버튼 영역 */
@@ -340,5 +356,53 @@ const handleConsultRowDblClick = (consult) => {
   text-align: center;
   color: #888;
   font-size: 16px;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+.submit-btn {
+  background-color: #86b649;
+  color: white;
+}
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+.delete-btn {
+  background-color: #e57373;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.delete-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.customer-detail > .section {
+  margin-bottom: 24px;
 }
 </style>

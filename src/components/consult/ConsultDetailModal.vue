@@ -26,7 +26,7 @@
           </div>
 
           <div class.detail-row>
-            <div class="detail-label">피드백 점수</div>
+            <div class="detail-label">만족도</div>
             <div class="detail-value">
               <span v-if="consult.feedbackScore" class="feedback-score">
                 {{ consult.feedbackScore.toFixed(1) }} / 5.0
