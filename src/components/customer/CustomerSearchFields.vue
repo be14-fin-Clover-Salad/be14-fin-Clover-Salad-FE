@@ -47,9 +47,9 @@ defineProps({ filters: Object, expanded: Boolean });
 
 <style scoped>
 .customer-search-fields {
-  padding: 20px;
+  padding: 16px 24px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   min-width: 0;
   overflow: hidden;
 }
@@ -75,15 +75,24 @@ defineProps({ filters: Object, expanded: Boolean });
   white-space: nowrap;
 }
 
-input,
-select {
-  padding: 4px 8px;
-  font-size: 13px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
+.customer-search-fields .field input,
+.customer-search-fields .field select {
+  height: 29.5px !important;
+  min-height: 29.5px !important;
+  max-height: 29.5px !important;
+  padding: 4px 8px !important;
+  font-size: 13px !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  line-height: normal !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: #fff !important;
+  vertical-align: middle !important;
 }
+
 input:focus,
 select:focus {
   outline: none;

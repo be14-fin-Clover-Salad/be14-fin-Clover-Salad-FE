@@ -16,6 +16,8 @@
         :columns="columns"
         :rows="rows"
         :is-loading="isLoading"
+        :selectedCode="selectedRowCode"
+        @row-click="handleRowClick"
         @row-dblclick="handleRowDblClick"
       />
     </div>
@@ -47,9 +49,16 @@ const searchForm = reactive({
 const rows = ref([]);
 const isLoading = ref(false);
 const errorMessage = ref("");
+const selectedRowCode = ref(null);
 
 const columns = [
-  { text: "No", value: "customerNo", label: "#", key: "customerNo" },
+  {
+    text: "No",
+    value: "customerNo",
+    label: "#",
+    key: "customerNo",
+    width: "30px",
+  },
   { text: "고객명", value: "name", label: "고객명", key: "name" },
   { text: "고객 유형", value: "type", label: "고객 유형", key: "type" },
   { text: "생년월일", value: "birthdate", label: "생년월일", key: "birthdate" },
@@ -88,6 +97,10 @@ const handleSearch = (filters) => {
 const handleReset = () => {
   Object.keys(searchForm).forEach((key) => (searchForm[key] = ""));
   fetchCustomers();
+};
+
+const handleRowClick = (row) => {
+  selectedRowCode.value = row.id;
 };
 
 const handleRowDblClick = (customer) => {
@@ -169,6 +182,11 @@ select:focus {
   width: 100%;
   table-layout: auto;
 }
+
+::v-deep(.data-table tbody tr:hover) {
+  cursor: pointer;
+}
+
 .error-message {
   margin-top: 16px;
   padding: 12px;
@@ -208,5 +226,8 @@ select:focus {
     padding: 8px 12px;
     gap: 6px;
   }
+}
+.data-table tr:hover {
+  background-color: #f9f9f9;
 }
 </style>

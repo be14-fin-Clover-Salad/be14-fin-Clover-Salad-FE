@@ -4,6 +4,8 @@
       :columns="headers"
       :rows="customers"
       :is-loading="loading"
+      :selectedCode="selectedRowId"
+      @row-click="handleRowClick"
       @row-dblclick="handleRowDoubleClick"
     >
     </BaseDataTable>
@@ -24,6 +26,7 @@ const customers = ref([]);
 const loading = ref(false);
 const error = ref(null);
 let currentSearchConditions = {};
+const selectedRowId = ref(null);
 
 const headers = ref([
   { text: "No", value: "customerNo", label: "No", key: "customerNo" },
@@ -48,6 +51,7 @@ const fetchData = async () => {
     const response = await searchCustomers();
     customers.value = response.data.content.map((c, index) => ({
       ...c,
+      id: c.id,
       customerNo: index + 1,
       type: formatCustomerType(c.type),
       registerAt: formatDate(c.registerAt),
@@ -68,6 +72,10 @@ const loadData = (conditions) => {
 const handleRowDoubleClick = (customer) => {
   emit("row-click", customer);
   router.push({ name: "CustomerDetail", params: { id: customer.id } });
+};
+
+const handleRowClick = (row) => {
+  selectedRowId.value = Number(row.id);
 };
 
 const formatCustomerType = (type) => {

@@ -85,13 +85,16 @@ defineProps({
   white-space: nowrap;
 }
 .field input[type="text"],
-.field input[type="date"] {
+.field input[type="date"],
+.field select {
+  height: 29.5px;
   padding: 4px 8px;
   font-size: 13px;
   border: 1px solid #ccc;
   border-radius: 4px;
   width: 100%;
   box-sizing: border-box;
+  line-height: normal;
 }
 .field input:focus {
   outline: none;

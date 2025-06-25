@@ -16,6 +16,8 @@
         :columns="columns"
         :rows="formattedConsults"
         :is-loading="isLoading"
+        :selectedCode="selectedRowCode"
+        @row-click="handleRowClick"
         @row-dblclick="handleRowDblClick"
       />
     </div>
@@ -53,6 +55,7 @@ const isLoading = ref(false);
 const errorMessage = ref("");
 const showDetailModal = ref(false);
 const selectedConsult = ref(null);
+const selectedRowCode = ref(null);
 
 const searchFilters = reactive({
   consultDateFrom: "",
@@ -60,14 +63,22 @@ const searchFilters = reactive({
   content: "",
   minScore: "",
   maxScore: "",
+  feedbackScore: "",
 });
 
 const columns = ref([
-  { key: "consultAt", label: "상담 일자", width: "180px" },
-  { key: "content", label: "상담 내용", width: "300px" },
-  { key: "customerName", label: "고객명", width: "130px" },
-  { key: "feedbackScore", label: "만족도", width: "120px" },
-  { key: "etc", label: "비고", width: "200px" },
+  {
+    text: "No",
+    value: "consultNo",
+    label: "#",
+    key: "consultNo",
+    width: "30px",
+  },
+  { key: "consultAt", label: "상담 일자", width: "120px" },
+  { key: "content", label: "상담 내용", width: "400px" },
+  { key: "customerName", label: "고객명", width: "100px" },
+  { key: "feedbackScore", label: "만족도", width: "80px" },
+  { key: "etc", label: "비고", width: "250px" },
 ]);
 
 function formatDateTime(dateString) {
@@ -80,8 +91,9 @@ function formatDateTime(dateString) {
 }
 
 const formattedConsults = computed(() => {
-  return consults.value.map((c) => ({
+  return consults.value.map((c, index) => ({
     ...c,
+    consultNo: index + 1,
     consultAt: formatDateTime(c.consultAt),
     feedbackScore: c.feedbackScore ? c.feedbackScore.toFixed(1) : "-",
     customerName: c.customerName || "-",
@@ -92,9 +104,16 @@ const fetchConsults = async () => {
   isLoading.value = true;
   errorMessage.value = "";
   try {
-    const params = Object.fromEntries(
-      Object.entries(searchFilters).filter(([_, v]) => v)
+    let params = Object.fromEntries(
+      Object.entries(searchFilters).filter(
+        ([_, v]) => v !== "" && v !== null && v !== undefined
+      )
     );
+    // feedbackScore가 있으면 minScore, maxScore로 변환
+    if (params.feedbackScore) {
+      params.minScore = params.maxScore = params.feedbackScore;
+      delete params.feedbackScore;
+    }
     const response = await searchConsults(params);
     consults.value = response.data;
   } catch (error) {
@@ -120,6 +139,10 @@ const handleReset = () => {
 
 const goToRegister = () => {
   router.push("/consult/register");
+};
+
+const handleRowClick = (row) => {
+  selectedRowCode.value = row.id;
 };
 
 const handleRowDblClick = (consult) => {
@@ -161,6 +184,10 @@ onMounted(fetchConsults);
   table-layout: auto;
 }
 
+::v-deep(.data-table tbody tr:hover) {
+  cursor: pointer;
+}
+
 .table-actions {
   display: flex;
   justify-content: flex-end;
@@ -182,5 +209,9 @@ onMounted(fetchConsults);
   border-radius: 6px;
   margin-top: 16px;
   border: 1px solid #ffcdd2;
+}
+
+.data-table tr:hover {
+  background-color: #f9f9f9;
 }
 </style>

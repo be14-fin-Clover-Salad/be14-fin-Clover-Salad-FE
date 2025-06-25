@@ -3,10 +3,12 @@
     <!-- 바운더리 바깥 상단 요약 -->
     <div class="table-summary">
       총 {{ rows.length }}건
-      <span ref="badgeRef"
-            class="info-badge"
-            @mouseenter="showTooltip = true"
-            @mouseleave="showTooltip = false">
+      <span
+        ref="badgeRef"
+        class="info-badge"
+        @mouseenter="showTooltip = true"
+        @mouseleave="showTooltip = false"
+      >
         <span class="i">i</span>
         <div v-show="showTooltip" class="tooltip tooltip-local">
           클릭하면<br />오름/내림차순 정렬이 가능합니다.
@@ -20,12 +22,25 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th v-for="col in columns" :key="col.key" @click="toggleSort(col.key)"
-                  class="sortable" :style="{ width: col.width || 'auto' }">
+              <th
+                v-for="col in columns"
+                :key="col.key"
+                @click="toggleSort(col.key)"
+                class="sortable"
+                :style="{ width: col.width || 'auto' }"
+              >
                 <span class="label">{{ col.label }}</span>
                 <span class="sort-icons" v-if="sortState.key === col.key">
-                  <span class="arrow up" :class="{ active: sortState.order === 'asc' }">▲</span>
-                  <span class="arrow down" :class="{ active: sortState.order === 'desc' }">▼</span>
+                  <span
+                    class="arrow up"
+                    :class="{ active: sortState.order === 'asc' }"
+                    >▲</span
+                  >
+                  <span
+                    class="arrow down"
+                    :class="{ active: sortState.order === 'desc' }"
+                    >▼</span
+                  >
                 </span>
               </th>
             </tr>
@@ -33,7 +48,11 @@
 
           <tbody v-if="isLoading">
             <tr v-for="n in 10" :key="n">
-              <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
+              <td
+                v-for="col in columns"
+                :key="col.key"
+                :style="{ width: col.width || 'auto' }"
+              >
                 <div class="skeleton"></div>
               </td>
             </tr>
@@ -45,10 +64,14 @@
               :key="rowIndex"
               @click="$emit('row-click', row)"
               @dblclick="$emit('row-dblclick', row)"
-              :class="{ selected: row.id === selectedCode }"
+              :class="{ selected: Number(row.id) === Number(selectedCode) }"
             >
-              <td v-for="col in columns" :key="col.key" :style="{ width: col.width || 'auto' }">
-                {{ row[col.key] || '-' }}
+              <td
+                v-for="col in columns"
+                :key="col.key"
+                :style="{ width: col.width || 'auto' }"
+              >
+                {{ row[col.key] || "-" }}
               </td>
             </tr>
           </tbody>
@@ -67,46 +90,48 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
   columns: { type: Array, required: true },
   rows: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
-  selectedCode: { type: Number, default: null }
-})
+  selectedCode: { type: Number, default: null },
+});
 
-const sortState = ref({ key: null, order: null })
-const showTooltip = ref(false)
-const badgeRef = ref(null)
+const sortState = ref({ key: null, order: null });
+const showTooltip = ref(false);
+const badgeRef = ref(null);
 
 function toggleSort(key) {
   if (sortState.value.key !== key) {
-    sortState.value = { key, order: 'asc' }
-  } else if (sortState.value.order === 'asc') {
-    sortState.value.order = 'desc'
+    sortState.value = { key, order: "asc" };
+  } else if (sortState.value.order === "asc") {
+    sortState.value.order = "desc";
   } else {
-    sortState.value = { key: null, order: null }
+    sortState.value = { key: null, order: null };
   }
 }
 
 const sortedRows = computed(() => {
-  const { key, order } = sortState.value
-  if (!key || !order) return props.rows
+  const { key, order } = sortState.value;
+  if (!key || !order) return props.rows;
 
   return [...props.rows].sort((a, b) => {
-    const aVal = a[key] ?? ''
-    const bVal = b[key] ?? ''
+    const aVal = a[key] ?? "";
+    const bVal = b[key] ?? "";
 
-    if (!isNaN(aVal) && !isNaN(bVal)) return order === 'asc' ? aVal - bVal : bVal - aVal
-    const aDate = new Date(aVal)
-    const bDate = new Date(bVal)
-    if (!isNaN(aDate) && !isNaN(bDate)) return order === 'asc' ? aDate - bDate : bDate - aDate
-    return order === 'asc'
+    if (!isNaN(aVal) && !isNaN(bVal))
+      return order === "asc" ? aVal - bVal : bVal - aVal;
+    const aDate = new Date(aVal);
+    const bDate = new Date(bVal);
+    if (!isNaN(aDate) && !isNaN(bDate))
+      return order === "asc" ? aDate - bDate : bDate - aDate;
+    return order === "asc"
       ? String(aVal).localeCompare(String(bVal))
-      : String(bVal).localeCompare(String(aVal))
-  })
-})
+      : String(bVal).localeCompare(String(aVal));
+  });
+});
 </script>
 
 <style scoped>
