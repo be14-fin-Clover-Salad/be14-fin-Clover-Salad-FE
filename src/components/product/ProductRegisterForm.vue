@@ -169,7 +169,7 @@
 
 <script setup>
   import ImageUploadModal from "@/components/product/ImageUploadModal.vue";
-  import { ref, watch, onMounted, computed } from "vue";
+  import { ref, watch, computed } from "vue";
 
   const imgUploaded = ref(false);
   const showImageUploadModal = ref(false);
@@ -234,10 +234,10 @@
     form.value.rentalCost = unformatNumber(formattedValue);
   };
 
-  // 컴포넌트 마운트 시 기존 이미지가 있는지 확인
-  onMounted(() => {
-    if (props.modelValue.fileUrl) {
-      path.value = props.modelValue.fileUrl; // 전체 URL 사용
+  // 컴포넌트 마운트 시 기존 이미지가 있는지 확인(watch)
+  watch(() => props.modelValue.fileUrl, (newUrl) => {
+    if (newUrl) {
+      path.value = newUrl;
       imgUploaded.value = true;
     }
   });

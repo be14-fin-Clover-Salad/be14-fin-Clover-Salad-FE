@@ -137,13 +137,10 @@
       const response = await api.post('/api/product/register', result.form);
       console.log('상품 등록 응답:', response);
       
-    } catch (error) {
-      console.error('상품 등록 실패:', error);
-      alert('상품 등록에 실패했습니다.');
-      return;
-    } finally {
       isLoading.value = false;
       await router.push('/product/list');
+    } catch (error) {
+      console.error('상품 등록 실패:', error);
     }
   }
 </script>
