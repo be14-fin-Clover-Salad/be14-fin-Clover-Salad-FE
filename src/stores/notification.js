@@ -189,9 +189,8 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   
     try {
-      // HTTP/2 프로토콜 오류 방지를 위한 임시 해결책
-      // nginx 설정이 업데이트되면 이 부분 제거 가능
-      const sseUrl = `${SSE_BASE_URL}/notification/subscribe?token=${token}&_http1=true`
+      // nginx 설정이 업데이트되었으므로 원래 URL 사용
+      const sseUrl = `${SSE_BASE_URL}/notification/subscribe?token=${token}`
       eventSource = new EventSource(sseUrl)
       
       console.debug('[SSE] EventSource 생성 완료:', sseUrl)
