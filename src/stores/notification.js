@@ -122,6 +122,7 @@ export const useNotificationStore = defineStore('notification', () => {
       eventSource.onopen = () => {
         console.debug('[SSE] 연결 성공')
         reconnectAttempts = 0
+        isConnecting = false
         if (reconnectTimeout) {
           clearTimeout(reconnectTimeout)
           reconnectTimeout = null
@@ -129,14 +130,27 @@ export const useNotificationStore = defineStore('notification', () => {
         // 연결 성공 시 모니터링 시작
         startConnectionMonitoring()
       }
-      eventSource.onerror = () => {
-        console.warn('[SSE] 연결 오류 발생')
-        eventSource.close()
-        eventSource = null
-        reconnectTimeout = setTimeout(() => {
-          reconnectTimeout = null
-          setupSse()
-        }, 5000)
+      eventSource.onerror = async (event) => {
+        console.warn('[SSE] 오류 발생, 연결 종료 및 재시도 준비 중...', event)
+        cleanupConnection()
+
+        reconnectAttempts++
+        if (!reconnectTimeout && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          const delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 30000) // 지수 백오프
+          console.debug(`[SSE] ${delay}ms 후 재연결 시도 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
+          reconnectTimeout = setTimeout(() => {
+            reconnectTimeout = null
+            setupSse()
+          }, delay)
+        } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+          console.warn('[SSE] 최대 재연결 시도 횟수 초과')
+          // 최대 시도 횟수 초과 시에도 30초 후 다시 시도
+          reconnectTimeout = setTimeout(() => {
+            reconnectAttempts = 0  // 카운터 리셋
+            reconnectTimeout = null
+            setupSse()
+          }, 30000)
+        }
       }
     } catch (err) {
       console.warn('[SSE] 토큰 발급 실패:', err)
