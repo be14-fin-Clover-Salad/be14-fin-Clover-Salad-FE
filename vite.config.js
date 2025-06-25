@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8080,
+    port: 8080
     // proxy: {
     //     "/notification/subscribe": {
     //         target: "http://localhost:5001",
