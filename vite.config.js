@@ -13,7 +13,7 @@ export default defineConfig({
   },
   server: {
     port: 8080,
-    proxy: {
+    // proxy: {
         // "/notification/subscribe": {
         //     target: "http://localhost:5001",
         //     changeOrigin: true,
@@ -25,6 +25,6 @@ export default defineConfig({
         //   changeOrigin: true,
         //   rewrite: (path) => path.replace(/^\/api/, "/api"),
         // }
-    },
+    // },
   },
 });
