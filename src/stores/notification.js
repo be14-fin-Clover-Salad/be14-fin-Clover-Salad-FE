@@ -24,9 +24,7 @@ export const useNotificationStore = defineStore('notification', () => {
         }
       })
       unreadCount.value = response.data.length
-    } catch (error) {
-
-    }
+    } catch (error) {}
   }
 
   async function fetchNotifications() {
@@ -37,19 +35,12 @@ export const useNotificationStore = defineStore('notification', () => {
           'Authorization': `Bearer ${auth.accessToken}`
         }
       })
-      
-      // 중복 알림 제거 (ID 기준)
       const uniqueNotifications = response.data.filter((notification, index, self) => 
         index === self.findIndex(n => n.id === notification.id)
       )
-      
       notifications.value = uniqueNotifications
-      
-      // 전체 읽지 않은 알림 개수를 가져오기 위해 fetchUnreadCount 호출
       await fetchUnreadCount()
-    } catch (error) {
-
-    }
+    } catch (error) {}
   }
 
   async function markAsRead(notificationId) {
@@ -65,9 +56,7 @@ export const useNotificationStore = defineStore('notification', () => {
         notifications.value[index].read = true
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }
-    } catch (error) {
-
-    }
+    } catch (error) {}
   }
 
   async function markAllAsRead() {
@@ -82,8 +71,6 @@ export const useNotificationStore = defineStore('notification', () => {
           'Authorization': `Bearer ${auth.accessToken}`
         }
       })
-      
-      // 모든 읽지 않은 알림을 읽음 상태로 변경
       notifications.value.forEach(notification => {
         if (!notification.read) {
           notification.read = true
@@ -112,12 +99,55 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
+  const connectSse = async () => {
+    const auth = useAuthStore()
+    try {
+      const response = await api.get('/notification/subscribe-token', {
+        headers: { 'Authorization': `Bearer ${auth.accessToken}` }
+      })
+      const token = response.data
+      eventSource = new EventSource(`${SSE_BASE_URL}/notification/subscribe?token=${token}`)
+      eventSource.addEventListener('notification', (event) => {
+        const data = JSON.parse(event.data)
+        const exists = notifications.value.some(n => n.id === data.id)
+        if (!exists) {
+          notifications.value.unshift({ ...data, read: false })
+          unreadCount.value++
+        }
+      })
+      eventSource.onopen = () => {
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
+          reconnectTimeout = null
+        }
+      }
+      eventSource.onerror = () => {
+        eventSource.close()
+        eventSource = null
+        reconnectTimeout = setTimeout(() => {
+          reconnectTimeout = null
+          setupSse()
+        }, 5000)
+      }
+    } catch (err) {
+      eventSource = null
+      reconnectTimeout = setTimeout(() => {
+        reconnectTimeout = null
+        setupSse()
+      }, 5000)
+    }
+  }
+
   const setupSse = async () => {
     if (typeof window === 'undefined') return
-
+  
     const auth = useAuthStore()
-
-
+  
+    if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
+      console.debug('SSE가 이미 연결되어 있음, 중복 연결 방지')
+      return
+    }
+  
     if (eventSource) {
       eventSource.close()
       eventSource = null
@@ -126,60 +156,51 @@ export const useNotificationStore = defineStore('notification', () => {
       clearTimeout(reconnectTimeout)
       reconnectTimeout = null
     }
-
+  
     if (!auth.accessToken) return
-
+  
+    let token
     try {
       const response = await api.get('/notification/subscribe-token', {
         headers: {
           'Authorization': `Bearer ${auth.accessToken}`
         }
       })
-      const token = response.data
-
-      eventSource = new EventSource(`${SSE_BASE_URL}/notification/subscribe?token=${token}`)
-
-      eventSource.addEventListener('notification', (event) => {
-        const data = JSON.parse(event.data)
-      
-        const exists = notifications.value.some(n => n.id === data.id)
-        if (!exists) {
-          notifications.value.unshift({ ...data, read: false })
-          unreadCount.value++
-        } else {
-          console.debug(`중복 알림 수신 차단 - id: ${data.id}`)
-        }
-      })
-
-      eventSource.onopen = () => {
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout)
-          reconnectTimeout = null
-        }
-
-      }
-
-      eventSource.onerror = (event) => {
-        eventSource.close()
-        eventSource = null
-      
-        const shouldRetry = event?.target?.readyState !== EventSource.CLOSED
-        if (!shouldRetry) {
-          console.warn('SSE 연결 종료됨, 재시도하지 않음')
-          return
-        }
-      
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(() => {
-            reconnectTimeout = null
-            setupSse()
-          }, 5000)
-        }
-      }
-
+      token = response.data
     } catch (err) {
-
+      console.warn('토큰 발급 실패, SSE 연결 시도 보류:', err)
+      return
+    }
+  
+    eventSource = new EventSource(`${SSE_BASE_URL}/notification/subscribe?token=${token}`)
+  
+    eventSource.addEventListener('notification', (event) => {
+      const data = JSON.parse(event.data)
+      const exists = notifications.value.some(n => n.id === data.id)
+      if (!exists) {
+        notifications.value.unshift({ ...data, read: false })
+        unreadCount.value++
+      }
+    })
+  
+    eventSource.onopen = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+        reconnectTimeout = null
+      }
+    }
+  
+    eventSource.onerror = async (event) => {
+      console.warn('SSE 오류 발생, 연결 종료 및 재시도 준비 중...')
+      eventSource.close()
       eventSource = null
+  
+      const shouldRetry = event?.target?.readyState !== EventSource.CLOSED
+      if (!shouldRetry) {
+        console.warn('SSE 연결 종료됨, 재시도하지 않음')
+        return
+      }
+  
       if (!reconnectTimeout) {
         reconnectTimeout = setTimeout(() => {
           reconnectTimeout = null
@@ -197,6 +218,15 @@ export const useNotificationStore = defineStore('notification', () => {
     markAsRead,
     markAllAsRead,
     deleteNotifications,
-    setupSse,
+    setupSse
   }
 })
+
+if (typeof window !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      console.debug('[SSE] 탭 다시 활성화됨 - SSE 재연결 시도')
+      useNotificationStore().setupSse()
+    }
+  })
+}
