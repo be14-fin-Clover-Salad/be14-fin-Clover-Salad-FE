@@ -10,6 +10,8 @@ const SSE_BASE_URL = window.location.origin
 
 let eventSource = null
 let reconnectTimeout = null
+let reconnectAttempts = 0
+const MAX_RECONNECT_ATTEMPTS = 5
 
 export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
@@ -116,12 +118,15 @@ export const useNotificationStore = defineStore('notification', () => {
         }
       })
       eventSource.onopen = () => {
+        console.debug('[SSE] 연결 성공')
+        reconnectAttempts = 0
         if (reconnectTimeout) {
           clearTimeout(reconnectTimeout)
           reconnectTimeout = null
         }
       }
       eventSource.onerror = () => {
+        console.warn('[SSE] 연결 오류 발생')
         eventSource.close()
         eventSource = null
         reconnectTimeout = setTimeout(() => {
@@ -130,6 +135,7 @@ export const useNotificationStore = defineStore('notification', () => {
         }, 5000)
       }
     } catch (err) {
+      console.warn('[SSE] 토큰 발급 실패:', err)
       eventSource = null
       reconnectTimeout = setTimeout(() => {
         reconnectTimeout = null
@@ -144,7 +150,7 @@ export const useNotificationStore = defineStore('notification', () => {
     const auth = useAuthStore()
   
     if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
-      console.debug('SSE가 이미 연결되어 있음, 중복 연결 방지')
+      console.debug('[SSE] 이미 연결되어 있음, 중복 연결 방지')
       return
     }
   
@@ -157,7 +163,16 @@ export const useNotificationStore = defineStore('notification', () => {
       reconnectTimeout = null
     }
   
-    if (!auth.accessToken) return
+    if (!auth.accessToken) {
+      console.debug('[SSE] 액세스 토큰 없음, 연결 시도 보류')
+      return
+    }
+  
+    // 재연결 시도 횟수 제한
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      console.warn('[SSE] 최대 재연결 시도 횟수 초과, 연결 중단')
+      return
+    }
   
     let token
     try {
@@ -168,45 +183,67 @@ export const useNotificationStore = defineStore('notification', () => {
       })
       token = response.data
     } catch (err) {
-      console.warn('토큰 발급 실패, SSE 연결 시도 보류:', err)
+      console.warn('[SSE] 토큰 발급 실패, SSE 연결 시도 보류:', err)
+      reconnectAttempts++
       return
     }
   
-    eventSource = new EventSource(`${SSE_BASE_URL}/notification/subscribe?token=${token}`)
+    try {
+      // nginx와 호환되는 URL 구성
+      const sseUrl = `${SSE_BASE_URL}/notification/subscribe?token=${token}`
+      eventSource = new EventSource(sseUrl)
+      
+      console.debug('[SSE] EventSource 생성 완료:', sseUrl)
   
-    eventSource.addEventListener('notification', (event) => {
-      const data = JSON.parse(event.data)
-      const exists = notifications.value.some(n => n.id === data.id)
-      if (!exists) {
-        notifications.value.unshift({ ...data, read: false })
-        unreadCount.value++
-      }
-    })
+      eventSource.addEventListener('notification', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          const exists = notifications.value.some(n => n.id === data.id)
+          if (!exists) {
+            notifications.value.unshift({ ...data, read: false })
+            unreadCount.value++
+            console.debug('[SSE] 새 알림 수신:', data)
+          }
+        } catch (parseError) {
+          console.warn('[SSE] 알림 데이터 파싱 오류:', parseError)
+        }
+      })
   
-    eventSource.onopen = () => {
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout)
-        reconnectTimeout = null
-      }
-    }
-  
-    eventSource.onerror = async (event) => {
-      console.warn('SSE 오류 발생, 연결 종료 및 재시도 준비 중...')
-      eventSource.close()
-      eventSource = null
-  
-      const shouldRetry = event?.target?.readyState !== EventSource.CLOSED
-      if (!shouldRetry) {
-        console.warn('SSE 연결 종료됨, 재시도하지 않음')
-        return
-      }
-  
-      if (!reconnectTimeout) {
-        reconnectTimeout = setTimeout(() => {
+      eventSource.onopen = () => {
+        console.debug('[SSE] 연결 성공')
+        reconnectAttempts = 0
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
           reconnectTimeout = null
-          setupSse()
-        }, 5000)
+        }
       }
+  
+      eventSource.onerror = async (event) => {
+        console.warn('[SSE] 오류 발생, 연결 종료 및 재시도 준비 중...', event)
+        eventSource.close()
+        eventSource = null
+  
+        const shouldRetry = event?.target?.readyState !== EventSource.CLOSED
+        if (!shouldRetry) {
+          console.warn('[SSE] 연결 종료됨, 재시도하지 않음')
+          return
+        }
+  
+        reconnectAttempts++
+        if (!reconnectTimeout && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          const delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 30000) // 지수 백오프
+          console.debug(`[SSE] ${delay}ms 후 재연결 시도 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
+          reconnectTimeout = setTimeout(() => {
+            reconnectTimeout = null
+            setupSse()
+          }, delay)
+        } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+          console.warn('[SSE] 최대 재연결 시도 횟수 초과')
+        }
+      }
+    } catch (error) {
+      console.error('[SSE] EventSource 생성 실패:', error)
+      reconnectAttempts++
     }
   }
 
