@@ -1,10 +1,10 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 
-const BASE_URL =
+const BASE_URL = window.location.origin
   //  'http://localhost:5000'
   //  'http://localhost:5001'
-   'https://api.saladerp.com'
+  //  'https://api.saladerp.com'
 
 // 일반 요청용 인스턴스
 const api = axios.create({

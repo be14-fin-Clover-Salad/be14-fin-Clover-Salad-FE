@@ -25,8 +25,8 @@ app.use('/api', createProxyMiddleware({
   changeOrigin: true,
 }))
 
-// SSE 구독용 프록시 (웹소켓 포함)
-app.use('/notification/subscribe', createProxyMiddleware({
+// 알림 관련 프록시 설정 (토큰 요청 및 SSE 연결)
+app.use('/notification', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
   ws: true,
