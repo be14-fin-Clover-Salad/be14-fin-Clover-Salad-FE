@@ -44,7 +44,9 @@ export const useNotificationStore = defineStore('notification', () => {
       )
       
       notifications.value = uniqueNotifications
-      unreadCount.value = uniqueNotifications.filter(n => !n.read).length
+      
+      // 전체 읽지 않은 알림 개수를 가져오기 위해 fetchUnreadCount 호출
+      await fetchUnreadCount()
     } catch (error) {
 
     }
@@ -74,7 +76,8 @@ export const useNotificationStore = defineStore('notification', () => {
       const unreadNotifications = notifications.value.filter(n => !n.read)
       if (unreadNotifications.length === 0) return
 
-      await api.patch('/notification/read-all', null, {
+      const unreadIds = unreadNotifications.map(n => n.id)
+      await api.patch('/notification/read', unreadIds, {
         headers: {
           'Authorization': `Bearer ${auth.accessToken}`
         }
@@ -138,8 +141,14 @@ export const useNotificationStore = defineStore('notification', () => {
 
       eventSource.addEventListener('notification', (event) => {
         const data = JSON.parse(event.data)
-        notifications.value.unshift({ ...data, read: false })
-        unreadCount.value++
+      
+        const exists = notifications.value.some(n => n.id === data.id)
+        if (!exists) {
+          notifications.value.unshift({ ...data, read: false })
+          unreadCount.value++
+        } else {
+          console.debug(`중복 알림 수신 차단 - id: ${data.id}`)
+        }
       })
 
       eventSource.onopen = () => {
@@ -150,11 +159,16 @@ export const useNotificationStore = defineStore('notification', () => {
 
       }
 
-      eventSource.onerror = () => {
-
+      eventSource.onerror = (event) => {
         eventSource.close()
         eventSource = null
-
+      
+        const shouldRetry = event?.target?.readyState !== EventSource.CLOSED
+        if (!shouldRetry) {
+          console.warn('SSE 연결 종료됨, 재시도하지 않음')
+          return
+        }
+      
         if (!reconnectTimeout) {
           reconnectTimeout = setTimeout(() => {
             reconnectTimeout = null

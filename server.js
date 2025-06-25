@@ -29,7 +29,11 @@ app.use('/api', createProxyMiddleware({
 app.use('/notification/subscribe', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
-  ws: true
+  ws: true,
+  selfHandleResponse: false,
+  onProxyRes: (proxyRes, req, res) => {
+    res.flushHeaders?.()
+  }
 }))
 
 // SPA 처리
