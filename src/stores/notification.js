@@ -3,10 +3,10 @@ import { ref } from 'vue'
 import api from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 
-const SSE_BASE_URL = window.location.origin
+const SSE_BASE_URL = 
   //  'http://localhost:5000'
   //  'http://localhost:5001'
-  //  'https://api.saladerp.com'
+   'https://api.saladerp.com'
 
 let eventSource = null
 let reconnectTimeout = null
