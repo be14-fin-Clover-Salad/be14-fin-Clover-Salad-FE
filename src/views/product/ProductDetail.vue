@@ -3,6 +3,7 @@
     <div class="section-header no-print">
       <h2 class="section-title">상품 상세 조회</h2>
       <div class="section-actions">
+        <button class="btn-print" @click="backToMenu">목록</button>
         <button class="btn-print" @click="printProduct">인쇄</button>
         <button v-if="isAdmin" class="btn-primary" @click="updateProduct">수정</button>
         <button v-if="isAdmin" class="btn-danger" @click="showProductDeleteConfirmModal = true">삭제</button>
@@ -60,6 +61,10 @@
 
   function printProduct() {
     window.print();
+  }
+
+  function backToMenu() {
+    router.push(`/product/list`);
   }
 
   async function updateProduct() {
