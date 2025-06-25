@@ -69,8 +69,7 @@
             <h2 class="section-title">상담 내용</h2>
             <div class="consult-meta-group">
               <span class="consult-meta-pill">
-                <b>상담자:</b>
-                {{
+                <b>상담자:</b>&nbsp;{{
                   form.employeeLevelLabel === "관리자" ||
                   form.employeeLevelLabel === "admin" ||
                   form.employeeLevelLabel === "Admin"
@@ -82,8 +81,7 @@
                 }}
               </span>
               <span class="consult-meta-pill">
-                <b>상담 일시:</b>
-                {{ formatDateTime(form.consultAt) }}
+                <b>상담 일시:</b>&nbsp;{{ formatDateTime(form.consultAt) }}
               </span>
             </div>
           </div>
@@ -101,8 +99,8 @@
           {{ errorMessage }}
         </div>
         <div class="form-actions">
-          <button type="button" class="cancel-btn" @click="handleCancel">
-            취소
+          <button type="submit" class="submit-btn" :disabled="isSubmitting">
+            {{ isSubmitting ? "수정 중..." : "수정" }}
           </button>
           <button
             type="button"
@@ -112,8 +110,8 @@
           >
             {{ isSubmitting ? "삭제 중..." : "삭제" }}
           </button>
-          <button type="submit" class="submit-btn" :disabled="isSubmitting">
-            {{ isSubmitting ? "수정 중..." : "수정" }}
+          <button type="button" class="cancel-btn" @click="handleCancel">
+            취소
           </button>
         </div>
       </form>

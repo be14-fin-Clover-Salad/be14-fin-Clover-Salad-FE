@@ -46,16 +46,59 @@
           </label>
         </div>
       </div>
+      <div class="field">
+        <label>부서</label>
+        <select v-model="filters.departmentId" :disabled="!isAdmin" readonly>
+          <option v-if="!isAdmin" :value="userDepartmentId" selected>
+            {{ userDepartmentName }}
+          </option>
+          <template v-else>
+            <option value="" selected>전체</option>
+            <option
+              v-for="dept in departments"
+              :key="dept.id"
+              :value="String(dept.id)"
+            >
+              {{ dept.name }}
+            </option>
+          </template>
+        </select>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { ref, onMounted, computed } from "vue";
+import { getDepartments } from "@/api/department.js";
+import { useAuthStore } from "@/stores/auth";
+
+const props = defineProps({
   filters: {
     type: Object,
     required: true,
   },
+});
+
+const departments = ref([]);
+const authStore = useAuthStore();
+
+const isAdmin = computed(() => authStore.userInfo?.levelLabel === "관리자");
+const userDepartmentId = computed(() =>
+  String(authStore.userInfo?.departmentId ?? "")
+);
+const userDepartmentName = computed(
+  () => authStore.userInfo?.departmentName ?? ""
+);
+
+onMounted(async () => {
+  if (isAdmin.value) {
+    const res = await getDepartments();
+    departments.value = res.data;
+    props.filters.departmentId = "";
+  } else {
+    props.filters.departmentId = userDepartmentId.value;
+  }
 });
 </script>
 
@@ -68,7 +111,7 @@ defineProps({
 }
 .row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-bottom: 10px;
 }

@@ -77,6 +77,7 @@ const columns = ref([
   { key: "consultAt", label: "상담 일자", width: "120px" },
   { key: "content", label: "상담 내용", width: "400px" },
   { key: "customerName", label: "고객명", width: "100px" },
+  { key: "employeeDisplayName", label: "담당자", width: "180px" },
   { key: "feedbackScore", label: "만족도", width: "80px" },
   { key: "etc", label: "비고", width: "250px" },
 ]);
@@ -91,13 +92,28 @@ function formatDateTime(dateString) {
 }
 
 const formattedConsults = computed(() => {
-  return consults.value.map((c, index) => ({
-    ...c,
-    consultNo: index + 1,
-    consultAt: formatDateTime(c.consultAt),
-    feedbackScore: c.feedbackScore ? c.feedbackScore.toFixed(1) : "-",
-    customerName: c.customerName || "-",
-  }));
+  return consults.value.map((c, index) => {
+    let displayName = "-";
+    if (c.employeeLevelLabel === "관리자") {
+      displayName = "관리자";
+    } else if (c.employeeName) {
+      if (c.departmentName) {
+        displayName = `${c.employeeName} ${c.employeeLevelLabel || ""}(${
+          c.departmentName
+        })`.trim();
+      } else {
+        displayName = `${c.employeeName} ${c.employeeLevelLabel || ""}`.trim();
+      }
+    }
+    return {
+      ...c,
+      consultNo: index + 1,
+      consultAt: formatDateTime(c.consultAt),
+      feedbackScore: c.feedbackScore ? c.feedbackScore.toFixed(1) : "-",
+      customerName: c.customerName || "-",
+      employeeDisplayName: displayName,
+    };
+  });
 });
 
 const fetchConsults = async () => {
