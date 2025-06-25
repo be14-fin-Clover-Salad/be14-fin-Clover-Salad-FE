@@ -217,4 +217,68 @@ function toggleExpand() {
     width: 100%;
   }
 }
+
+/* 전역 input 스타일 - 모든 자식 컴포넌트에 적용 */
+.search-filter-shell :deep(input),
+.search-filter-shell :deep(select) {
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  vertical-align: middle;
+  line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  transition: border-color 0.2s ease;
+}
+
+.search-filter-shell :deep(input:focus),
+.search-filter-shell :deep(select:focus) {
+  outline: none;
+  border-color: #d5eb97;
+  box-shadow: 0 0 0 2px rgba(213, 235, 151, 0.2);
+}
+
+.search-filter-shell :deep(input::placeholder) {
+  color: #999;
+  font-size: 13px;
+}
+
+.search-filter-shell :deep(select) {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+/* 반응형 input 스타일 */
+@media (max-width: 768px) {
+  .search-filter-shell :deep(input),
+  .search-filter-shell :deep(select) {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+  
+  .search-filter-shell :deep(input::placeholder) {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-filter-shell :deep(input),
+  .search-filter-shell :deep(select) {
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+  
+  .search-filter-shell :deep(input::placeholder) {
+    font-size: 11px;
+  }
+}
 </style>
