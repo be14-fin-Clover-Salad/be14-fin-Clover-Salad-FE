@@ -72,13 +72,39 @@
       isLoading.value = true
       const result = formRef.value.submitForm()
       console.log(result.form);
+
+      // 파일이 선택된 경우 먼저 S3에 업로드
+      if (result.form.selectedFile) {
+        console.log('파일 업로드 시작...');
+        const formData = new FormData();
+        formData.append('file', result.form.selectedFile);
+        formData.append('type', 'PRODUCT');
+
+        const uploadResponse = await api.post('/api/product/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+
+        console.log('파일 업로드 응답:', uploadResponse.data);
+        // 업로드된 파일 정보로 폼 데이터 업데이트
+        result.form.fileUploadId = uploadResponse.data.fileUploadId;
+        result.form.fileName = uploadResponse.data.fileName;
+        result.form.fileUrl = uploadResponse.data.fileUrl;
+
+        // selectedFile은 제거 (서버로 전송할 필요 없음)
+        delete result.form.selectedFile;
+        delete result.form.fileSize;
+        delete result.form.fileType;
+      }
+
       const response = await api.put(`/api/product/update/${productId.value}`, result.form)
       console.log(response)
+
+      isLoading.value = false;
+      await router.push(`/product/detail/${productId.value}`);
     } catch (error) {
       console.error('상품 수정 실패:', error);
-    } finally {
-      isLoading.value = false
-      await router.push(`/product/detail/${productId.value}`);
     }
   }
 
