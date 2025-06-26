@@ -81,14 +81,10 @@
                         : "")
                 }}
               </span>
-              <span class="consult-meta-pill"
-                ><b>상담일:</b>
-                {{
-                  form.consultAt
-                    ? form.consultAt.split("T")[0].replace(/-/g, ". ")
-                    : "-"
-                }}</span
-              >
+              <span class="consult-meta-pill">
+                <b>상담 일시:</b>
+                {{ formatDateTime(form.consultAt) }}
+              </span>
             </div>
           </div>
           <div class="form-group">
@@ -255,6 +251,19 @@ const handleDelete = async () => {
     isSubmitting.value = false;
   }
 };
+
+function formatDateTime(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const HH = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const weekNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const ddd = weekNames[date.getDay()];
+  return `${yyyy}-${MM}-${dd}(${ddd}) ${HH}:${mm}`;
+}
 </script>
 
 <style scoped>
@@ -262,12 +271,14 @@ const handleDelete = async () => {
   padding: 24px;
 }
 .form-container {
-  border-radius: 8px;
+  gap: 24px;
 }
 .section {
-  border-radius: 6px;
-  padding: 24px;
-  margin-bottom: 32px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .section-header {
   display: flex;
@@ -389,12 +400,6 @@ const handleDelete = async () => {
   display: flex;
   align-items: center;
 }
-.section-consult-content {
-  background: #fafafa;
-  border-radius: 12px;
-  padding: 24px 24px 32px 24px;
-  margin-bottom: 32px;
-}
 .consult-title-row {
   display: flex;
   align-items: center;
@@ -434,5 +439,8 @@ const handleDelete = async () => {
 .delete-btn:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+.consult-detail-view .section {
+  margin-bottom: 24px;
 }
 </style>

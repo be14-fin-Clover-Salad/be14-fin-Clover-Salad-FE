@@ -146,22 +146,16 @@ function formatCurrency(val) {
 .dashboard-wrapper {
   position: relative;
   z-index: 10;
-  transform: translate(-30px, -30px);
-  width: calc(100% + 60px);
-  height: calc(100% + 60px);
+  padding: 30px;
   background-color: #f7f8fa;
   overflow-x: hidden;
   overflow-y: auto;
 }
 
 .dashboard-container {
-  padding: 32px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  width: 1440px;
-  height: 900px;
-  margin: 0 auto;
 }
 
 /* 이하 기존 스타일 그대로 유지 */
