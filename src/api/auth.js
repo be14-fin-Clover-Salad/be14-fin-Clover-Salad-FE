@@ -3,8 +3,8 @@ import { useAuthStore } from "@/stores/auth";
 
 const BASE_URL =
   //  'http://localhost:5000'
-   'http://localhost:5001'
-  //  'https://api.saladerp.com'
+  //  'http://localhost:5001'
+   'https://api.saladerp.com'
 
 // 일반 요청용 인스턴스
 const api = axios.create({
