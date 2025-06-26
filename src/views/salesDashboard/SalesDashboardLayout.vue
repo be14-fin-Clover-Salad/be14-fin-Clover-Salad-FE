@@ -33,7 +33,7 @@
             <span>{{ conditionGraphTitle }}</span>
             <span class="total-amount">{{ formatCurrency(totalTeamAmount) }}</span>
           </div>
-          <v-chart :option="donutOption" autoresize style="height:320px;" />
+          <v-chart :option="donutOption" autoresize style="height:100%;" />
         </div>
       </div>
       <div class="dashboard-bottom">
@@ -146,22 +146,19 @@ function formatCurrency(val) {
 .dashboard-wrapper {
   position: relative;
   z-index: 10;
-  transform: translate(-30px, -30px);
-  width: calc(100% + 60px);
-  height: calc(100% + 60px);
+  padding: 30px;
   background-color: #f7f8fa;
   overflow-x: hidden;
   overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 .dashboard-container {
-  padding: 32px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  width: 1440px;
-  height: 900px;
-  margin: 0 auto;
+  height: 100%;
 }
 
 /* 이하 기존 스타일 그대로 유지 */
@@ -174,13 +171,12 @@ function formatCurrency(val) {
 
 .dashboard-top {
   gap: 24px;
-  flex: none;
-  height: 320px;
-  min-height: 0;
+  flex: 1;
+  min-height: 250px;
+  max-height: 300px;
 }
 .dashboard-bottom {
-  flex: none;
-  height: 500px;
+  flex: 1;
   min-height: 0;
   margin-top: 24px;
   gap: 24px;
@@ -193,8 +189,8 @@ function formatCurrency(val) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: none;
-  width: 475px;
+  flex: 1;
+  min-width: 0;
 }
 .year-sales {
   background: #fff;
@@ -204,8 +200,8 @@ function formatCurrency(val) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: none;
-  width: 380px;
+  flex: 0 0 380px;
+  min-width: 0;
 }
 .dashboard-middle {
   display: flex;
@@ -216,21 +212,25 @@ function formatCurrency(val) {
   border-radius: 0;
   box-shadow: none;
   justify-content: space-between;
+  flex: 1;
 }
 .month-and-quarter-sales {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 24px;
-  min-height: 140px;
+  flex: 1;
+  min-height: 0;
 }
 .filter-sales {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  flex-shrink: 0;
 }
 .condition-graph {
   margin-left: 0;
+  flex: 1;
 }
 .sales-progress, .sales-by-teams {
   background: #fff;
@@ -240,8 +240,8 @@ function formatCurrency(val) {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex: none;
-  width: 676px;
+  flex: 1;
+  min-width: 0;
 }
 .filter-options-row {
   display: flex;
