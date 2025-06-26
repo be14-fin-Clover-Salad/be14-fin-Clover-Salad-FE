@@ -13,6 +13,9 @@ export const useTabStore = defineStore("tab", {
     removeTab(path) {
       this.tabs = this.tabs.filter((t) => t.path !== path);
     },
+    removeAllTabs() {
+      this.tabs = []
+    },
     // 탭이 이미 존재하는지 확인하는 getter
     hasTab(path) {
       return this.tabs.find((t) => t.path === path) !== undefined;
@@ -21,5 +24,6 @@ export const useTabStore = defineStore("tab", {
     switchToTab(path) {
       return this.tabs.find((t) => t.path === path);
     },
+   
   },
 });
