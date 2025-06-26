@@ -22,7 +22,9 @@
       :rows="rows"
       :columns="columns"
       :isLoading="isLoading"
-      @row-dblclick="handleRowClick"
+      :selectedCode="selectedRowCode"
+      @row-click="handleRowClick"
+      @row-dblclick="handleRowDblClick"
     />
   </section>
 </template>
@@ -52,6 +54,7 @@
   const isLoading = ref(false)
   const productId = ref(null)
   const isExpanded = ref(false)
+  const selectedRowCode = ref(null)
 
   async function handleSearch(data) {
     try {
@@ -81,6 +84,10 @@
   }
 
   function handleRowClick(product) {
+    selectedRowCode.value  = product.id
+  }
+
+  function handleRowDblClick(product) {
     productId.value = product.id;
     if (productId.value) {
       router.push(`/product/detail/${productId.value}`);

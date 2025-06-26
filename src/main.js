@@ -10,6 +10,9 @@ import VueECharts from 'vue-echarts'
 import * as echarts from 'echarts'
 
 const app = createApp(App)
+const pinia = createPinia();
+app.use(pinia);
+
 app.component('v-chart', VueECharts)
 app.provide('echarts', echarts)
 app.use(createPinia({

@@ -66,16 +66,23 @@ const columns = ref([
   { key: "consultAt", label: "상담 일자", width: "180px" },
   { key: "content", label: "상담 내용", width: "300px" },
   { key: "customerName", label: "고객명", width: "130px" },
-  { key: "feedbackScore", label: "피드백 점수", width: "120px" },
+  { key: "feedbackScore", label: "만족도", width: "120px" },
   { key: "etc", label: "비고", width: "200px" },
 ]);
+
+function formatDateTime(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${MM}-${dd}`;
+}
 
 const formattedConsults = computed(() => {
   return consults.value.map((c) => ({
     ...c,
-    consultAt: c.consultAt
-      ? new Date(c.consultAt).toLocaleString("ko-KR")
-      : "-",
+    consultAt: formatDateTime(c.consultAt),
     feedbackScore: c.feedbackScore ? c.feedbackScore.toFixed(1) : "-",
     customerName: c.customerName || "-",
   }));

@@ -96,6 +96,7 @@ const login = async () => {
     }
 
     auth.setAccessToken(token);
+    localStorage.setItem('accessToken', token);
     auth.setUserInfo(res.data);
 
     try {
