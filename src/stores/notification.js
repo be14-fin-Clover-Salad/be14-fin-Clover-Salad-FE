@@ -321,7 +321,9 @@ export const useNotificationStore = defineStore('notification', () => {
     deleteNotifications,
     setupSse,
     startConnectionMonitoring,
-    stopConnectionMonitoring
+    stopConnectionMonitoring,
+    cleanupConnection,
+    connectSse
   }
 })
 
