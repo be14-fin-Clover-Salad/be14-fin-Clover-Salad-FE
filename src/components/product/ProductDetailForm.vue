@@ -18,23 +18,23 @@
       <div class="form-grid">
         <div class="form-item">
           <label class="form-label">상품 코드</label>
-          <input type="text" v-model="form.productCode" class="form-input" :readonly="!isAdmin"/>
+          <input type="text" v-model="form.productCode" class="form-input" readonly/>
         </div>
         <div class="form-item">
           <label class="form-label">상품명</label>
-          <input type="text" v-model="form.name" class="form-input" :readonly="!isAdmin"/>
+          <input type="text" v-model="form.name" class="form-input" readonly/>
         </div>
         <div class="form-item">
           <label class="form-label">제조사</label>
-          <input type="text" v-model="form.company" class="form-input" :readonly="!isAdmin"/>
+          <input type="text" v-model="form.company" class="form-input" readonly/>
         </div>
         <div class="form-item">
           <label class="form-label">카테고리</label>
-          <input type="text" v-model="form.category" class="form-input" :readonly="!isAdmin"/>
+          <input type="text" v-model="form.category" class="form-input" readonly/>
         </div>
         <div class="form-item">
           <label class="form-label">모델명</label>
-          <input type="text" v-model="form.serialNumber" class="form-input" :readonly="!isAdmin"/>
+          <input type="text" v-model="form.serialNumber" class="form-input" readonly/>
         </div>
       </div>
     </div>
@@ -48,13 +48,19 @@
         <div class="form-item">
           <label class="form-label">상품 원가</label>
           <div class="input-with-unit">
-            <input type="number" v-model="form.originCost" class="form-input" :readonly="!isAdmin"/>
+            <input
+              type="text"
+              v-model="formattedOriginCost"
+              class="form-input"
+              placeholder="0"
+              readonly
+            />
             <span class="unit">원</span>
           </div>
         </div>
         <div class="form-item">
           <label class="form-label">기간</label>
-          <select v-model="type" class="form-input" :disabled="!isAdmin">
+          <select v-model="type" class="form-input">
             <option value="1">1년</option>
             <option value="3">3년</option>
             <option value="5">5년</option>
@@ -63,7 +69,13 @@
         <div class="form-item">
           <label class="form-label">렌탈료</label>
           <div class="input-with-unit">
-            <input type="number" v-model="calcRentalCost" class="form-input" readonly/>
+            <input
+              type="text"
+              v-model="formattedCalcRentalCost"
+              class="form-input"
+              placeholder="0"
+              readonly
+            />
             <span class="unit">원</span>
           </div>
         </div>
@@ -77,23 +89,19 @@
       </div>
       <div class="form-item full-width">
         <label class="form-label">상품 설명</label>
-        <textarea rows="4" v-model="form.description" class="form-textarea" :readonly="!isAdmin" />
+        <textarea rows="4" v-model="form.description" class="form-textarea" readonly/>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 const props = defineProps({
   form: {
     type: Object,
     required: true
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
   }
 })
 
@@ -115,6 +123,37 @@ watch(() => type.value, (newType) => {
       break;
   }
 }, { immediate: true })
+
+// 숫자 포맷팅 함수
+const formatNumber = (value) => {
+  if (!value) return '';
+  // 숫자가 아닌 문자 제거
+  const numericValue = value.toString().replace(/[^\d]/g, '');
+  // 세자리마다 쉼표 추가
+  return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// 숫자 언포맷팅 함수
+const unformatNumber = (value) => {
+  if (!value) return 0;
+  // 쉼표 제거 후 숫자로 변환
+  return parseInt(value.toString().replace(/,/g, '')) || 0;
+};
+
+// 포맷된 가격 표시용 computed
+const formattedOriginCost = computed({
+  get: () => formatNumber(props.form.originCost),
+  set: (value) => {
+    props.form.originCost = unformatNumber(value);
+  }
+});
+
+const formattedCalcRentalCost = computed({
+  get: () => formatNumber(calcRentalCost.value),
+  set: (value) => {
+    calcRentalCost.value = unformatNumber(value);
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -188,14 +227,7 @@ watch(() => type.value, (newType) => {
   color: #495057;
 
   &:read-only {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    cursor: not-allowed;
-  }
-
-  &:not(:read-only) {
-    background-color: #fff;
-    color: #495057;
+    cursor: default;
   }
 }
 
