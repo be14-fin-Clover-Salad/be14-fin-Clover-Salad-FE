@@ -290,7 +290,6 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
 
     &.deleted {
       opacity: 0.5;
-      pointer-events: none;
     }
   }
 }
