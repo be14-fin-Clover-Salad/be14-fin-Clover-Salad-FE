@@ -4,9 +4,9 @@
       <div class="modal-header">
         <h2 class="title">{{ contract.customerName }}–렌탈 계약</h2>
         <div class="button-group">
-          <button class="btn">인쇄</button>
+          <button class="btn" v-if="false">인쇄</button>
           <button class="btn" @click="showApprovalModal = true">결재 요청</button>
-          <button class="btn primary">등록</button>
+          <button class="btn" v-if="false" primary>등록</button>
         </div>
       </div>
 
@@ -22,7 +22,7 @@
         <div class="row">
           <div class="field">
             <label>계약서 *</label>
-            <div class="value">{{ contract.renameFile }}</div>
+            <div class="value">{{ displayFileName }}</div>
           </div>
           <div class="field">
             <label>계약 번호</label>
@@ -53,7 +53,7 @@
         <div class="file-info-panel">
           <div>
             <label>계약서 *</label>
-            <div class="value">{{ contract.renameFile || '-' }}</div>
+            <div class="value">{{ displayFileName || '-' }}</div>
             <small>계약 관리 등록시 해당 계약의 계약서 PDF가 존재해야 합니다</small>
           </div>
           <div>
@@ -144,10 +144,10 @@
         </table>
       </div>
 
-
       <!-- 결재 요청 모달 -->
       <ContractApprovalRequestModal v-if="showApprovalModal" :isOpen="showApprovalModal" :contractId="props.contractId"
-        :contractCode="props.contractCode" :contractState="contractState" :approvalState="currentApprovalState" @close="showApprovalModal = false" />
+        :contractCode="props.contractCode" :contractState="contractState" :approvalState="currentApprovalState"
+        @close="showApprovalModal = false" />
     </div>
   </div>
 </template>
@@ -170,47 +170,33 @@ const tab = ref('info')
 const showApprovalModal = ref(false)
 const showPreview = ref(false)
 
+// UUID 접두 제거 후 파일명 표시
+const displayFileName = computed(() => {
+  const name = contract.value.renameFile || ''
+  const idx = name.indexOf('_')
+  return idx > -1 ? name.substring(idx + 1) : name
+})
+
 // 현재 결재 상태 계산 (가장 최근 결재의 상태)
 const currentApprovalState = computed(() => {
-  if (!contract.value.approvalList || contract.value.approvalList.length === 0) {
-    return '결재전'  // 결재 내역이 없으면 '결재전' 반환
-  }
-  // 가장 최근 결재의 상태 반환
+  if (!contract.value.approvalList || contract.value.approvalList.length === 0) return '결재전'
   return contract.value.approvalList[contract.value.approvalList.length - 1]?.state || '결재전'
 })
 
-// 계약 상태 추론 (API 응답에서 상태를 찾거나 기본값 사용)
+// 계약 상태 추론
 const contractState = computed(() => {
-  // API 응답에서 가능한 상태 필드들을 확인
-  const possibleStatusFields = ['status', 'contractStatus', 'state', 'contractState']
-  
-  for (const field of possibleStatusFields) {
-    if (contract.value[field]) {
-      return contract.value[field]
-    }
-  }
-  
-  // 상태 필드가 없으면 결재 내역을 기반으로 추론
-  if (!contract.value.approvalList || contract.value.approvalList.length === 0) {
-    return '결재전'
-  }
-  
-  const latestApproval = contract.value.approvalList[contract.value.approvalList.length - 1]
-  if (latestApproval?.state === '반려') {
-    return '반려'
-  } else if (latestApproval?.state === '승인') {
-    return '계약중'
-  } else if (latestApproval?.state === '요청') {
-    return '결재중'
-  }
-  
+  const possible = ['status', 'contractStatus', 'state', 'contractState']
+  for (const f of possible) if (contract.value[f]) return contract.value[f]
+  if (!contract.value.approvalList || contract.value.approvalList.length === 0) return '결재전'
+  const latest = contract.value.approvalList[contract.value.approvalList.length - 1]
+  if (latest?.state === '반려') return '반려'
+  if (latest?.state === '승인') return '계약중'
+  if (latest?.state === '요청') return '결재중'
   return '결재전'
 })
 
 // S3 BASE URL
 const S3_BASE = 'https://saladerp-bucket.s3.ap-northeast-2.amazonaws.com/'
-
-// 썸네일/파일 URL 조합 (키만 있으면 S3 BASE를 붙임)
 const thumbnailSrc = computed(() => {
   const path = contract.value.thumbnailUrl
   return path ? (path.startsWith('http') ? path : S3_BASE + path) : ''
@@ -223,11 +209,9 @@ const fileSrc = computed(() => {
 function formatAmount(val) {
   return val?.toLocaleString() || '0'
 }
-
 function formatDateTime(dateStr) {
   if (!dateStr) return null
-  const date = new Date(dateStr)
-  return date.toLocaleString()
+  return new Date(dateStr).toLocaleString()
 }
 
 onMounted(async () => {
@@ -382,7 +366,6 @@ onMounted(async () => {
   background: #c62828;
 }
 
-/* 팝업 이미지 모달 */
 .img-modal {
   position: fixed;
   top: 0;
@@ -405,7 +388,7 @@ onMounted(async () => {
   border: 4px solid #b71c1c;
 }
 
-@media (max-width: 900px) {
+@media (max-width:900px) {
   .file-detail-row {
     flex-direction: column;
     gap: 16px;
