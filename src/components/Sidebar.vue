@@ -1,6 +1,7 @@
 <template>
   <aside class="sidebar">
     <div class="sidebar-content">
+      <!-- 검색 -->
       <div class="search-wrap">
         <div class="search-input-container">
           <input
@@ -13,9 +14,8 @@
           <span class="search-icon">
             <img src="/public/search.svg" alt="search" />
           </span>
-          
-          <!-- 검색 결과 드롭다운 -->
-          <div v-if="searchQuery && filteredMenuList.length > 0" class="search-dropdown">
+
+          <div v-if="searchQuery && filteredMenuList.length" class="search-dropdown">
             <ul class="search-results-list">
               <li
                 v-for="result in filteredMenuList"
@@ -30,8 +30,8 @@
           </div>
         </div>
       </div>
-      
-      <!-- 일반 메뉴 (항상 표시) -->
+
+      <!-- 메뉴 -->
       <nav>
         <ul>
           <li v-for="group in menuList" :key="group.group">
@@ -43,8 +43,9 @@
             </div>
             <ul class="submenu" v-show="openMenu === group.group">
               <li
-                v-for="item in group.items"
+                v-for="item in visibleItems(group)"
                 :key="item.path"
+                class="submenu-item"
                 @click="navigate(item.label, item.path)"
               >
                 {{ item.label }}
@@ -54,7 +55,7 @@
         </ul>
       </nav>
     </div>
-    
+
     <!-- 버전 정보 -->
     <div class="version-info">
       <span class="version-text">v1.0.0</span>
@@ -63,76 +64,98 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import { menuList } from "@/config/menuConfig";
-import { useTabStore } from "@/stores/tabStore";
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { menuList } from '@/config/menuConfig'
+import { useTabStore } from '@/stores/tabStore'
+import { useAuthStore } from '@/stores/auth'
 
-const openMenu = ref(null);
-const searchQuery = ref("");
-const router = useRouter();
-const tabStore = useTabStore();
+// reactive state
+const openMenu    = ref(null)
+const searchQuery = ref('')
+const router      = useRouter()
+const tabStore    = useTabStore()
+const authStore   = useAuthStore()
 
-const toggle = (menu) => {
-  openMenu.value = openMenu.value === menu ? null : menu;
-};
+// JWT payload parsing util
+function parseJwt(token) {
+  if (!token) return {}
+  const base64Url = token.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/')
+  if (!base64Url) return {}
+  try {
+    const json = decodeURIComponent(
+      atob(base64Url)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(json)
+  } catch {
+    return {}
+  }
+}
+
+// 사용자 클레임
+const claims = computed(() => parseJwt(authStore.accessToken))
+
+// ADMIN 여부 판단
+const isAdmin = computed(() => {
+  const auth = claims.value.auth || claims.value.roles || ''
+  if (typeof auth === 'string') {
+    return auth.includes('ADMIN')
+  }
+  if (Array.isArray(auth)) {
+    return auth.includes('ADMIN')
+  }
+  return false
+})
+
+// “로그 관리” 항목을 제외한 visibleItems 함수
+function visibleItems(group) {
+  return group.items.filter(item => {
+    // “관리” 그룹의 “로그 관리”는 비관리자에겐 제외
+    if (group.group === '관리' && item.label === '로그 관리' && !isAdmin.value) {
+      return false
+    }
+    return true
+  })
+}
+
+// 검색 결과 계산 (로그 관리 항목 제외)
+const filteredMenuList = computed(() => {
+  if (!searchQuery.value.trim()) return []
+  const q = searchQuery.value.toLowerCase()
+  const res = []
+  menuList.forEach(group => {
+    visibleItems(group).forEach(item => {
+      if (
+        group.group.toLowerCase().includes(q) ||
+        item.label.toLowerCase().includes(q)
+      ) {
+        res.push({ group: group.group, item })
+      }
+    })
+  })
+  return res
+})
+
+const toggle = menu => {
+  openMenu.value = openMenu.value === menu ? null : menu
+}
 
 const navigate = (label, path) => {
-  // 해당 메뉴가 속한 그룹을 찾아서 사이드바에서 열기
-  const targetGroup = menuList.find(group => 
-    group.items.some(item => item.path === path)
-  );
-  
-  if (targetGroup) {
-    openMenu.value = targetGroup.group;
-  }
-  
   if (tabStore.hasTab(path)) {
-    router.push(path);
+    router.push(path)
   } else {
-    tabStore.addTab({ title: label, path });
-    router.push(path);
+    tabStore.addTab({ title: label, path })
+    router.push(path)
   }
-  // 검색 후 검색창 초기화
-  searchQuery.value = "";
-};
+  searchQuery.value = ''
+}
 
 const handleSearch = () => {
-  // 검색 로직은 computed에서 처리
-};
-
-const filteredMenuList = computed(() => {
-  if (!searchQuery.value.trim()) return [];
-  
-  const query = searchQuery.value.toLowerCase();
-  const results = [];
-  
-  menuList.forEach(group => {
-    // 그룹명에서 검색
-    if (group.group.toLowerCase().includes(query)) {
-      group.items.forEach(item => {
-        results.push({
-          group: group.group,
-          item: item
-        });
-      });
-    } else {
-      // 메뉴 아이템에서 검색
-      const matchingItems = group.items.filter(item => 
-        item.label.toLowerCase().includes(query)
-      );
-      
-      matchingItems.forEach(item => {
-        results.push({
-          group: group.group,
-          item: item
-        });
-      });
-    }
-  });
-  
-  return results;
-});
+  // computed(filteredMenuList)가 자동 갱신됩니다
+}
 </script>
 
 <style scoped>
@@ -281,7 +304,7 @@ ul {
   user-select: none;
 }
 
-.submenu li {
+.submenu-item {
   font-size: 14px;
   font-weight: 400;
   padding: 8px 12px;
@@ -290,7 +313,7 @@ ul {
   transition: background-color 0.2s;
 }
 
-.submenu li:hover {
+.submenu-item:hover {
   background-color: #f0f6ea;
 }
 
