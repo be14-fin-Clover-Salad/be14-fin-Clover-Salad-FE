@@ -133,6 +133,9 @@ export const menuList = [
         label: "로그 관리",
         path: "/admin/log",
         component: () => import("@/views/log/AccessLogView.vue"),
+         meta: {
+          roles: ["ADMIN"] 
+        }
       },
     ],
   },
