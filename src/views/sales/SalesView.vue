@@ -241,10 +241,7 @@ const showRegisterModal = ref(false)
 
 // 금액 포맷팅 함수
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW'
-  }).format(amount)
+  return amount.toLocaleString('ko-KR')
 }
 </script>
 

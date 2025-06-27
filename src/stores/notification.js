@@ -288,12 +288,11 @@ export const useNotificationStore = defineStore('notification', () => {
     isConnecting = false
   }
 
-  // 연결 상태 체크 함수
   const checkConnectionHealth = () => {
     if (eventSource?.readyState == EventSource.CLOSED) {
         console.warn('[SSE] 연결이 끊어진 것을 감지, 재연결 시도')
         cleanupConnection()
-        setupSse()
+        connectSse()
     }
   }
 
@@ -335,7 +334,7 @@ if (typeof window !== 'undefined') {
       const store = useNotificationStore()
       store.stopConnectionMonitoring()
       store.cleanupConnection()
-      store.setupSse()
+      store.connectSse()
     } else {
       console.debug('[SSE] 탭 비활성화됨 - 연결 정리')
       useNotificationStore().stopConnectionMonitoring()
