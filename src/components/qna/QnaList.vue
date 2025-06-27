@@ -29,13 +29,13 @@
             v-for="(qna, index) in paginatedQnas"
             :key="qna.id"
             class="qna-row"
-            :class="{ deleted: isAdmin && qna.is_deleted }"
+            :class="{ deleted: isAdmin && qna.isDeleted }"
             @click="goToDetail(qna.id)"
           >
             <td class="qna-index">{{ calcQnaNumber(index) }}</td>
             <td class="qna-title">
-              <template v-if="isAdmin && qna.is_deleted">
-                <del v-html="formatTitle(qna.title)" />
+              <template v-if="isAdmin && qna.isDeleted">
+                <del class="deleted-title" v-html="formatTitle(qna.title)" />
               </template>
               <template v-else>
                 <span v-html="formatTitle(qna.title)" />
@@ -88,7 +88,6 @@
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, computed, watch } from 'vue'
@@ -240,7 +239,6 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0;
 
   &:hover {
     background-color: #94b933;
@@ -292,8 +290,14 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
 
     &.deleted {
       opacity: 0.5;
+      pointer-events: none;
     }
   }
+}
+
+.deleted-title {
+  color: #999;
+  text-decoration: line-through;
 }
 
 .board-table .qna-index {
@@ -409,7 +413,6 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
     color: #adb5bd;
     cursor: default;
   }
-  
 }
 
 .bottom-actions {
