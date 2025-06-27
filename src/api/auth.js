@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 
-const BASE_URL =
+const BASE_URL = 
   //  'http://localhost:5000'
   //  'http://localhost:5001'
    'https://api.saladerp.com'
