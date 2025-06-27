@@ -41,7 +41,7 @@
         <tbody v-else>
           <tr>
             <td class="notice-index"></td>
-            <td class="notice-title empty-message" colspan="3">
+            <td class="notice-title empty-message" colspan="4">
               등록된 공지사항이 없습니다.
             </td>
           </tr>
@@ -50,7 +50,7 @@
     </div>
 
     <div class="bottom-actions">
-      <div class="pagination" v-if="notices.length">
+      <div class="pagination" v-if="totalPages > 0">
         <button 
           @click="changePage(currentPage - 10)"
           :disabled="currentPage < 10"
@@ -120,7 +120,8 @@ const mixedNotices = computed(() =>
 );
 const totalPages = computed(() => {
   const remaining = mixedNotices.value.length - Math.max(0, 15 - pinnedAdmins.value.length);
-  return Math.ceil(remaining / pageSize) + 1;
+  const calculated = Math.ceil(remaining / pageSize) + 1;
+  return Math.max(1, calculated);
 });
 const pagedNotices = computed(() => {
   if (currentPage.value === 0) {
@@ -207,7 +208,7 @@ onMounted(async () => {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
-  
+
   th, td {
     padding: 15px;
     text-align: left;
@@ -361,7 +362,7 @@ strong {
   &:disabled {
     background-color: transparent;
     color: #adb5bd;
-    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 
@@ -387,13 +388,11 @@ strong {
 }
 
 .empty-message {
-  text-align: center;
-  padding: 40px 15px;
+  text-align: center !important;
   color: #6c757d;
   font-size: 14px;
-  display: table-cell;     
-  vertical-align: middle;   
-  height: 100px;
-}             
+  height: auto;
+  min-height: 100px;
+  vertical-align: middle;
+}
 </style>
-

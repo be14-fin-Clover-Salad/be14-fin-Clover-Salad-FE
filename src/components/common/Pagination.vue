@@ -84,6 +84,8 @@ button {
   background-color: white;
   cursor: pointer;
   min-width: 32px;
+  color: #333;
+  transition: all 0.2s ease;
 }
 
 button.active {
@@ -92,7 +94,7 @@ button.active {
 }
 
 button:disabled {
-  color: #ccc;
-  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>
