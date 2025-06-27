@@ -5,21 +5,22 @@ import { useAuthStore } from '@/stores/auth'
 
 const SSE_BASE_URL = 
   //  'http://localhost:5000'
-  //  'http://localhost:5001'
-   'https://api.saladerp.com'
+   'http://localhost:5001'
+  //  'https://api.saladerp.com'
 
 let eventSource = null
 let reconnectTimeout = null
 let reconnectAttempts = 0
 const MAX_RECONNECT_ATTEMPTS = 5
-let connectionCheckInterval = null  // 연결 상태 체크 인터벌
-let isConnecting = false  // 연결 중인지 확인하는 플래그
+let connectionCheckInterval = null
+let isConnecting = false
 
 export const useNotificationStore = defineStore('notification', () => {
   const unreadCount = ref(0)
   const notifications = ref([])
+  const showReconnectError = ref(false)
 
-  async function fetchUnreadCount() {
+ const fetchUnreadCount = async() => {
     try {
       const auth = useAuthStore()
       const response = await api.get('/notification/unread-latest', {
@@ -31,7 +32,7 @@ export const useNotificationStore = defineStore('notification', () => {
     } catch (error) {}
   }
 
-  async function fetchNotifications() {
+  const fetchNotifications = async () =>  {
     try {
       const auth = useAuthStore()
       const response = await api.get('/notification/unread-latest', {
@@ -47,7 +48,7 @@ export const useNotificationStore = defineStore('notification', () => {
     } catch (error) {}
   }
 
-  async function markAsRead(notificationId) {
+  const markAsRead = async (notificationId)  => {
     try {
       const auth = useAuthStore()
       await api.patch(`/notification/${notificationId}/read`, null, {
@@ -63,7 +64,7 @@ export const useNotificationStore = defineStore('notification', () => {
     } catch (error) {}
   }
 
-  async function markAllAsRead() {
+  const markAllAsRead = async () => {
     try {
       const auth = useAuthStore()
       const unreadNotifications = notifications.value.filter(n => !n.read)
@@ -105,6 +106,17 @@ export const useNotificationStore = defineStore('notification', () => {
 
   const connectSse = async () => {
     const auth = useAuthStore()
+
+    if (isConnecting || (eventSource && eventSource.readyState !== EventSource.CLOSED)) {
+      return
+    }
+
+    cleanupConnection()
+    if (!auth.accessToken) return
+
+    isConnecting = true
+    showReconnectError.value = false
+
     try {
       const response = await api.get('/notification/subscribe-token', {
         headers: { 'Authorization': `Bearer ${auth.accessToken}` }
@@ -119,153 +131,147 @@ export const useNotificationStore = defineStore('notification', () => {
           unreadCount.value++
         }
       })
+
+      eventSource.addEventListener('hearbeat', (event) => {
+        console.debug('[SSE] hearbeat 수신: ', e.data)
+      })
+
       eventSource.onopen = () => {
         console.debug('[SSE] 연결 성공')
         reconnectAttempts = 0
         isConnecting = false
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout)
-          reconnectTimeout = null
-        }
-        // 연결 성공 시 모니터링 시작
+        showReconnectError.value = false
         startConnectionMonitoring()
       }
-      eventSource.onerror = async (event) => {
-        console.warn('[SSE] 오류 발생, 연결 종료 및 재시도 준비 중...', event)
-        cleanupConnection()
 
+      eventSource.onerror = () => {
+        console.warn('[SSE] 오류 발생, 연결 종료 및 재시도 준비 중...')
+        cleanupConnection()
         reconnectAttempts++
-        if (!reconnectTimeout && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 30000) // 지수 백오프
-          console.debug(`[SSE] ${delay}ms 후 재연결 시도 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
+        isConnecting = false
+
+        if(reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          const delay = Math.min(5000 * 2 ** reconnectAttempts, 30000)
           reconnectTimeout = setTimeout(() => {
             reconnectTimeout = null
-            setupSse()
+            connectSse()
           }, delay)
-        } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-          console.warn('[SSE] 최대 재연결 시도 횟수 초과')
-          // 최대 시도 횟수 초과 시에도 30초 후 다시 시도
-          reconnectTimeout = setTimeout(() => {
-            reconnectAttempts = 0  // 카운터 리셋
-            reconnectTimeout = null
-            setupSse()
+        } else {
+            showReconnectError.value = true
+            reconnectTimeout = setTimeout(() => {
+              reconnectAttempts = 0
+              showReconnectError.value = false
+              connectSse()
           }, 30000)
         }
-      }
+     }
     } catch (err) {
       console.warn('[SSE] 토큰 발급 실패:', err)
-      const auth = useAuthStore()
-      try {
-        await auth.refreshToken()
-        await setupSse()
-      } catch (refreshErr) {
-        auth.clearToken()
-        window.location.href = '/login'
-      }
+      reconnectAttempts++
+      isConnecting = false
     }
   }
 
-  const setupSse = async () => {
-    if (typeof window === 'undefined') return
+  // const setupSse = async () => {
+  //   if (typeof window === 'undefined') return
   
-    const auth = useAuthStore()
+  //   const auth = useAuthStore()
   
-    // 이미 연결 중이거나 연결되어 있으면 중복 방지
-    if (isConnecting || (eventSource && eventSource.readyState !== EventSource.CLOSED)) {
-      console.debug('[SSE] 이미 연결 중이거나 연결되어 있음, 중복 연결 방지')
-      return
-    }
+  //   // 이미 연결 중이거나 연결되어 있으면 중복 방지
+  //   if (isConnecting || (eventSource && eventSource.readyState !== EventSource.CLOSED)) {
+  //     console.debug('[SSE] 이미 연결 중이거나 연결되어 있음, 중복 연결 방지')
+  //     return
+  //   }
   
-    // 기존 연결 정리
-    cleanupConnection()
+  //   // 기존 연결 정리
+  //   cleanupConnection()
   
-    if (!auth.accessToken) {
-      console.debug('[SSE] 액세스 토큰 없음, 연결 시도 보류')
-      return
-    }
+  //   if (!auth.accessToken) {
+  //     console.debug('[SSE] 액세스 토큰 없음, 연결 시도 보류')
+  //     return
+  //   }
   
-    // 재연결 시도 횟수 제한
-    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-      console.warn('[SSE] 최대 재연결 시도 횟수 초과, 연결 중단')
-      return
-    }
+  //   // 재연결 시도 횟수 제한
+  //   if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+  //     console.warn('[SSE] 최대 재연결 시도 횟수 초과, 연결 중단')
+  //     return
+  //   }
   
-    isConnecting = true
+  //   isConnecting = true
   
-    let token
-    try {
-      const response = await api.get('/notification/subscribe-token', {
-        headers: {
-          'Authorization': `Bearer ${auth.accessToken}`
-        }
-      })
-      token = response.data
-    } catch (err) {
-      console.warn('[SSE] 토큰 발급 실패, SSE 연결 시도 보류:', err)
-      reconnectAttempts++
-      isConnecting = false
-      return
-    }
+  //   let token
+  //   try {
+  //     const response = await api.get('/notification/subscribe-token', {
+  //       headers: {
+  //         'Authorization': `Bearer ${auth.accessToken}`
+  //       }
+  //     })
+  //     token = response.data
+  //   } catch (err) {
+  //     console.warn('[SSE] 토큰 발급 실패, SSE 연결 시도 보류:', err)
+  //     reconnectAttempts++
+  //     isConnecting = false
+  //     return
+  //   }
   
-    try {
-      // nginx 설정이 업데이트되었으므로 원래 URL 사용
-      const sseUrl = `${SSE_BASE_URL}/notification/subscribe?token=${token}`
-      eventSource = new EventSource(sseUrl)
+  //   try {
+  //     // nginx 설정이 업데이트되었으므로 원래 URL 사용
+  //     const sseUrl = `${SSE_BASE_URL}/notification/subscribe?token=${token}`
+  //     eventSource = new EventSource(sseUrl)
       
-      console.debug('[SSE] EventSource 생성 완료:', sseUrl)
+  //     console.debug('[SSE] EventSource 생성 완료:', sseUrl)
   
-      eventSource.addEventListener('notification', (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          const exists = notifications.value.some(n => n.id === data.id)
-          if (!exists) {
-            notifications.value.unshift({ ...data, read: false })
-            unreadCount.value++
-            console.debug('[SSE] 새 알림 수신:', data)
-          }
-        } catch (parseError) {
-          console.warn('[SSE] 알림 데이터 파싱 오류:', parseError)
-        }
-      })
+  //     eventSource.addEventListener('notification', (event) => {
+  //       try {
+  //         const data = JSON.parse(event.data)
+  //         const exists = notifications.value.some(n => n.id === data.id)
+  //         if (!exists) {
+  //           notifications.value.unshift({ ...data, read: false })
+  //           unreadCount.value++
+  //           console.debug('[SSE] 새 알림 수신:', data)
+  //         }
+  //       } catch (parseError) {
+  //         console.warn('[SSE] 알림 데이터 파싱 오류:', parseError)
+  //       }
+  //     })
   
-      eventSource.onopen = () => {
-        console.debug('[SSE] 연결 성공')
-        reconnectAttempts = 0
-        isConnecting = false
-        // 연결 성공 시 모니터링 시작
-        startConnectionMonitoring()
-      }
+  //     eventSource.onopen = () => {
+  //       console.debug('[SSE] 연결 성공')
+  //       reconnectAttempts = 0
+  //       isConnecting = false
+  //       // 연결 성공 시 모니터링 시작
+  //       startConnectionMonitoring()
+  //     }
   
-      eventSource.onerror = async (event) => {
-        console.warn('[SSE] 오류 발생, 연결 종료 및 재시도 준비 중...', event)
-        cleanupConnection()
+  //     eventSource.onerror = async (event) => {
+  //       console.warn('[SSE] 오류 발생, 연결 종료 및 재시도 준비 중...', event)
+  //       cleanupConnection()
   
-        reconnectAttempts++
-        if (!reconnectTimeout && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 30000) // 지수 백오프
-          console.debug(`[SSE] ${delay}ms 후 재연결 시도 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
-          reconnectTimeout = setTimeout(() => {
-            reconnectTimeout = null
-            setupSse()
-          }, delay)
-        } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-          console.warn('[SSE] 최대 재연결 시도 횟수 초과')
-          // 최대 시도 횟수 초과 시에도 30초 후 다시 시도
-          reconnectTimeout = setTimeout(() => {
-            reconnectAttempts = 0  // 카운터 리셋
-            reconnectTimeout = null
-            setupSse()
-          }, 30000)
-        }
-      }
-    } catch (error) {
-      console.error('[SSE] EventSource 생성 실패:', error)
-      reconnectAttempts++
-      isConnecting = false
-    }
-  }
+  //       reconnectAttempts++
+  //       if (!reconnectTimeout && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+  //         const delay = Math.min(5000 * Math.pow(2, reconnectAttempts - 1), 30000) // 지수 백오프
+  //         console.debug(`[SSE] ${delay}ms 후 재연결 시도 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
+  //         reconnectTimeout = setTimeout(() => {
+  //           reconnectTimeout = null
+  //           setupSse()
+  //         }, delay)
+  //       } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+  //         console.warn('[SSE] 최대 재연결 시도 횟수 초과')
+  //         // 최대 시도 횟수 초과 시에도 30초 후 다시 시도
+  //         reconnectTimeout = setTimeout(() => {
+  //           reconnectAttempts = 0  // 카운터 리셋
+  //           reconnectTimeout = null
+  //           setupSse()
+  //         }, 30000)
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('[SSE] EventSource 생성 실패:', error)
+  //     reconnectAttempts++
+  //     isConnecting = false
+  //   }
+  // }
 
-  // 기존 연결 정리 함수
   const cleanupConnection = () => {
     if (eventSource) {
       eventSource.close()
@@ -284,26 +290,21 @@ export const useNotificationStore = defineStore('notification', () => {
 
   // 연결 상태 체크 함수
   const checkConnectionHealth = () => {
-    if (eventSource) {
-      console.debug('[SSE] 연결 상태 체크:', eventSource.readyState)
-      if (eventSource.readyState === EventSource.CLOSED) {
+    if (eventSource?.readyState == EventSource.CLOSED) {
         console.warn('[SSE] 연결이 끊어진 것을 감지, 재연결 시도')
         cleanupConnection()
         setupSse()
-      }
     }
   }
 
-  // 연결 상태 모니터링 시작
+
   const startConnectionMonitoring = () => {
     if (connectionCheckInterval) {
       clearInterval(connectionCheckInterval)
     }
-    // 30초마다 연결 상태 체크
     connectionCheckInterval = setInterval(checkConnectionHealth, 30000)
   }
 
-  // 연결 상태 모니터링 중지
   const stopConnectionMonitoring = () => {
     if (connectionCheckInterval) {
       clearInterval(connectionCheckInterval)
@@ -319,11 +320,11 @@ export const useNotificationStore = defineStore('notification', () => {
     markAsRead,
     markAllAsRead,
     deleteNotifications,
-    setupSse,
     startConnectionMonitoring,
     stopConnectionMonitoring,
     cleanupConnection,
-    connectSse
+    connectSse,
+    showReconnectError
   }
 })
 

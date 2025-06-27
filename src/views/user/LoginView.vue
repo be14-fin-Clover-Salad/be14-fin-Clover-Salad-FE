@@ -100,7 +100,7 @@ const login = async () => {
     auth.setUserInfo(res.data);
 
     try {
-      await notificationStore.setupSse()
+      await notificationStore.connectSse()
     } catch (err) {
       console.warn('SSE 설정 중 오류 발생 (무시):', err)
     }
