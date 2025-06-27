@@ -19,17 +19,30 @@ const __dirname = dirname(__filename)
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'dist')))
 
-// API 프록시 설정 (Spring Boot 서버 주소로 변경!)
+// API 프록시 설정
 app.use('/api', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
 }))
 
-// SSE 구독용 프록시 (웹소켓 포함)
-app.use('/notification/subscribe', createProxyMiddleware({
+// 알림 관련 프록시 설정 (nginx와 호환되도록 단순화)
+app.use('/notification', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
-  ws: true
+  ws: true,
+  onProxyReq: (proxyReq, req, res) => {
+    // SSE 연결을 위한 기본 헤더만 설정
+    if (req.url.includes('/subscribe')) {
+      proxyReq.setHeader('Accept', 'text/event-stream')
+      proxyReq.setHeader('Cache-Control', 'no-cache')
+    }
+  },
+  onProxyRes: (proxyRes, req, res) => {
+    // nginx에서 처리하므로 최소한의 헤더만 설정
+    if (req.url.includes('/subscribe')) {
+      proxyRes.headers['X-Accel-Buffering'] = 'no'
+    }
+  }
 }))
 
 // SPA 처리
