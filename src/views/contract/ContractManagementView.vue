@@ -126,6 +126,10 @@ async function handleSearch(data) {
       createdAtFormatted: formatDateTime(r.createdAt)
     }))
     rows.splice(0, rows.length, ...formatted)
+    selectedContract.value = null
+    selectedRowCode.value  = null
+    showDetailModal.value   = false
+    showReplaceModal.value  = false
   } finally {
     isLoading.value = false
   }

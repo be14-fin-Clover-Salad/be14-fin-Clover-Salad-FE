@@ -1,12 +1,7 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell
-      :initial="searchForm"
-      :showToggle="false"
-      @search="handleSearch"
-      @reset="handleReset"
-    >
+    <SearchFilterShell :initial="searchForm" :showToggle="false" @search="handleSearch" @reset="handleReset">
       <template #fields="{ filters }">
         <ContractTemplateSearchFields :filters="filters" />
       </template>
@@ -14,14 +9,8 @@
 
     <!-- 테이블 -->
     <div class="table-wrapper">
-      <BaseDataTable
-        :columns="columns"
-        :rows="rows"
-        :isLoading="isLoading"
-        :selectedCode="selectedRowCode"
-        @row-click="handleRowClick"
-        @row-dblclick="handleRowDblClick"
-      >
+      <BaseDataTable :columns="columns" :rows="rows" :isLoading="isLoading" :selectedCode="selectedRowCode"
+        @row-click="handleRowClick" @row-dblclick="handleRowDblClick">
         <template #cell-createdAt="{ row }">
           {{ row.createdAtFormatted }}
         </template>
@@ -36,21 +25,12 @@
     </div>
 
     <!-- 업로드/수정 모달 -->
-    <ContractTemplateUploadModal
-      :isOpen="showUploadModal"
-      :editMode="!!selectedTemplate"
-      :initialData="selectedTemplate"
-      @close="closeUploadModal"
-      @upload-success="handleUploadSuccess"
-    />
+    <ContractTemplateUploadModal :isOpen="showUploadModal" :editMode="!!selectedTemplate"
+      :initialData="selectedTemplate" @close="closeUploadModal" @upload-success="handleUploadSuccess" />
 
     <!-- 상세 모달 -->
-    <ContractTemplateDetailModal
-      v-if="showDetailModal"
-      :isOpen="showDetailModal"
-      :template="selectedTemplate"
-      @close="closeDetailModal"
-    />
+    <ContractTemplateDetailModal v-if="showDetailModal" :isOpen="showDetailModal" :template="selectedTemplate"
+      @close="closeDetailModal" />
   </section>
 </template>
 
@@ -69,7 +49,8 @@ const searchForm = reactive({
   name: '',
   version: '',
   createdAtStart: '',
-  createdAtEnd: ''
+  createdAtEnd: '',
+  description: ''
 })
 
 // 테이블 데이터 / UI 상태
@@ -172,7 +153,7 @@ async function handleDelete() {
 
 async function handleUploadSuccess(uploadResp) {
   showUploadModal.value = false
-    await handleSearch({ ...searchForm })
+  await handleSearch({ ...searchForm })
 
   const templateId = uploadResp?.id ?? selectedTemplate.value?.id
 
@@ -184,13 +165,13 @@ async function handleUploadSuccess(uploadResp) {
     )
 
     selectedTemplate.value = {
-      id:               dto.id,
-      name:             dto.name,
-      description:      dto.description,
-      version:          dto.version,
-      createdAt:        dto.createdAt,
-      uploadFilePath:   dto.uploadFilePath,   // S3 PDF URL
-      thumbnailPath:    dto.thumbnailPath     // S3 썸네일 URL
+      id: dto.id,
+      name: dto.name,
+      description: dto.description,
+      version: dto.version,
+      createdAt: dto.createdAt,
+      uploadFilePath: dto.uploadFilePath,   // S3 PDF URL
+      thumbnailPath: dto.thumbnailPath     // S3 썸네일 URL
       // note 필드가 있다면 추가로 넣으세요: note: dto.note
     }
 
@@ -208,13 +189,57 @@ function closeDetailModal() { showDetailModal.value = false }
 </script>
 
 <style scoped>
-section { padding:20px }
-::v-deep(.data-table) { width:100%; table-layout:auto }
-.table-wrapper { margin-top:24px; overflow-x:auto }
-.action-buttons { display:flex; justify-content:flex-end; gap:12px; margin-top:16px }
-.register-btn,.edit-btn,.delete-btn{padding:8px 16px;font-size:14px;border:none;border-radius:6px;cursor:pointer}
-.register-btn{background:#6c87c1;color:#fff}
-.edit-btn{background:#ffc107;color:#000}
-.delete-btn{background:#f44336;color:#fff}
-.register-btn:disabled,.edit-btn:disabled,.delete-btn:disabled{background:#ccc;color:#666;cursor:not-allowed}
+section {
+  padding: 20px
+}
+
+::v-deep(.data-table) {
+  width: 100%;
+  table-layout: auto
+}
+
+.table-wrapper {
+  margin-top: 24px;
+  overflow-x: auto
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px
+}
+
+.register-btn,
+.edit-btn,
+.delete-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer
+}
+
+.register-btn {
+  background: #6c87c1;
+  color: #fff
+}
+
+.edit-btn {
+  background: #ffc107;
+  color: #000
+}
+
+.delete-btn {
+  background: #f44336;
+  color: #fff
+}
+
+.register-btn:disabled,
+.edit-btn:disabled,
+.delete-btn:disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed
+}
 </style>
