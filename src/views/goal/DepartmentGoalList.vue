@@ -72,7 +72,9 @@ const columns = [
 
 onMounted(async () => {
   const response = await api.get(`/employee/detail?employeeId=${userId.value}`);
-  departmentName.value = response.data.departmentName || undefined;
+  if (response.data.departmentName !== "미배정") {
+    departmentName.value = response.data.departmentName || undefined;
+  }
   searchForm.departmentName = departmentName.value;
   employeeCode.value = Number(response.data.code) || undefined;
   searchForm.employeeCode = employeeCode.value;

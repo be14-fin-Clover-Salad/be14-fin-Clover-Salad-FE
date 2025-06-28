@@ -94,6 +94,7 @@ const row1 = [
   {
     label: '부서 이름',
     key: 'departmentName',
+    placeholder: '부서명을 입력해주세요',
     type: 'string'
   },
   {
