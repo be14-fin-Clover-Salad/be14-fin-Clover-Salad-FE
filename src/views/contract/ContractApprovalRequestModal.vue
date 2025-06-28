@@ -35,46 +35,32 @@
         <!-- 결재 제목 -->
         <div class="section-container">
           <h3 class="section-title">결재 제목</h3>
-          <div class="content-box editable" :class="{ 'disabled': isContractActive }">
-            <input 
-              v-model="form.title" 
-              class="content-input editable" 
-              :class="{ 'disabled': isContractActive }"
-              :disabled="isContractActive"
-              placeholder="결재 제목을 입력하세요"
-            />
+          <div class="content-box editable" :class="{ 'disabled': isContractActive || isTeamLead || isAdmin }">
+            <input v-model="form.title" class="content-input editable"
+              :class="{ 'disabled': isContractActive || isTeamLead || isAdmin }"
+              :disabled="isContractActive || isTeamLead || isAdmin" placeholder="결재 제목을 입력하세요" />
           </div>
         </div>
 
         <!-- 결재 내용 -->
         <div class="section-container">
           <h3 class="section-title">결재 내용</h3>
-          <div class="content-box editable" :class="{ 'disabled': isContractActive }">
-            <textarea 
-              v-model="form.content"
-              rows="8"
-              class="content-textarea editable"
-              :class="{ 'disabled': isContractActive }"
-              :disabled="isContractActive"
-              placeholder="결재 요청 내용을 입력하세요"
-            ></textarea>
+          <div class="content-box editable" :class="{ 'disabled': isContractActive || isTeamLead || isAdmin }">
+            <textarea v-model="form.content" rows="8" class="content-textarea editable"
+              :class="{ 'disabled': isContractActive || isTeamLead || isAdmin }"
+              :disabled="isContractActive || isTeamLead || isAdmin" placeholder="결재 요청 내용을 입력하세요"></textarea>
           </div>
         </div>
 
         <!-- action buttons -->
         <div class="action-section">
           <div class="button-group">
-            <button
-              class="approve-btn"
-              :disabled="isApproveDisabled"
-              @click="handleSubmit"
-            >
+            <button class="approve-btn" :disabled="isApproveDisabled" @click="handleSubmit" :title="(isTeamLead || isAdmin)
+              ? '팀장/관리자는 결재 요청 할 수 없습니다'
+              : ''">
               {{ approveBtnLabel }}
             </button>
-            <button 
-              class="reject-btn"
-              @click="handleCancel"
-            >
+            <button class="reject-btn" @click="handleCancel">
               취소
             </button>
           </div>
@@ -100,6 +86,11 @@ const props = defineProps({
 const emit = defineEmits(['close', 'refresh'])
 
 const authStore = useAuthStore()
+
+// --- 권한 확인
+const isAdmin = computed(() => authStore.userLevel === '관리자')
+const isTeamLead = computed(() => authStore.userLevel === '팀장')
+
 const requester = authStore.userInfo?.name || ''
 
 const form = ref({
@@ -126,10 +117,18 @@ const isApproveDisabled = computed(() => {
   }
   // 결재중이지만 반려 상태인 경우는 활성화
   if (props.contractState === '결재중' && props.approvalState === '반려') {
-    return false
+    // 단, 팀장/관리자는 무조건 비활성화
+    return isTeamLead.value || isAdmin.value ? true : false
   }
   // 결재중이고 반려가 아닌 경우는 비활성화
-  return props.contractState === '결재중'
+  if (props.contractState === '결재중') {
+    return true
+  }
+  // 팀장/관리자는 무조건 비활성화
+  if (isTeamLead.value || isAdmin.value) {
+    return true
+  }
+  return false
 })
 
 function getStatusClass(status) {
@@ -163,7 +162,6 @@ async function handleSubmit() {
       contractId: props.contractId,
       title: form.value.title,
       content: form.value.content
-      // comment 제거
     }
 
     await api.post('/approval/request', payload, {
@@ -484,13 +482,13 @@ async function handleSubmit() {
     width: 95%;
     margin: 0 auto;
   }
-  
+
   .erp-table th,
   .erp-table td {
     padding: 12px;
     font-size: 13px;
   }
-  
+
   .erp-table th {
     width: 120px;
   }
@@ -501,29 +499,29 @@ async function handleSubmit() {
     width: 98%;
     max-height: 95vh;
   }
-  
+
   .modal-header {
     padding: 16px 20px;
   }
-  
+
   .modal-content {
     padding: 20px;
   }
-  
+
   .erp-table {
     font-size: 12px;
   }
-  
+
   .erp-table th,
   .erp-table td {
     padding: 10px;
   }
-  
+
   .button-group {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .approve-btn,
   .reject-btn {
     width: 100%;
