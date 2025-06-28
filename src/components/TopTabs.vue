@@ -143,26 +143,15 @@ function closeTab(tab) {
   align-items: flex-end;
   padding: 0 16px 0 5px;
   background-color: #f9f9f9;
-  border-bottom: none;
+  border-bottom: 1px solid #c8d6ae;
   height: 42px;
   position: relative;
-  width: 99.5%;
-  overflow: hidden;
-  margin-right: auto;
+  width: 100%;
+  overflow: visible;
+  max-width: 99.5%;
+  margin: 0 auto;
 }
 
-.top-tabs::-webkit-scrollbar {
-  height: 6px;
-}
-.top-tabs::-webkit-scrollbar-thumb {
-  background: #c8d6ae;
-  border-radius: 3px;
-}
-.top-tabs::-webkit-scrollbar-track {
-  background: #f9f9f9;
-}
-
-/* 모든 탭에 공통 적용 */
 .tab {
   padding: 8px 16px;
   border: 1px solid #c8d6ae;
@@ -179,7 +168,6 @@ function closeTab(tab) {
   color: #333333;
   position: relative;
   bottom: -1px;
-  flex: 1 1 0;
   min-width: 60px;
   max-width: 200px;
   white-space: nowrap;
@@ -236,22 +224,19 @@ function closeTab(tab) {
 /* 화살표 탭 추가 스타일 */
 .control-tab {
   /* .tab 기본 스타일 상속 */
-  padding: 8px 16px;
+  padding: 17.5px 12px;
   width: 40px;
   height: 34px;
   justify-content: center;
   flex-shrink: 0;
-  flex-grow: 0;
   box-sizing: border-box;
-  min-width: 40px;
-  max-width: 40px;
 }
 
 /* 화살표 탭 active 상태에서도 크기 유지 */
 .control-tab.active {
   width: 40px;
   height: 34px;
-  padding: 8px 16px;
+  padding: 8px 12px;
 }
 
 /* 화살표 아이콘 크기 */
