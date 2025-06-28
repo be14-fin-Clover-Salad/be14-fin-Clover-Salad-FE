@@ -1,13 +1,8 @@
 <template>
   <section>
     <!-- 검색 필터 -->
-    <SearchFilterShell
-      :initial="searchForm"
-      :expanded="isExpanded"
-      @search="handleSearch"
-      @reset="handleReset"
-      @toggle-expand="isExpanded = !isExpanded"
-    >
+    <SearchFilterShell :initial="searchForm" :expanded="isExpanded" @search="handleSearch" @reset="handleReset"
+      @toggle-expand="isExpanded = !isExpanded">
       <template #fields="{ filters, expanded }">
         <ContractSearchFields :filters="filters" :expanded="expanded" />
       </template>
@@ -15,14 +10,8 @@
 
     <!-- 계약 목록 테이블 -->
     <div class="table-wrapper">
-      <BaseDataTable
-        :columns="columns"
-        :rows="rows"
-        :isLoading="isLoading"
-        :selectedCode="selectedRowCode"
-        @row-click="handleRowClick"
-        @row-dblclick="handleRowDblClick"
-      />
+      <BaseDataTable :columns="columns" :rows="rows" :isLoading="isLoading" :selectedCode="selectedRowCode"
+        @row-click="handleRowClick" @row-dblclick="handleRowDblClick" />
     </div>
 
     <!-- 버튼 영역 -->
@@ -32,31 +21,15 @@
     </div>
 
     <!-- 모달 컴포넌트들 -->
-    <ContractUploadModal
-      :isOpen="showUploadModal"
-      @close="showUploadModal = false"
-      @upload-success="handleUploadSuccess"
-    />
-    <ContractUploadSuccessModal
-      :isOpen="showSuccessModal"
-      @confirm="goToDetailView"
-      @close="showSuccessModal = false"
-    />
-    <ContractDetailModal
-      v-if="selectedContract"
-      :key="selectedContract.id"
-      :isOpen="showDetailModal"
-      :contractId="selectedContract.id"
-      :contractCode="selectedContract.code"
-      :contractStatus="selectedContract.status"
-      @close="() => { showDetailModal = false; selectedContract = null }"
-    />
-    <ContractReplaceModal
-      :isOpen="showReplaceModal"
-      :contract="selectedContract"
-      @close="handleReplaceModalClose"
-      @replace-success="handleReplaceSuccess"
-    />
+    <ContractUploadModal :isOpen="showUploadModal" @close="showUploadModal = false"
+      @upload-success="handleUploadSuccess" />
+    <ContractUploadSuccessModal :isOpen="showSuccessModal" @confirm="goToDetailView"
+      @close="showSuccessModal = false" />
+    <ContractDetailModal v-if="selectedContract" :key="selectedContract.id" :isOpen="showDetailModal"
+      :contractId="selectedContract.id" :contractCode="selectedContract.code" :contractStatus="selectedContract.status"
+      @close="() => { showDetailModal = false; selectedContract = null }" />
+    <ContractReplaceModal :isOpen="showReplaceModal" :contract="selectedContract" @close="handleReplaceModalClose"
+      @replace-success="handleReplaceSuccess" />
   </section>
 </template>
 
@@ -88,13 +61,13 @@ const searchForm = reactive({
 const rows = reactive([])
 const isLoading = ref(false)
 
-const showUploadModal  = ref(false)
+const showUploadModal = ref(false)
 const showSuccessModal = ref(false)
-const showDetailModal  = ref(false)
+const showDetailModal = ref(false)
 const showReplaceModal = ref(false)
 
-const selectedContract  = ref(null)
-const selectedRowCode   = ref(null)
+const selectedContract = ref(null)
+const selectedRowCode = ref(null)
 
 const isExpanded = ref(false)
 
@@ -107,8 +80,8 @@ onMounted(async () => {
     const target = rows.find(c => c.code === contractCode)
     if (target) {
       selectedContract.value = target
-      selectedRowCode.value  = target.id
-      showDetailModal.value   = true
+      selectedRowCode.value = target.id
+      showDetailModal.value = true
     }
   }
 })
@@ -117,9 +90,9 @@ onMounted(async () => {
 async function handleSearch(data) {
   // 검색 시작할 때 이전 선택 초기화
   selectedContract.value = null
-  selectedRowCode.value  = null
+  selectedRowCode.value = null
   showReplaceModal.value = false
-  showDetailModal.value  = false
+  showDetailModal.value = false
 
   const token = useAuthStore().accessToken
   try {
@@ -144,9 +117,9 @@ async function handleSearch(data) {
 function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
   selectedContract.value = null
-  selectedRowCode.value  = null
+  selectedRowCode.value = null
   showReplaceModal.value = false
-  showDetailModal.value  = false
+  showDetailModal.value = false
 }
 
 // 등록 성공 후 상세정보 조회
@@ -158,11 +131,13 @@ async function handleUploadSuccess(contractData) {
       `/api/query/contract/${contractData.contractId}/info`,
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
     )
+
     selectedContract.value = res.data
     showSuccessModal.value = true
 
     // **전체 목록을 다시 불러옵니다**
     await handleSearch({ ...searchForm })
+    selectedContract.value = res.data
   } catch {
     alert('계약 상세 조회 실패')
   }
@@ -170,18 +145,20 @@ async function handleUploadSuccess(contractData) {
 
 // "확인" 클릭 시 상세 모달 열기
 async function goToDetailView() {
+  console.log('goToDetailView called')
+  console.log('selectedContract before opening detail modal:', selectedContract.value)
   showSuccessModal.value = false
-  showDetailModal.value  = true
+  showDetailModal.value = true
 }
 
 // 테이블 행 클릭
 function handleRowClick(contract) {
-  selectedRowCode.value  = contract.id
+  selectedRowCode.value = contract.id
   selectedContract.value = contract
 }
 function handleRowDblClick(contract) {
   selectedContract.value = contract
-  showDetailModal.value  = true
+  showDetailModal.value = true
 }
 
 // 재업로드 모달 제어
@@ -203,7 +180,7 @@ async function handleReplaceSuccess(updatedContract) {
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
     )
     selectedContract.value = res.data
-    showDetailModal.value  = true
+    showDetailModal.value = true
 
     // **전체 목록을 다시 불러옵니다**
     await handleSearch({ ...searchForm })
@@ -244,12 +221,35 @@ function formatNumber(val) {
 </script>
 
 <style scoped>
-section { padding: 20px; }
-.table-wrapper { margin-top: 24px; overflow-x: auto; }
-.action-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
-.register-btn, .replace-btn {
-  background-color: #6c87c1; color: white; border: none;
-  border-radius: 6px; padding: 8px 16px; font-size: 14px; cursor: pointer;
+section {
+  padding: 20px;
 }
-.replace-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+.table-wrapper {
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.register-btn,
+.replace-btn {
+  background-color: #6c87c1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.replace-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 </style>

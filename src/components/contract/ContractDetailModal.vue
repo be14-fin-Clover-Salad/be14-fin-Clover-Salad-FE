@@ -7,11 +7,12 @@
         <div class="button-group">
           <!-- 인쇄 버튼은 사용하지 않음 -->
           <!-- <button class="btn">인쇄</button> -->
-          <!-- 결재 요청 버튼: 결재전 또는 반려 상태일 때만 활성화 -->
+          <!-- 결재 요청 버튼: 결재전 또는 반려 상태일 때만 활성화, 관리자 및 팀장은 비활성화 -->
           <button
             class="btn primary"
             @click="onRequestApproval"
             :disabled="!canRequestApproval"
+            :title="canRequestApproval ? '' : '관리자 및 팀장은 결재 요청할 수 없습니다.'"
           >
             결재 요청
           </button>
@@ -233,6 +234,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/auth'
+import { useAuthStore } from '@/stores/auth'
 import ContractApprovalRequestModal from '@/views/contract/ContractApprovalRequestModal.vue'
 import ApprovalDetailModal from '@/components/approval/ApprovalDetailModal.vue'
 
@@ -245,6 +247,9 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const router = useRouter()
+const authStore = useAuthStore()
+const userRole = computed(() => authStore.role)
+const userLevel = computed(() => authStore.userLevel) // level 추가
 
 const contract = ref({ productList: [], approvalList: [] })
 const tab = ref('info')
@@ -284,8 +289,11 @@ const contractState = computed(() => {
   return '결재전'
 })
 
-// 결재 요청 가능 여부: '결재전' 또는 '반려' 일 때만 true
+// 결재 요청 가능 여부: 관리자 및 팀장 제외, '결재전' 또는 '반려' 일 때만 true
 const canRequestApproval = computed(() => {
+  const isAdminOrTeamLead = ['관리자', '팀장'].includes(userLevel.value)
+  if (isAdminOrTeamLead) return false
+
   return ['결재전', '반려'].includes(contractState.value)
 })
 
