@@ -1,13 +1,15 @@
 <template>
   <section>
     <div class="section-header">
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 15%">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 23%">
         <h2 class="section-title">실적 목표 수정</h2>
-        <input :value="targetYear" type="number" :min="1901" :max="2100" readonly />
+        <span>사번: </span>
+        <input :value="route.params.gotEmployeeCode" type="number" disabled style="width: 23%;"/>
+        <input :value="targetYear" type="number" :min="1901" :max="2100" disabled style="width: 13%;"/>
         <span>년</span>
       </div>
       <div class="section-actions">
-        <button class="button primary" @click="fillDummyData">더미 데이터 입력</button>
+        <button class="button primary" @click="fillDummyData" hidden>더미 데이터 입력</button>
         <button class="button primary" @click="onClickRegister" :disabled="!existDefaultGoal">수정</button>
         <button class="button danger" @click="showGoalRegisterCancelModal = true">취소</button>
       </div>
@@ -35,14 +37,16 @@
         >
           <input
             type="number"
+            min="0"
             :value="getGoalValue(item.key, month)"
             @input="updateGoalValue(item.key, month, $event.target.value)"
+            :disabled="isInputDisabled(month)"
             class="goal-input"
           />
         </td>
 
         <!-- 총합 -->
-        <td :class="{ 'under-total': isUnderTotal(item) }">
+        <td :class="{ 'under-total': isUnderTotal(item) || isUnderAverage(item) }">
           {{
             ['rentalProductCount', 'newCustomerCount', 'totalRentalAmount'].includes(item.key)
               ? getTotal(item.key)
@@ -51,7 +55,7 @@
         </td>
 
         <!-- 평균 -->
-        <td :class="{ 'under-total': isUnderAverage(item) }">
+        <td :class="{ 'under-total': isUnderTotal(item) || isUnderAverage(item) }">
           {{
             item.key === 'rentalRetentionCount'
               ? getRatio(item.key, item.pairKey).toFixed(1) + '%'
@@ -88,7 +92,7 @@
       :isOpen="showGoalRegisterCancelModal"
       :type="type"
       @close="showGoalRegisterCancelModal = false"
-      @cancel="router.push('/goal/employee');"
+      @cancel="router.push(`/goal/detail/${route.params.gotEmployeeCode}/${targetYear}`);"
     />
     <GoalRegisterConfirmModal
       :isOpen="showGoalRegisterConfirmModal"
@@ -298,7 +302,24 @@ const isUnderTotal = (item) => {
 };
 
 const isUnderAverage = (item) => {
-  return isUnderTotal(item); // 평균 강조 조건도 동일 기준 사용
+  if (!standards.value) return false;
+
+  if (item.key === 'rentalRetentionCount') {
+    return getRatio(item.key, item.pairKey) < standards.value[item.standardKey];
+  }
+
+  if (item.key === 'customerFeedbackScore') {
+    return getFeedbackScoreAverage() < (standards.value.customerFeedbackScore / 10);
+  }
+
+  // 일반 항목 평균 기준: 연간 기준 / 12
+  const monthlyAvg = standards.value[item.key] != null
+    ? standards.value[item.key] / 12
+    : null;
+
+  const actualAvg = getTotal(item.key) / 12;
+
+  return monthlyAvg != null && actualAvg < monthlyAvg;
 };
 
 function getFeedbackScoreAverage() {
@@ -455,6 +476,31 @@ function fillDummyData() {
       }
     }
   }
+}
+
+function isInputDisabled(month) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // 1~12
+  const currentDate = now.getDate();
+
+  const selectedYear = Number(targetYear.value);
+
+  // 현재 연도 & 월이면 10일까지 수정 가능
+  if (selectedYear === currentYear && month === currentMonth) {
+    return currentDate > 10;
+  }
+
+  // 현재보다 과거 달이면 수정 불가
+  if (
+    selectedYear < currentYear ||
+    (selectedYear === currentYear && month < currentMonth)
+  ) {
+    return true;
+  }
+
+  // 미래면 수정 가능
+  return false;
 }
 </script>
 

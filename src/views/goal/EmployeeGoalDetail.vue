@@ -4,7 +4,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; width: 23%">
         <h2 class="section-title">실적 목표 조회</h2>
         <span>사번: </span>
-        <input :value="route.params.gotEmployeeCode" type="number" :min="1901" :max="2100" readonly style="width: 23%;" />
+        <input :value="route.params.gotEmployeeCode" type="number" readonly style="width: 23%;" />
         <input :value="targetYear" type="number" :min="1901" :max="2100" readonly style="width: 13%;" />
         <span>년</span>
       </div>
