@@ -62,7 +62,6 @@
           </ul>
         </div>
 
-        <!-- ✅ 조건 추가: 작성자 또는 관리자만 대상 추가 가능 -->
         <div class="add-target-wrap" v-if="isWriterOrAdmin">
           <button class="add-target-btn" @click="openAddTargetModal">+ 대상 추가</button>
         </div>
@@ -131,6 +130,7 @@ const formatEmployeeLabel = id => {
 const filteredCheckList = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
   return checkList.value
+    .filter(entry => entry.employeeName !== '관리자')
     .slice()
     .sort((a, b) => b.isChecked - a.isChecked)
     .filter(entry => formatEmployeeLabel(entry.employeeId).toLowerCase().includes(keyword))
