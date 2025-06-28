@@ -31,7 +31,7 @@ import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import SearchFilterShell from "@/components/common/SearchFilterShell.vue";
 import BaseDataTable from "@/components/BaseDataTable.vue";
-import { searchCustomers } from "@/api/customer.js";
+import { getMyCustomers, searchCustomers } from "@/api/customer.js";
 import CustomerSearchFields from "@/components/customer/CustomerSearchFields.vue";
 
 const router = useRouter();
@@ -62,6 +62,25 @@ const columns = [
   },
 ];
 
+const readAllCustomers = async (params = {}) => {
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const response = await getMyCustomers(params);
+    rows.value = response.map((c, index) => ({
+      ...c,
+      customerNo: index + 1,
+      type: formatCustomerType(c.type),
+      registerAt: formatDate(c.registerAt),
+    }));
+  } catch (err) {
+    errorMessage.value = "고객 정보를 불러오는 데 실패했습니다.";
+    rows.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const fetchCustomers = async (params = {}) => {
   isLoading.value = true;
   errorMessage.value = "";
@@ -74,7 +93,7 @@ const fetchCustomers = async (params = {}) => {
       registerAt: formatDate(c.registerAt),
     }));
   } catch (err) {
-    errorMessage.value = "고객 정보를 불러오는 데 실패했습니다.";
+    errorMessage.value = "고객 정보를 검색하는 데 실패했습니다.";
     rows.value = [];
   } finally {
     isLoading.value = false;
@@ -111,7 +130,7 @@ const formatDate = (dateString) => {
   return `${yyyy}-${MM}-${dd}`;
 };
 
-fetchCustomers();
+readAllCustomers();
 </script>
 
 <style scoped>
