@@ -52,8 +52,8 @@ const displayedLogs = ref([])
 
 onMounted(async () => {
   // const res = await axios.get('http://localhost:5000/api/log/access')
-  const res = await axios.get('http://localhost:5001/api/log/access')
-  // const res = await axios.get('https://api.saladerp.com/api/log/access')
+  // const res = await axios.get('http://localhost:5001/api/log/access')
+  const res = await axios.get('https://api.saladerp.com/api/log/access')
   logs.value = res.data
   displayedLogs.value = logs.value // 최초 전체 표시
 })
