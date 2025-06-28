@@ -9,8 +9,10 @@ export const menuList = [
         component: () => import("@/views/dashboard/EmployeeDashboard.vue"),
         meta: {
           title: "사원별 대시보드",
-          basePath: "/dashboard/employee"
+          basePath: "/dashboard/employee",
+          allowedRoles: ['ROLE_MEMBER']
         }
+        
       },
       // { // 기능 미완성으로 인한 메뉴 숨기기
       //   label: "상품별 매출 조회",
