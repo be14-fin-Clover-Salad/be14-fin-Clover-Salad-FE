@@ -29,15 +29,18 @@
 
       <div class="qna-box">{{ qna.content }}</div>
 
-      <div v-if="!qna.isDeleted && isWriter && !qna.answerContent" class="edit-btn-wrap">
+      <!-- ✅ 삭제 버튼은 딱 여기만! -->
+      <div v-if="canDelete" class="edit-btn-wrap">
         <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
       </div>
 
       <div class="qna-answer" v-if="qna.answerContent || isAdmin">
         <h3>답변</h3>
+
         <div v-if="qna.answerContent && !isEditingAnswer" class="answer-box">
           {{ qna.answerContent }}
         </div>
+
         <div v-if="!qna.isDeleted && isAdmin && (isEditingAnswer || !qna.answerContent)" class="qna-answer-form">
           <textarea v-model="answerContent" rows="6" placeholder="답변 내용을 입력하세요." />
           <div class="btn-wrap-between">
@@ -47,15 +50,14 @@
               </button>
               <button v-if="qna.answerContent" class="btn cancel-btn" @click="cancelAnswerEdit">취소</button>
             </div>
-            <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
         </div>
-        <div v-if="!qna.isDeleted && (isAdmin || isWriter) && qna.answerContent && !isEditingAnswer" class="edit-btn-wrap">
+
+        <div v-if="!qna.isDeleted && isAdmin && qna.answerContent && !isEditingAnswer" class="edit-btn-wrap">
           <div class="btn-wrap-between">
             <div class="left-buttons">
-              <button v-if="isAdmin" class="btn edit-btn" @click="startAnswerEdit">수정하기</button>
+              <button class="btn edit-btn" @click="startAnswerEdit">수정하기</button>
             </div>
-            <button class="btn delete-btn" @click="deleteQna">삭제하기</button>
           </div>
         </div>
       </div>
@@ -87,6 +89,13 @@ const isAdmin = computed(() =>
   userInfo.value?.name === '관리자'
 )
 const isWriter = computed(() => qna.value && Number(qna.value.writerId) === Number(loginUserId))
+
+// ✅ 답변 등록되면 관리자도 삭제 불가
+const canDelete = computed(() =>
+  !qna.value?.isDeleted &&
+  !qna.value?.answerContent &&
+  (isWriter.value || isAdmin.value)
+)
 
 const fetchQna = async () => {
   try {
@@ -169,7 +178,7 @@ const deleteQna = async () => {
 .qna-content {
   max-width: 800px;
   width: 100%;
-  padding: 0 1rem; /* 제목이 너무 왼쪽에 붙는 현상 방지 */
+  padding: 0 1rem;
   box-sizing: border-box;
 }
 .back-btn {
@@ -193,7 +202,7 @@ const deleteQna = async () => {
   font-size: 1.6rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  word-break: break-word; /* 제목 줄바꿈 */
+  word-break: break-word;
 }
 .qna-info {
   display: flex;
