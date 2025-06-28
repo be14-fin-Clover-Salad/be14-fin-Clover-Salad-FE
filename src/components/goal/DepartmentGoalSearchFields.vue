@@ -44,14 +44,14 @@
           <input
             :value="formatNumber(filters.minTotalRentalAmount)"
             @input="onAmountInput('minTotalRentalAmount', $event.target.value)"
-            placeholder="500000"
+            :placeholder="f.startPlaceholder || ''"
             type="text"
           />
           <span class="tilde">~</span>
           <input
             :value="formatNumber(filters.maxTotalRentalAmount)"
             @input="onAmountInput('maxTotalRentalAmount', $event.target.value)"
-            placeholder="10000000"
+            :placeholder="f.endPlaceholder || ''"
             type="text"
           />
         </div>
@@ -131,9 +131,9 @@ const row2 = [
   {
     label: '총 렌탈료',
     startKey: 'minTotalRentalAmount',
-    startPlaceholder: '1000000',
+    startPlaceholder: '1,000,000',
     endKey: 'maxTotalRentalAmount',
-    endPlaceholder: '5000000'
+    endPlaceholder: '5,000,000'
   },
   {
     label: '고객 만족도',
