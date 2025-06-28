@@ -39,7 +39,7 @@ import { ref, onMounted, computed, reactive } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/api/auth.js";
 import { useAuthStore } from "@/stores/auth";
-import { searchConsults } from "@/api/consult.js";
+import { getAllConsults, searchConsults } from "@/api/consult.js";
 import SearchFilterShell from "@/components/common/SearchFilterShell.vue";
 import BaseDataTable from "@/components/BaseDataTable.vue";
 import ConsultDetailModal from "@/components/consult/ConsultDetailModal.vue";
@@ -106,6 +106,24 @@ const fetchConsults = async () => {
   }
 };
 
+const readAllConsults = async () => {
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const params = Object.fromEntries(
+      Object.entries(searchFilters).filter(([_, v]) => v)
+    );
+    const response = await getAllConsults();
+    consults.value = response.data;
+  } catch (error) {
+    console.error("상담 목록 조회 실패:", error);
+    errorMessage.value = "상담 목록을 조회하는 중 오류가 발생했습니다.";
+    consults.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const handleSearch = (filters) => {
   Object.assign(searchFilters, filters);
   fetchConsults();
@@ -142,7 +160,8 @@ const handleDeleteConsult = async (consultId) => {
   }
 };
 
-onMounted(fetchConsults);
+// onMounted(fetchConsults);
+onMounted(getAllConsults);
 </script>
 
 <style scoped>
