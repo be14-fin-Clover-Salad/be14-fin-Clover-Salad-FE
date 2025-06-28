@@ -44,7 +44,7 @@
     />
     <ContractDetailModal
       v-if="selectedContract"
-      :key="selectedContract?.id"    
+      :key="selectedContract.id"
       :isOpen="showDetailModal"
       :contractId="selectedContract.id"
       :contractCode="selectedContract.code"
@@ -87,12 +87,15 @@ const searchForm = reactive({
 // 테이블 및 모달 상태
 const rows = reactive([])
 const isLoading = ref(false)
-const showUploadModal = ref(false)
+
+const showUploadModal  = ref(false)
 const showSuccessModal = ref(false)
-const showDetailModal = ref(false)
+const showDetailModal  = ref(false)
 const showReplaceModal = ref(false)
-const selectedContract = ref(null)
-const selectedRowCode = ref(null)
+
+const selectedContract  = ref(null)
+const selectedRowCode   = ref(null)
+
 const isExpanded = ref(false)
 
 // 라우트에서 contractCode 파라미터 처리
@@ -104,14 +107,20 @@ onMounted(async () => {
     const target = rows.find(c => c.code === contractCode)
     if (target) {
       selectedContract.value = target
-      selectedRowCode.value   = target.id
-      showDetailModal.value    = true
+      selectedRowCode.value  = target.id
+      showDetailModal.value   = true
     }
   }
 })
 
 // 계약 검색 함수
 async function handleSearch(data) {
+  // 검색 시작할 때 이전 선택 초기화
+  selectedContract.value = null
+  selectedRowCode.value  = null
+  showReplaceModal.value = false
+  showDetailModal.value  = false
+
   const token = useAuthStore().accessToken
   try {
     isLoading.value = true
@@ -126,10 +135,6 @@ async function handleSearch(data) {
       createdAtFormatted: formatDateTime(r.createdAt)
     }))
     rows.splice(0, rows.length, ...formatted)
-    selectedContract.value = null
-    selectedRowCode.value  = null
-    showDetailModal.value   = false
-    showReplaceModal.value  = false
   } finally {
     isLoading.value = false
   }
@@ -138,6 +143,10 @@ async function handleSearch(data) {
 // 검색 필터 초기화
 function handleReset() {
   Object.keys(searchForm).forEach(key => searchForm[key] = '')
+  selectedContract.value = null
+  selectedRowCode.value  = null
+  showReplaceModal.value = false
+  showDetailModal.value  = false
 }
 
 // 등록 성공 후 상세정보 조회
@@ -151,17 +160,18 @@ async function handleUploadSuccess(contractData) {
     )
     selectedContract.value = res.data
     showSuccessModal.value = true
+
+    // **전체 목록을 다시 불러옵니다**
+    await handleSearch({ ...searchForm })
   } catch {
     alert('계약 상세 조회 실패')
   }
 }
 
 // "확인" 클릭 시 상세 모달 열기
-function goToDetailView() {
+async function goToDetailView() {
   showSuccessModal.value = false
-  handleSearch({ ...searchForm }).then(() => {
-    showDetailModal.value = true
-  })
+  showDetailModal.value  = true
 }
 
 // 테이블 행 클릭
@@ -183,7 +193,6 @@ function handleReplaceModalClose() {
   showReplaceModal.value = false
 }
 
-
 // 재업로드 성공 후 상세정보 재조회
 async function handleReplaceSuccess(updatedContract) {
   showReplaceModal.value = false
@@ -194,7 +203,10 @@ async function handleReplaceSuccess(updatedContract) {
       { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
     )
     selectedContract.value = res.data
-    showDetailModal.value   = true
+    showDetailModal.value  = true
+
+    // **전체 목록을 다시 불러옵니다**
+    await handleSearch({ ...searchForm })
   } catch {
     alert('재업로드 후 상세 조회 실패')
   }
