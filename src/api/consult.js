@@ -2,12 +2,12 @@ import api from "./auth";
 
 // 상담 검색 (필터링 기능 포함)
 export const searchConsults = (params) => {
-  return api.get("/api/consult", { params });
+  return api.get("/api/consult/all", { params });
 };
 
 // 모든 상담 목록 조회 (관리자)
 export const getAllConsults = () => {
-  return api.get("/api/consult");
+  return api.get("/api/consult/all");
 };
 
 // ID로 상담 상세 조회 (관리자/사원 분기)

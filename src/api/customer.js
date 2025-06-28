@@ -1,9 +1,10 @@
 import api from "./auth.js";
 
-// 고객 목록 조회 (내 고객)
+// 고객 목록 조회
 export const getMyCustomers = async () => {
   try {
-    const response = await api.get("/api/customer/my");
+    // const response = await api.get("/api/customer/my");
+    const response = await api.get("/api/customer/all");
     return response.data;
   } catch (error) {
     console.error("고객 목록 조회 실패:", error);
@@ -11,7 +12,7 @@ export const getMyCustomers = async () => {
   }
 };
 
-// 고객 단건 조회 (내 고객)
+// 고객 단건 조회
 export const getMyCustomerById = async (customerId) => {
   try {
     const response = await api.get(`/api/customer/my/${customerId}`);
@@ -58,7 +59,7 @@ export const deleteCustomer = async (customerId) => {
   }
 };
 
-// 고객 검색 (현재는 내 고객 전체 조회)
+// 고객 검색
 export const searchCustomers = async (params) => {
   try {
     const response = await api.get("/api/customer/my", { params });
