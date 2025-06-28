@@ -16,7 +16,7 @@
       </template>
     </SearchFilterShell>
     <div class="action-buttons">
-      <button class="register-btn" @click="registerProduct">등록</button>
+      <button v-if="isAdmin" class="register-btn" @click="registerProduct">등록</button>
     </div>
     <BaseDataTable
       :rows="rows"
@@ -33,9 +33,10 @@
   import BaseDataTable from "@/components/BaseDataTable.vue";
   import SearchFilterShell from "@/components/common/SearchFilterShell.vue";
   import ProductSearchFields from "@/components/product/ProductSearchFields.vue";
-  import { reactive, ref } from "vue";
+  import { computed, reactive, ref } from "vue";
   import { useRouter } from 'vue-router'
   import api from "@/api/auth.js";
+  import { useAuthStore } from "@/stores/auth.js";
 
   const searchForm = reactive({
     productCode: '',
@@ -51,10 +52,16 @@
 
   const router = useRouter()
   const rows = reactive([])
+  const authStore = useAuthStore();
   const isLoading = ref(false)
   const productId = ref(null)
   const isExpanded = ref(false)
   const selectedRowCode = ref(null)
+
+  // 관리자 권한 확인
+  const isAdmin = computed(() => {
+    return authStore.userLevel === '관리자';
+  });
 
   async function handleSearch(data) {
     try {
@@ -65,7 +72,9 @@
       // index 부여
       const indexedData = response.data.map((item, idx) => ({
         ...item,
-        index: idx + 1
+        index: idx + 1,
+        originCost: formatNumber(item.originCost),
+        rentalCost: formatNumber(item.rentalCost),
       }))
       rows.splice(0, rows.length, ...indexedData)
     } catch (error) {
@@ -74,6 +83,15 @@
       isLoading.value = false
     }
   }
+
+  // 숫자 포맷팅 함수
+  const formatNumber = (value) => {
+    if (!value) return '';
+    // 숫자가 아닌 문자 제거
+    const numericValue = value.toString().replace(/[^\d]/g, '');
+    // 세자리마다 쉼표 추가
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
 
   function handleReset() {
     Object.keys(searchForm).forEach(key => searchForm[key] = '')

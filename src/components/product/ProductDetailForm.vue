@@ -59,6 +59,19 @@
           </div>
         </div>
         <div class="form-item">
+          <label class="form-label">월간 렌탈료</label>
+          <div class="input-with-unit">
+            <input
+              type="text"
+              v-model="formattedRentalCost"
+              class="form-input"
+              placeholder="0"
+              readonly
+            />
+            <span class="unit">원</span>
+          </div>
+        </div>
+        <div class="form-item">
           <label class="form-label">기간</label>
           <select v-model="type" class="form-input">
             <option value="1">1년</option>
@@ -145,6 +158,13 @@ const formattedOriginCost = computed({
   get: () => formatNumber(props.form.originCost),
   set: (value) => {
     props.form.originCost = unformatNumber(value);
+  }
+});
+
+const formattedRentalCost = computed({
+  get: () => formatNumber(props.form.rentalCost),
+  set: (value) => {
+    props.form.rentalCost = unformatNumber(value);
   }
 });
 
