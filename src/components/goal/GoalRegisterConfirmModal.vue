@@ -51,8 +51,10 @@
 }
 
 .upload-label {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
   margin-top: 16px;
+  gap: 12px;
 }
 
 .upload-button {

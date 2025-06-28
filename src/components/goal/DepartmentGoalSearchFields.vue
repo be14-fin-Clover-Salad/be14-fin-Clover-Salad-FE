@@ -3,7 +3,7 @@
     <!-- 기본 노출 -->
     <div class="row">
       <div
-        class="range-field"
+        class="field range-field"
         v-for="(item, index) in row1"
         :key="index"
       >
