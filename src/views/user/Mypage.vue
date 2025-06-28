@@ -25,7 +25,6 @@
             type="text" 
             v-model="tempUserInfo.name" 
             class="edit-input"
-            @input="validateName"
             @keypress="onlyKorean"
           >
           <span v-if="nameError" class="error-message name-error">{{ nameError }}</span>
@@ -41,7 +40,6 @@
             v-model="tempUserInfo.phone" 
             class="edit-input"
             @keypress="onlyNumbers"
-            @input="validatePhone"
             maxlength="11"
           >
           <span v-if="phoneError" class="error-message phone-error">{{ phoneError }}</span>
@@ -53,6 +51,7 @@
         <span v-if="!isEditMode">{{ userInfo.email }}</span>
         <div v-else class="input-wrapper">
           <input type="email" v-model="tempUserInfo.email" class="edit-input">
+          <span v-if="emailError" class="error-message email-error">{{ emailError }}</span>
         </div>
       </div>
       
@@ -189,6 +188,7 @@ export default {
       selectedFile: null,
       phoneError: '',
       nameError: '',
+      emailError: '',
       isDragOver: false
     }
   },
@@ -288,8 +288,49 @@ export default {
     cancelEdit() {
       this.isEditMode = false;
       this.tempUserInfo = {};
+      this.nameError = '';
+      this.phoneError = '';
+      this.emailError = '';
     },
     async saveChanges() {
+      // 검증 로직 추가
+      this.nameError = '';
+      this.phoneError = '';
+      this.emailError = '';
+      
+      let hasError = false;
+      
+      // 이름 검증
+      if (!this.tempUserInfo.name || this.tempUserInfo.name.trim() === '') {
+        this.nameError = '이름을 입력해주세요.';
+        hasError = true;
+      } else if (!/^[가-힣]+$/.test(this.tempUserInfo.name)) {
+        this.nameError = '이름은 유효한 한글 형식으로 입력해주세요.';
+        hasError = true;
+      }
+      
+      // 연락처 검증
+      if (!this.tempUserInfo.phone || this.tempUserInfo.phone.trim() === '') {
+        this.phoneError = '연락처를 입력해주세요.';
+        hasError = true;
+      } else if (!/^\d{11}$/.test(this.tempUserInfo.phone)) {
+        this.phoneError = '연락처는 11자리 숫자만 입력 가능합니다.';
+        hasError = true;
+      }
+      
+      // 이메일 검증
+      if (!this.tempUserInfo.email || this.tempUserInfo.email.trim() === '') {
+        this.emailError = '이메일을 입력해주세요.';
+        hasError = true;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.tempUserInfo.email)) {
+        this.emailError = '유효한 이메일 형식을 입력해주세요.';
+        hasError = true;
+      }
+      
+      if (hasError) {
+        return;
+      }
+
       try {
         const auth = useAuthStore();
         console.log('정보 수정 요청 시작:', {
@@ -440,39 +481,14 @@ export default {
         }
       }
     },
-    validatePhone(event) {
-      const value = event.target.value;
-      if (!/^\d*$/.test(value)) {
-        this.phoneError = '숫자만 입력하실 수 있습니다.';
-        this.tempUserInfo.phone = value.replace(/[^\d]/g, '');
-      } else if (value.length > 11) {
-        this.phoneError = '연락처는 11자리만 입력 가능합니다.';
-        this.tempUserInfo.phone = value.slice(0, 11);
-      } else {
-        this.phoneError = '';
-      }
-    },
     onlyNumbers(event) {
       const keyCode = event.keyCode;
       const currentValue = this.tempUserInfo.phone || '';
       
       if (keyCode < 48 || keyCode > 57) {
         event.preventDefault();
-        this.phoneError = '숫자만 입력하실 수 있습니다.';
       } else if (currentValue.length >= 11) {
         event.preventDefault();
-        this.phoneError = '연락처는 11자리만 입력 가능합니다.';
-      } else {
-        this.phoneError = '';
-      }
-    },
-    validateName(event) {
-      const value = event.target.value;
-      if (!/^[가-힣]*$/.test(value)) {
-        this.nameError = '한글만 입력하실 수 있습니다.';
-        this.tempUserInfo.name = value.replace(/[^가-힣]/g, '');
-      } else {
-        this.nameError = '';
       }
     },
     onlyKorean(event) {
@@ -482,9 +498,6 @@ export default {
             keyCode === 8 ||
             keyCode === 46)) {
         event.preventDefault();
-        this.nameError = '한글만 입력하실 수 있습니다.';
-      } else {
-        this.nameError = '';
       }
     },
     handleDragOver(event) {
@@ -818,6 +831,10 @@ export default {
 }
 
 .name-error {
+  color: #ff0000 !important;
+}
+
+.email-error {
   color: #ff0000 !important;
 }
 
