@@ -126,7 +126,6 @@ async function fetchQnaList() {
     ])
     employees.value = empRes.data
     qnas.value = qnaRes.data
-
   } catch (err) {
     console.error('QnA API 오류:', err)
   }
@@ -136,6 +135,10 @@ watch(loginUserId, (newId) => {
   if (newId) fetchQnaList()
 }, { immediate: true })
 
+watch(selectedStatus, () => {
+  currentPage.value = 0
+})
+
 const filteredQnas = computed(() => {
   const base = selectedStatus.value
     ? qnas.value.filter(q => q.answerStatus === selectedStatus.value)
@@ -144,36 +147,35 @@ const filteredQnas = computed(() => {
 })
 
 const totalPages = computed(() => {
-  return Math.max(1, Math.ceil(filteredQnas.value.length / pageSize));
-});
+  return Math.max(1, Math.ceil(filteredQnas.value.length / pageSize))
+})
 
 const visiblePageNumbers = computed(() => {
-  const total = totalPages.value;
-  const startPage = Math.floor(currentPage.value / 10) * 10 + 1;
-  const endPage = Math.min(startPage + 9, total);
-  const pages = [];
+  const total = totalPages.value
+  const startPage = Math.floor(currentPage.value / 10) * 10 + 1
+  const endPage = Math.min(startPage + 9, total)
+  const pages = []
 
   for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
+    pages.push(i)
   }
 
-  if (pages.length === 0) pages.push(1);
-
-  return pages;
-});
+  if (pages.length === 0) pages.push(1)
+  return pages
+})
 
 const changePage = (page) => {
   if (page >= 0 && page < totalPages.value) {
-    currentPage.value = page;
+    currentPage.value = page
   }
-};
+}
 
 const calcQnaNumber = (index) => {
-  return filteredQnas.value.length - ((currentPage.value) * pageSize + index)
+  return filteredQnas.value.length - (currentPage.value * pageSize + index)
 }
 
 const paginatedQnas = computed(() => {
-  const start = (currentPage.value) * pageSize
+  const start = currentPage.value * pageSize
   return filteredQnas.value.slice(start, start + pageSize)
 })
 
