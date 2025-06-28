@@ -60,6 +60,8 @@ const searchForm = reactive({
 });
 
 const columns = [
+  { label: '#', key: 'id'},
+  { label: '부서명', key: 'departmentName' },
   { label: '대상연월', key: 'targetDate' },
   { label: '렌탈 상품 수', key: 'rentalProductCount' },
   { label: '렌탈 유지율', key: 'rentalRetentionRate' },
@@ -84,6 +86,7 @@ async function handleSearch(data) {
     const response = await api.get('/api/goal/department', {
       params: data
     })
+    console.log(response.data);
     // index 부여
     const indexedData = response.data.map((item, idx) => ({
         ...item,
@@ -94,6 +97,7 @@ async function handleSearch(data) {
         customerFeedbackScore: formatNumber2(item.customerFeedbackScore / item.customerFeedbackCount / 10)
       })
     )
+    console.log(indexedData);
     rows.splice(0, rows.length, ...indexedData)
   } catch (error) {
     console.error('검색 실패:', error);
