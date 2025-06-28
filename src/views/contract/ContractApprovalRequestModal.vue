@@ -35,10 +35,12 @@
         <!-- 결재 제목 -->
         <div class="section-container">
           <h3 class="section-title">결재 제목</h3>
-          <div class="content-box editable">
+          <div class="content-box editable" :class="{ 'disabled': isContractActive }">
             <input 
               v-model="form.title" 
               class="content-input editable" 
+              :class="{ 'disabled': isContractActive }"
+              :disabled="isContractActive"
               placeholder="결재 제목을 입력하세요"
             />
           </div>
@@ -47,11 +49,13 @@
         <!-- 결재 내용 -->
         <div class="section-container">
           <h3 class="section-title">결재 내용</h3>
-          <div class="content-box editable">
+          <div class="content-box editable" :class="{ 'disabled': isContractActive }">
             <textarea 
               v-model="form.content"
               rows="8"
               class="content-textarea editable"
+              :class="{ 'disabled': isContractActive }"
+              :disabled="isContractActive"
               placeholder="결재 요청 내용을 입력하세요"
             ></textarea>
           </div>
@@ -65,11 +69,12 @@
               :disabled="isApproveDisabled"
               @click="handleSubmit"
             >
-              <span class="btn-icon">✓</span>
               {{ approveBtnLabel }}
             </button>
-            <button class="reject-btn" @click="emit('close')">
-              <span class="btn-icon">✗</span>
+            <button 
+              class="reject-btn"
+              @click="handleCancel"
+            >
               취소
             </button>
           </div>
@@ -102,6 +107,11 @@ const form = ref({
   content: ''
 })
 
+// 계약 상태가 "계약중"인지 확인
+const isContractActive = computed(() => {
+  return props.contractState === '계약중'
+})
+
 // 상태에 따라 버튼 라벨과 비활성화 조건 계산
 const approveBtnLabel = computed(() => {
   if (props.contractState === '결재전') return '요청'
@@ -110,6 +120,10 @@ const approveBtnLabel = computed(() => {
 })
 
 const isApproveDisabled = computed(() => {
+  // 계약중 상태이면 비활성화
+  if (props.contractState === '계약중') {
+    return true
+  }
   // 결재중이지만 반려 상태인 경우는 활성화
   if (props.contractState === '결재중' && props.approvalState === '반려') {
     return false
@@ -131,6 +145,10 @@ function getStatusClass(status) {
     default:
       return 'status-unknown'
   }
+}
+
+function handleCancel() {
+  emit('close')
 }
 
 async function handleSubmit() {
@@ -319,6 +337,11 @@ async function handleSubmit() {
   min-height: 28px;
 }
 
+.content-box.disabled {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+}
+
 .content-input {
   width: 100%;
   border: none;
@@ -330,6 +353,11 @@ async function handleSubmit() {
   line-height: 1.6;
   padding: 0;
   min-height: 28px;
+}
+
+.content-input.disabled {
+  color: #6c757d;
+  cursor: default;
 }
 
 .content-textarea {
@@ -346,10 +374,20 @@ async function handleSubmit() {
   min-height: 120px;
 }
 
+.content-textarea.disabled {
+  color: #6c757d;
+  cursor: default;
+}
+
 .content-textarea::placeholder,
 .content-input::placeholder {
   color: #6c757d;
   font-style: italic;
+}
+
+.content-input.disabled::placeholder,
+.content-textarea.disabled::placeholder {
+  color: #adb5bd;
 }
 
 .status-badge {
@@ -427,27 +465,18 @@ async function handleSubmit() {
 .approve-btn:disabled {
   background: #adb5bd;
   color: #fff;
-  cursor: not-allowed;
+  cursor: default;
 }
 
 .reject-btn {
   background: #f8f9fa;
   color: #6c757d;
   border: 1px solid #dee2e6;
+  cursor: pointer;
 }
 
 .approve-btn:hover:not(:disabled) {
   background: #5A6F54;
-}
-
-.reject-btn:hover {
-  background: #e9ecef;
-}
-
-.btn-icon {
-  margin-right: 5px;
-  font-size: 13px;
-  font-weight: bold;
 }
 
 @media (max-width: 1024px) {
