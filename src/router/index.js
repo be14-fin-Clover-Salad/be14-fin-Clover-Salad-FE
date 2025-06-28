@@ -213,6 +213,17 @@ routes.push({
   },
 });
 
+routes.push({
+  path: '/approval',
+  name: 'ApprovalManagement',
+  component: () => import('@/views/approval/Approval.vue'),
+  meta: {
+    title: '결재 관리',
+    requiresAuth: true,
+    basePath: '/approval',
+  }
+})
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
