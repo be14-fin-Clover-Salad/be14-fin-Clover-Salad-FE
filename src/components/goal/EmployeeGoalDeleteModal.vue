@@ -39,15 +39,16 @@
 }
 
 .upload-box {
-  border: 2px dashed #8e8eff;
   padding: 40px 20px;
   text-align: center;
   border-radius: 8px;
 }
 
 .upload-label {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
   margin-top: 16px;
+  gap: 12px;
 }
 
 .upload-button {
