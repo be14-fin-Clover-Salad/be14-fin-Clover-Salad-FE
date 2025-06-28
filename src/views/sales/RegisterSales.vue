@@ -251,7 +251,8 @@ async function handleSave() {
       console.error('응답 헤더:', error.response.headers)
       
       if (error.response.status === 500) {
-        alert(`서버 오류가 발생했습니다.\n에러 내용: ${error.response.data}`)
+        // 서버에서 받은 에러 메시지를 그대로 표시
+        alert(error.response.data)
       } else {
         alert(`등록 중 오류가 발생했습니다. (상태 코드: ${error.response.status})`)
       }
