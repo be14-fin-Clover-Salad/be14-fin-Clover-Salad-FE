@@ -353,6 +353,18 @@ const handleMarkAllAsRead = async () => {
             return
         }
 
+        // 선택된 알림들이 모두 이미 읽은 상태인지 확인
+        const selectedNotificationObjects = allNotifications.value.filter(n => 
+            selectedNotifications.value.includes(n.id)
+        )
+        
+        const allAlreadyRead = selectedNotificationObjects.every(n => n.read)
+        
+        if (allAlreadyRead) {
+            alert('선택하신 모든 알림은 이미 읽은 상태입니다.')
+            return
+        }
+
         showReadConfirmModal.value = true
     } catch (error) {
         console.error('읽음 처리 확인 중 오류 발생:', error)

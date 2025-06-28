@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTabStore } from "@/stores/tabStore";
 import { menuList, tabOnlyMenuItems } from "@/config/menuConfig";
@@ -44,6 +44,22 @@ const tabs = computed(() => tabStore.tabs);
 
 // 드롭다운 메뉴 표시 상태
 const showMenu = ref(false);
+
+// 드롭다운 메뉴 외부 클릭 감지
+function handleClickOutside(event) {
+  const controlTab = event.target.closest('.control-tab');
+  if (!controlTab && showMenu.value) {
+    showMenu.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 
 function onToggleMenu() {
   try {
@@ -127,9 +143,23 @@ function closeTab(tab) {
   align-items: flex-end;
   padding: 0 16px 0 5px;
   background-color: #f9f9f9;
-  border-bottom: 1px solid #c8d6ae;
+  border-bottom: none;
   height: 42px;
   position: relative;
+  width: 99.5%;
+  overflow: hidden;
+  margin-right: auto;
+}
+
+.top-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+.top-tabs::-webkit-scrollbar-thumb {
+  background: #c8d6ae;
+  border-radius: 3px;
+}
+.top-tabs::-webkit-scrollbar-track {
+  background: #f9f9f9;
 }
 
 /* 모든 탭에 공통 적용 */
@@ -149,6 +179,8 @@ function closeTab(tab) {
   color: #333333;
   position: relative;
   bottom: -1px;
+  flex: 1 1 0;
+  min-width: 60px;
   max-width: 200px;
   white-space: nowrap;
 }
@@ -196,14 +228,30 @@ function closeTab(tab) {
 .tab-title {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 /* 화살표 탭 추가 스타일 */
 .control-tab {
   /* .tab 기본 스타일 상속 */
-  padding: 8px;
-  width: 32px;
+  padding: 8px 16px;
+  width: 40px;
+  height: 34px;
   justify-content: center;
+  flex-shrink: 0;
+  flex-grow: 0;
+  box-sizing: border-box;
+  min-width: 40px;
+  max-width: 40px;
+}
+
+/* 화살표 탭 active 상태에서도 크기 유지 */
+.control-tab.active {
+  width: 40px;
+  height: 34px;
+  padding: 8px 16px;
 }
 
 /* 화살표 아이콘 크기 */
@@ -224,6 +272,7 @@ function closeTab(tab) {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
   margin-top: 4px;
+  min-width: 140px;
 }
 
 /* 드롭다운 아이템 */
