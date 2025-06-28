@@ -1,13 +1,15 @@
 <template>
   <section>
     <div class="section-header">
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 15%">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 23%">
         <h2 class="section-title">실적 목표 수정</h2>
-        <input :value="targetYear" type="number" :min="1901" :max="2100" readonly />
+        <span>사번: </span>
+        <input :value="route.params.gotEmployeeCode" type="number" disabled style="width: 23%;"/>
+        <input :value="targetYear" type="number" :min="1901" :max="2100" disabled style="width: 13%;"/>
         <span>년</span>
       </div>
       <div class="section-actions">
-        <button class="button primary" @click="fillDummyData">더미 데이터 입력</button>
+        <button class="button primary" @click="fillDummyData" hidden>더미 데이터 입력</button>
         <button class="button primary" @click="onClickRegister" :disabled="!existDefaultGoal">수정</button>
         <button class="button danger" @click="showGoalRegisterCancelModal = true">취소</button>
       </div>
@@ -37,6 +39,7 @@
             type="number"
             :value="getGoalValue(item.key, month)"
             @input="updateGoalValue(item.key, month, $event.target.value)"
+            :disabled="isInputDisabled(month)"
             class="goal-input"
           />
         </td>
@@ -88,7 +91,7 @@
       :isOpen="showGoalRegisterCancelModal"
       :type="type"
       @close="showGoalRegisterCancelModal = false"
-      @cancel="router.push('/goal/employee');"
+      @cancel="router.push(`/goal/detail/${route.params.gotEmployeeCode}/${targetYear}`);"
     />
     <GoalRegisterConfirmModal
       :isOpen="showGoalRegisterConfirmModal"
@@ -120,6 +123,7 @@ const targetYear = computed(() => route.params.gotTargetYear);
 const level = ref(null);
 const existDefaultGoal = ref(false);
 const goalData = ref(null);
+const today = ref(new Date());
 
 const items = [
   { label: '렌탈 상품 수', key: 'rentalProductCount' },
@@ -455,6 +459,31 @@ function fillDummyData() {
       }
     }
   }
+}
+
+function isInputDisabled(month) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // 1~12
+  const currentDate = now.getDate();
+
+  const selectedYear = Number(targetYear.value);
+
+  // 현재 연도 & 월이면 10일까지 수정 가능
+  if (selectedYear === currentYear && month === currentMonth) {
+    return currentDate > 10;
+  }
+
+  // 현재보다 과거 달이면 수정 불가
+  if (
+    selectedYear < currentYear ||
+    (selectedYear === currentYear && month < currentMonth)
+  ) {
+    return true;
+  }
+
+  // 미래면 수정 가능
+  return false;
 }
 </script>
 
