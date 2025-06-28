@@ -4,25 +4,15 @@
       <!-- 검색 -->
       <div class="search-wrap">
         <div class="search-input-container">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="메뉴 검색..."
-            class="search-input"
-            @input="handleSearch"
-          />
+          <input v-model="searchQuery" type="text" placeholder="메뉴 검색..." class="search-input" @input="handleSearch" />
           <span class="search-icon">
             <img src="/public/search.svg" alt="search" />
           </span>
 
           <div v-if="searchQuery && filteredMenuList.length" class="search-dropdown">
             <ul class="search-results-list">
-              <li
-                v-for="result in filteredMenuList"
-                :key="`${result.group}-${result.item.path}`"
-                @click="navigate(result.item.label, result.item.path)"
-                class="search-result-item"
-              >
+              <li v-for="result in filteredMenuList" :key="`${result.group}-${result.item.path}`"
+                @click="navigate(result.item.label, result.item.path)" class="search-result-item">
                 <div class="result-group">{{ result.group }}</div>
                 <div class="result-item">{{ result.item.label }}</div>
               </li>
@@ -35,19 +25,12 @@
       <nav>
         <ul>
           <li v-for="group in menuList" :key="group.group">
-            <div
-              @click="toggle(group.group)"
-              :class="['menu-title', openMenu === group.group && 'active']"
-            >
+            <div @click="toggle(group.group)" :class="['menu-title', openMenu === group.group && 'active']">
               <span class="menu-label">{{ group.group }}</span>
             </div>
             <ul class="submenu" v-show="openMenu === group.group">
-              <li
-                v-for="item in visibleItems(group)"
-                :key="item.path"
-                class="submenu-item"
-                @click="navigate(item.label, item.path)"
-              >
+              <li v-for="item in visibleItems(group)" :key="item.path" class="submenu-item"
+                @click="navigate(item.label, item.path)">
                 {{ item.label }}
               </li>
             </ul>
@@ -71,11 +54,11 @@ import { useTabStore } from '@/stores/tabStore'
 import { useAuthStore } from '@/stores/auth'
 
 // reactive state
-const openMenu    = ref(null)
+const openMenu = ref(null)
 const searchQuery = ref('')
-const router      = useRouter()
-const tabStore    = useTabStore()
-const authStore   = useAuthStore()
+const router = useRouter()
+const tabStore = useTabStore()
+const authStore = useAuthStore()
 
 // JWT payload parsing util
 function parseJwt(token) {
@@ -112,7 +95,15 @@ const isAdmin = computed(() => {
 
 // “로그 관리” 항목을 제외한 visibleItems 함수
 function visibleItems(group) {
+  const myRole =
+    authStore.userInfo?.role ||
+    claims.value.auth || // JWT auth 필드
+    claims.value.roles;  // JWT roles 필드
   return group.items.filter(item => {
+    // allowedRoles가 있는 경우 내 권한이 포함되어야 보임
+    if (item.meta?.allowedRoles) {
+      return item.meta.allowedRoles.includes(myRole);
+    }
     // “관리” 그룹의 “로그 관리”는 비관리자에겐 제외
     if (group.group === '관리' && item.label === '로그 관리' && !isAdmin.value) {
       return false

@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard-page">
-    <!-- 필터 바 -->
+
+    <!-- 1. 필터 바 -->
     <div class="filter-row">
       <select v-model="filterYear">
         <option v-for="y in yearList" :key="y" :value="y">{{ y }}년</option>
@@ -18,7 +19,7 @@
       </select>
     </div>
 
-    <!-- 게이지 카드 -->
+    <!-- 2. 게이지 KPI 카드 -->
     <div class="icon-stats-row">
       <div class="icon-card">
         <div class="gauge-wrapper">
@@ -49,7 +50,8 @@
       <div class="icon-card">
         <div class="gauge-wrapper">
           <v-chart :option="customerGaugeOption" autoresize style="width:80px;height:80px;" />
-          <div v-if="newCustomerPercent > 1" class="gauge-over">+{{ ((newCustomerPercent - 1) * 100).toFixed(0) }}%
+          <div v-if="newCustomerPercent > 1" class="gauge-over">
+            +{{ ((newCustomerPercent - 1) * 100).toFixed(0) }}%
           </div>
         </div>
         <div class="icon-content">
@@ -74,78 +76,68 @@
       </div>
     </div>
 
-    <!-- 메인 차트 + 총매출 게이지 -->
-    <div class="card main-chart">
-      <div class="card-header with-gauge">
-        <div class="title-block">
-          <h4 class="card-title">{{ mainTitle }}</h4>
-          <p class="card-category">계약 전체 렌탈료</p>
-        </div>
-        <div class="total-gauge">
-          <div class="gauge-wrapper" style="width:80px;height:80px;">
-            <v-chart :option="salesGaugeOption" autoresize style="width:100%;height:100%;" />
-            <div v-if="salesPercent > 1" class="gauge-over">
-              +{{ ((salesPercent - 1) * 100).toFixed(0) }}%
+    <!-- 3. 메인 차트 + 비교차트(50:50) -->
+    <div class="main-row">
+      <div class="card main-chart">
+        <div class="card-header with-gauge main-header-align">
+          <div class="main-title-block">
+            <h4 class="main-card-title">{{ mainTitle }}</h4>
+            <p class="main-card-category">계약 전체 렌탈료</p>
+          </div>
+          <div class="main-total-gauge">
+            <div class="gauge-wrapper" style="width:80px;height:80px;">
+              <v-chart :option="salesGaugeOption" autoresize style="width:100%;height:100%;" />
+              <div v-if="salesPercent > 1" class="gauge-over">
+                +{{ ((salesPercent - 1) * 100).toFixed(0) }}%
+              </div>
+            </div>
+            <div class="main-total-label">
+              <p>총 매출</p>
+              <h3>{{ formatKoreanAmount(kpi.total_rental_amount) }}원</h3>
             </div>
           </div>
-          <div class="total-label">
-            <p>총 매출</p>
-            <h3>{{ kpi.total_rental_amount.toLocaleString() }}원</h3>
-          </div>
+        </div>
+        <div class="card-body">
+          <v-chart :option="mainOption" autoresize style="height:260px;" />
         </div>
       </div>
-      <div class="card-body">
-        <v-chart :option="mainOption" autoresize style="height:260px;" />
+      <div class="card compare-chart">
+        <div class="card-header main-header-align">
+          <h4 class="main-card-title">{{ compareTitle }}</h4>
+        </div>
+        <div class="card-body padded-chart">
+          <v-chart :option="compareOption" autoresize style="height:260px;" />
+        </div>
       </div>
     </div>
 
-    <!-- 미니 통계 차트 -->
+    <!-- 4. 미니 통계 차트 -->
     <div class="stats-row">
       <div class="card stat-card">
-        <div class="card-header">
-          <p class="card-category">렌탈 상품 수</p>
-          <h3 class="card-title">{{ miniStats.product }}</h3>
+        <div class="card-header stat-header">
+          <p class="icon-title">렌탈 상품 수</p>
+          <h3 class="icon-value">{{ miniStats.product }}</h3>
         </div>
-        <div class="card-body padded-chart">
+        <div class="card-body stat-body padded-chart">
           <v-chart :option="miniOption(miniStats.productArr, miniStats.xArr)" autoresize style="height:120px;" />
         </div>
       </div>
       <div class="card stat-card">
-        <div class="card-header">
-          <p class="card-category">신규 고객 수</p>
-          <h3 class="card-title">{{ miniStats.newCustomer }}</h3>
+        <div class="card-header stat-header">
+          <p class="icon-title">신규 고객 수</p>
+          <h3 class="icon-value">{{ miniStats.newCustomer }}</h3>
         </div>
-        <div class="card-body padded-chart">
+        <div class="card-body stat-body padded-chart">
           <v-chart :option="miniOption(miniStats.newCustomerArr, miniStats.xArr)" autoresize style="height:120px;" />
         </div>
       </div>
       <div class="card stat-card">
-        <div class="card-header">
-          <p class="card-category">렌탈 유지율</p>
-          <h3 class="card-title">{{ miniStats.retention }}%</h3>
+        <div class="card-header stat-header">
+          <p class="icon-title">렌탈 유지율</p>
+          <h3 class="icon-value">{{ miniStats.retention }}%</h3>
         </div>
-        <div class="card-body padded-chart">
+        <div class="card-body stat-body padded-chart">
           <v-chart :option="miniOption(miniStats.retentionArr, miniStats.xArr)" autoresize style="height:120px;" />
-        </div>
-      </div>
-    </div>
-
-    <!-- 카테고리 & 비교 차트 -->
-    <div class="half-row">
-      <div class="card half-card">
-        <div class="card-header">
-          <h4 class="card-title">렌탈 상품 카테고리</h4>
-        </div>
-        <div class="card-body padded-chart">
-          <v-chart :option="categoryOption" autoresize style="height:260px;" />
-        </div>
-      </div>
-      <div class="card half-card">
-        <div class="card-header">
-          <h4 class="card-title">{{ compareTitle }}</h4>
-        </div>
-        <div class="card-body padded-chart">
-          <v-chart :option="compareOption" autoresize style="height:260px;" />
         </div>
       </div>
     </div>
@@ -157,6 +149,27 @@ import { ref, computed, watch, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import api from '@/api/auth'
 
+// 금액 한글 단위로 변환
+function formatKoreanAmount(num) {
+  if (num == null) return '-'
+  if (num >= 1e8) return (num / 1e8).toFixed(2).replace(/\.00$/, '') + '억'
+  if (num >= 1e4) return (num / 1e4).toFixed(2).replace(/\.00$/, '') + '만'
+  return num.toLocaleString()
+}
+function getMonthLabel(m) {
+  if (m < 1) return '12월'
+  if (m > 12) return '1월'
+  return `${m}월`
+}
+function getQuarterLabel(q) {
+  if (q < 1) return '4분기'
+  if (q > 4) return '1분기'
+  return `${q}분기`
+}
+function getYearLabel(y) {
+  return `${y}년`
+}
+
 function getEmployeeCodeFromToken() {
   const token = localStorage.getItem('accessToken')
   if (!token) return null
@@ -167,7 +180,6 @@ function getEmployeeCodeFromToken() {
   }
 }
 const employeeCode = getEmployeeCodeFromToken()
-
 const thisYear = new Date().getFullYear()
 const yearList = Array.from({ length: thisYear - 2019 + 1 }, (_, i) => thisYear - i)
 const filterYear = ref(thisYear)
@@ -405,34 +417,33 @@ function miniOption(dataArr, xArr) {
   }
 }
 
-const categoryOption = computed(() => {
-  const productCategories = [
-    { name: '청정기', value: 20 }, { name: '정수기', value: 15 },
-    { name: '비데', value: 10 }, { name: '공기청정기', value: 25 },
-    { name: '건조기', value: 10 }
-  ]
-  return {
-    tooltip: { trigger: 'item', formatter: '{b}: {c}건' },
-    legend: { orient: 'vertical', left: 10, data: productCategories.map(c => c.name) },
-    series: [{
-      name: '렌탈 상품', type: 'pie', radius: '65%', center: ['60%', '50%'],
-      data: productCategories,
-      emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.5)' } }
-    }]
-  }
-})
-
 const compareTitle = computed(() => {
-  if (filterType.value === 'month') return `${filterYear.value}년 ${filterValue.value}월 전월·당월·명월`
-  if (filterType.value === 'quarter') return `${filterYear.value}년 ${filterValue.value}분기 전분기·분기·다음분기`
-  return `${filterYear.value}년 전년·연·다음년`
+  if (filterType.value === 'month') return `${filterYear.value}년 ${filterValue.value}월 전후 비교`
+  if (filterType.value === 'quarter') return `${filterYear.value}년 ${filterValue.value}분기 전후 비교`
+  return `${filterYear.value}년 전후 비교`
 })
 
 const compareOption = computed(() => {
   let labels = []
-  if (filterType.value === 'month') labels = [`${filterValue.value - 1}월`, `${filterValue.value}월`, `${filterValue.value + 1}월`]
-  else if (filterType.value === 'quarter') labels = [`${filterValue.value - 1}분기`, `${filterValue.value}분기`, `${filterValue.value + 1}분기`]
-  else labels = [`${filterYear.value - 1}년`, `${filterYear.value}년`, `${filterYear.value + 1}년`]
+  if (filterType.value === 'month') {
+    labels = [
+      getMonthLabel(filterValue.value - 1),
+      getMonthLabel(filterValue.value),
+      getMonthLabel(filterValue.value + 1)
+    ]
+  } else if (filterType.value === 'quarter') {
+    labels = [
+      getQuarterLabel(filterValue.value - 1),
+      getQuarterLabel(filterValue.value),
+      getQuarterLabel(filterValue.value + 1)
+    ]
+  } else {
+    labels = [
+      getYearLabel(filterYear.value - 1),
+      getYearLabel(filterYear.value),
+      getYearLabel(filterYear.value + 1)
+    ]
+  }
   return {
     grid: { top: '10%', left: '10%', right: '10%', bottom: '15%', containLabel: true },
     xAxis: { type: 'category', data: labels, axisLine: { lineStyle: { color: '#e9ecef' } }, axisTick: { show: false }, axisLabel: { color: '#9fa9b1' } },
@@ -440,33 +451,25 @@ const compareOption = computed(() => {
     series: [{
       type: 'bar', data: compareKpi.value, barWidth: '40%',
       itemStyle: { color: (p) => ['#ff7f7f', '#ffe066', '#a3e635'][p.dataIndex], borderRadius: [8, 8, 0, 0] },
-      label: { show: true, position: 'top', color: '#333' }
+      label: { show: true, position: 'top', color: '#333',
+        formatter: params => formatKoreanAmount(params.value)
+      }
     }]
   }
 })
 </script>
 
 <style scoped>
-.card-header{
-  margin-left: 25px;
-}
-
-.card-title {
-  margin-top: 5px;
-}
-
 .dashboard-page {
   padding: 24px;
   background: #f4f5f7;
   min-height: 100vh;
 }
-
 .filter-row {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.3rem;
 }
-
 .filter-row select {
   padding: .5rem;
   border: 1px solid #ccc;
@@ -474,13 +477,11 @@ const compareOption = computed(() => {
   background: #fff;
   font-size: 1rem;
 }
-
 .icon-stats-row {
   display: flex;
   gap: 1rem;
   margin-bottom: 24px;
 }
-
 .icon-card {
   flex: 1;
   background: #fff;
@@ -488,101 +489,161 @@ const compareOption = computed(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  padding: 1rem;
+  padding: 1.2rem 1.2rem 1.2rem 1.6rem;
+  min-width: 0;
+  min-height: 130px;
 }
-
 .gauge-wrapper {
   position: relative;
+  margin-right: 18px;
 }
-
 .gauge-over {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: .75rem;
+  font-size: .78rem;
   font-weight: bold;
   color: red;
+  pointer-events: none;
 }
-
 .icon-content .icon-title {
-  margin: 0;
-  font-size: .875rem;
-  color: #8898aa;
-}
-
-.icon-content .icon-value {
-  margin: .25rem 0;
-  font-size: 1.25rem;
+  margin: 0 0 6px 0;
+  font-size: .98rem;
+  color: #7b8aaf;
   font-weight: 600;
+  letter-spacing: -0.5px;
 }
-
+.icon-content .icon-value {
+  margin: 0 0 4px 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
 .icon-content .icon-subtitle {
-  font-size: .75rem;
+  font-size: .78rem;
   color: #adb5bd;
 }
-
+.main-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 24px;
+}
+.main-chart,
+.compare-chart {
+  flex: 1;
+  min-width: 390px;
+  max-width: 500%;
+  display: flex;
+  flex-direction: column;
+}
 .card {
   background: #fff;
   border-radius: .75rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
-
-.card-header.with-gauge {
+.main-header-align {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  padding: 22px 36px 10px 36px;
 }
-
-.title-block h4 {
-  margin: 5px;
-  font-size: 1.25rem;
+.main-title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.main-card-title {
+  margin: 0 0 6px 0;
+  font-size: 1.15rem;
+  color: #7b8aaf;
   font-weight: 600;
+  letter-spacing: -0.5px;
 }
-
-.card-category {
+.main-card-category {
   margin: 0;
-  font-size: .875rem;
-  color: #8898aa;
+  font-size: .98rem;
+  color: #adb5bd;
+  letter-spacing: -0.5px;
 }
-
-.total-gauge {
+.main-total-gauge {
   display: flex;
   align-items: center;
+  gap: 18px;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
-
-.total-label p {
+.main-total-label p {
+  margin: 0 0 2px 0;
+  font-size: .98rem;
+  color: #adb5bd;
+}
+.main-total-label h3 {
   margin: 0;
-  font-size: .75rem;
-  color: #8898aa;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #222;
 }
-
-.total-label h3 {
-  margin: 0;
-  font-size: 1rem;
+.card-header {
+  padding: 38px 36px 10px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
-
+.padded-chart {
+  padding: 1rem 0 1.1rem 0;
+}
 .stats-row {
   display: flex;
   gap: 1rem;
   margin-bottom: 24px;
 }
-
 .stat-card {
   flex: 1;
+  min-width: 0;
 }
-
-.padded-chart {
-  padding: 1rem 0;
-}
-
-.half-row {
+.stat-header {
+  padding: 18px 22px 12px 22px;
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: flex-start;
 }
-
-.half-card {
-  flex: 1;
+.stat-body {
+  padding-top: 8px;
+}
+.stat-header .icon-title {
+  margin: 0 0 6px 0;
+  font-size: .98rem;
+  color: #7b8aaf;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+.stat-header .icon-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #222;
+}
+.card-header.with-gauge {
+  position: relative;
+  padding: 38px 36px 10px 36px;
+  min-height: 95px;
+}
+.main-total-gauge {
+  position: absolute;
+  top: 24px;
+  right: 42px;
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+.card-header.main-header-align {
+  padding: 22px 36px 10px 36px;
+  min-height: 60px;
 }
 </style>
