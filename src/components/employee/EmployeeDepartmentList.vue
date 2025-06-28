@@ -5,12 +5,15 @@
         <template v-if="departmentInfo.isUnassigned">
           <span class="lower-dept">미배정</span>
         </template>
-        <template v-else>
+        <template v-else-if="departmentInfo.upper">
           <span class="upper-dept">{{ departmentInfo.upper }}</span> / <span class="lower-dept">{{ departmentInfo.lower }}</span>
         </template>
+        <template v-else>
+          <span class="lower-dept">{{ departmentInfo.lower }}</span>
+        </template>
       </div>
-      <div v-if="!loading && !error && employees.length > 0" class="employee-count-box">
-        <span class="text">총</span> <span class="count">{{ employees.length }}</span> <span class="text">명</span>
+      <div v-if="!loading && !error && filteredEmployees.length > 0" class="employee-count-box">
+        <span class="text">총</span> <span class="count">{{ filteredEmployees.length }}</span> <span class="text">명</span>
       </div>
     </div>
     <div
@@ -76,11 +79,12 @@ const departmentInfo = computed(() => {
       return { upper: '', lower: '', isUnassigned: false, hasData: false }
     }
 
+    // 상위 부서가 없는 경우 (최상위 부서인 경우)
     if (!deptInfo.parent) {
       return {
         upper: '',
-        lower: '미배정',
-        isUnassigned: true,
+        lower: deptInfo.current?.name || '',
+        isUnassigned: false,
         hasData: true
       }
     }
@@ -108,10 +112,17 @@ const formatPhoneNumber = (phone) => {
 
 const fetchEmployees = async (departmentId) => {
   try {
+    loading.value = true
+    error.value = null
+    
     const response = await api.get(`/department/employee?departmentId=${departmentId}`)
     employees.value = response.data
   } catch (error) {
     console.error('부서 직원 조회 실패:', error)
+    error.value = '직원 목록을 불러오는데 실패했습니다.'
+    employees.value = []
+  } finally {
+    loading.value = false
   }
 }
 
@@ -384,6 +395,16 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   width: 4px;
   background-color: #a3b13c;
   border-radius: 4px 0 0 4px;
+}
+
+/* Focus outline 제거 */
+.employee-card:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.employee-card:active {
+  background-color: #D5E0D0;
 }
 
 /* 반응형 스타일 */

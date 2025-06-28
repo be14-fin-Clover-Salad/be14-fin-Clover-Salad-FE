@@ -46,11 +46,13 @@
               </div>
             </div>
             <div class="dropdown-divider"></div>
-            <div class="dropdown-item" @click.stop="goToMypage">
+            <!-- 관리자가 아닌 경우에만 내 정보 수정 버튼 표시 -->
+            <div class="dropdown-item" @click.stop="goToMypage" v-if="user.levelLabel !== '관리자'">
               <img src="/profile.svg" alt="내 정보 수정" class="dropdown-icon" />
               내 정보 수정
             </div>
-            <div class="dropdown-divider strong"></div>
+            <!-- 관리자인 경우 내 정보 수정 버튼이 없으므로 구분선도 조건부로 표시 -->
+            <div class="dropdown-divider strong" v-if="user.levelLabel !== '관리자'"></div>
             <div class="dropdown-item" @click.stop="logout">
               <img src="/logout.svg" alt="로그아웃" class="dropdown-icon" />
               <span class="logout-text">로그아웃</span>

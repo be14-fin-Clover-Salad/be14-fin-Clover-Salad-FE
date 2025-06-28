@@ -536,6 +536,12 @@ const handleEscKey = (event) => {
     border-left: 4px solid #4A6741;
   }
 
+  /* Focus outline 제거 */
+  &:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
   &:active {
     background-color: #D5E0D0;
   }
@@ -679,6 +685,22 @@ const handleEscKey = (event) => {
   &:active {
     transform: translateY(0);
   }
+}
+
+.btn-primary:focus,
+.btn-secondary:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.close-btn:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.filter-remove:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* 반응형 */

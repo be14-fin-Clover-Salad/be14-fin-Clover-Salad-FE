@@ -23,21 +23,31 @@
     <!-- 두 번째 행 - expanded가 true일 때만 보임 -->
     <template v-if="expanded">
       <div class="row">
-        <div class="field">
-          <label>매출 날짜 (시작)</label>
-          <input v-model="filters.startDate" type="date" />
+        <div class="field date-range-field">
+          <label>매출 날짜</label>
+          <div class="date-inputs">
+            <input v-model="filters.startDate" type="date" placeholder="시작일" />
+            <span class="date-separator">~</span>
+            <input v-model="filters.endDate" type="date" placeholder="종료일" />
+          </div>
         </div>
-        <div class="field">
-          <label>매출 날짜 (종료)</label>
-          <input v-model="filters.endDate" type="date" />
-        </div>
-        <div class="field">
-          <label>최소 금액</label>
-          <input v-model="filters.minAmount" placeholder="예: 1000000" type="number" />
-        </div>
-        <div class="field">
-          <label>최대 금액</label>
-          <input v-model="filters.maxAmount" placeholder="예: 10000000" type="number" />
+        <div class="field date-range-field">
+          <label>매출 금액</label>
+          <div class="date-inputs">
+            <input 
+              v-model="formattedMinAmount" 
+              placeholder="최소 금액" 
+              type="text"
+              @input="handleMinAmountInput"
+            />
+            <span class="date-separator">~</span>
+            <input 
+              v-model="formattedMaxAmount" 
+              placeholder="최대 금액" 
+              type="text"
+              @input="handleMaxAmountInput"
+            />
+          </div>
         </div>
       </div>
     </template>
@@ -45,20 +55,62 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   filters: Object,
   expanded: { type: Boolean, default: false }
 })
 
-const allFields = [
-  { label: '부서명', key: 'department', placeholder: '예: 영업부' },
-  { label: '직원명', key: 'employeeName', placeholder: '예: 김영업' },
-  { label: '계약 코드', key: 'contractCode', placeholder: '예: C-20240101' },
-  { label: '매출 날짜 (시작)', key: 'startDate', type: 'date' },
-  { label: '매출 날짜 (종료)', key: 'endDate', type: 'date' },
-  { label: '최소 금액', key: 'minAmount', placeholder: '예: 1000000', type: 'number' },
-  { label: '최대 금액', key: 'maxAmount', placeholder: '예: 10000000', type: 'number' }
-]
+// 숫자 포맷팅 함수
+function formatNumber(value) {
+  if (!value) return ''
+  // 숫자가 아닌 문자 제거
+  const numericValue = value.toString().replace(/[^0-9]/g, '')
+  if (!numericValue) return ''
+  // 세 자리마다 콤마 추가
+  return parseInt(numericValue).toLocaleString('ko-KR')
+}
+
+// 포맷된 숫자를 실제 숫자로 변환
+function parseFormattedNumber(value) {
+  if (!value) return null
+  const numericValue = value.toString().replace(/[^0-9]/g, '')
+  return numericValue ? parseInt(numericValue) : null
+}
+
+// 최소 금액 입력 핸들러
+function handleMinAmountInput(event) {
+  const inputValue = event.target.value
+  const numericValue = parseFormattedNumber(inputValue)
+  
+  // 실제 값 업데이트
+  props.filters.minAmount = numericValue
+}
+
+// 최대 금액 입력 핸들러
+function handleMaxAmountInput(event) {
+  const inputValue = event.target.value
+  const numericValue = parseFormattedNumber(inputValue)
+  
+  // 실제 값 업데이트
+  props.filters.maxAmount = numericValue
+}
+
+// 포맷된 금액 표시용 computed
+const formattedMinAmount = computed({
+  get: () => formatNumber(props.filters.minAmount),
+  set: (value) => {
+    props.filters.minAmount = parseFormattedNumber(value)
+  }
+})
+
+const formattedMaxAmount = computed({
+  get: () => formatNumber(props.filters.maxAmount),
+  set: (value) => {
+    props.filters.maxAmount = parseFormattedNumber(value)
+  }
+})
 </script>
 
 <style scoped>
@@ -71,8 +123,26 @@ const allFields = [
 .row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 20px;
   margin-bottom: 10px;
+}
+
+.date-range-field {
+  grid-column: span 2;
+}
+
+.date-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 5px;
+  align-items: center;
+}
+
+.date-separator {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
 }
 
 .row:last-child {
@@ -104,10 +174,11 @@ const allFields = [
   line-height: 1.5;
   width: 100%;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .field input:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: #ccc;
 }
 </style> 

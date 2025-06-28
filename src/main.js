@@ -15,9 +15,6 @@ app.use(pinia);
 
 app.component('v-chart', VueECharts)
 app.provide('echarts', echarts)
-app.use(createPinia({
-  devtools: false
-}))
 app.use(router)
 
 const auth = useAuthStore()
@@ -36,6 +33,10 @@ const tryRefreshAndLoadUser = async () => {
       await auth.refreshToken()
       await auth.recoverUserInfo()
     } 
+
+    if(auth.userInfo) {
+      await notificationStore.connectSse()
+    }
   } catch (err) {
       auth.clearToken()
       window.location.href = '/login'
@@ -47,7 +48,7 @@ async function bootstrap() {
 
   if (auth.userInfo) {
     try {
-      await notificationStore.setupSse()
+      notificationStore.connectSse()
     } catch (e) {
     }
   }

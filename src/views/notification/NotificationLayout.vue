@@ -1,5 +1,29 @@
 <template>
     <div class="notification-container">
+        <div class="board-header">
+            <div class="filter-options">
+                <select v-model="filterStatus" @change="handleFilterChange" class="filter-select">
+                    <option value="all">전체</option>
+                    <option value="unread">읽지 않음</option>
+                </select>
+            </div>
+            
+            <div class="action-buttons">
+                <button 
+                    @click="handleMarkAllAsRead" 
+                    class="mark-all-read-button"
+                    :disabled="selectedNotifications.length === 0">
+                    읽음
+                </button>
+                <button 
+                    @click="confirmDelete" 
+                    class="delete-button"
+                    :disabled="selectedNotifications.length === 0">
+                    삭제
+                </button>
+            </div>
+        </div>
+        
         <div class="board-container">
             <table class="board-table">
                 <thead>
@@ -69,21 +93,6 @@
                     &gt;
                 </button>
             </div>
-            
-            <div class="delete-actions">
-                <button 
-                    @click="handleMarkAllAsRead" 
-                    class="mark-all-read-button"
-                    :disabled="selectedNotifications.length === 0">
-                    읽음
-                </button>
-                <button 
-                    @click="confirmDelete" 
-                    class="delete-button"
-                    :disabled="selectedNotifications.length === 0">
-                    삭제
-                </button>
-            </div>
         </div>
 
         <!-- 결재 상세 모달 -->
@@ -98,16 +107,32 @@
 
         <!-- 삭제 확인 모달 -->
         <div v-if="showDeleteConfirmModal" class="modal-overlay">
-            <div class="modal-content">
+            <div class="modal-box">
                 <div class="modal-header">
-                    <h3>알림 삭제</h3>
+                    <h2 class="modal-title">알림 삭제</h2>
                 </div>
-                <div class="modal-body">
+                <div class="modal-content">
                     <p>선택한 알림을 삭제하시겠습니까?</p>
                 </div>
                 <div class="modal-footer">
                     <button @click="executeDelete" class="confirm-button">삭제</button>
                     <button @click="showDeleteConfirmModal = false" class="cancel-button">취소</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 읽음 처리 확인 모달 -->
+        <div v-if="showReadConfirmModal" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2 class="modal-title">알림 읽음 처리</h2>
+                </div>
+                <div class="modal-content">
+                    <p>선택한 알림들을 모두 읽음 처리하시겠습니까?</p>
+                </div>
+                <div class="modal-footer">
+                    <button @click="executeMarkAsRead" class="read-confirm-button">확인</button>
+                    <button @click="showReadConfirmModal = false" class="cancel-button">취소</button>
                 </div>
             </div>
         </div>
@@ -132,11 +157,14 @@ const authStore = useAuthStore()
 // console.log('Delete Notifications Function:', notificationStore.deleteNotifications)
 
 const notifications = ref([])
+const allNotifications = ref([]) // 모든 알림을 저장할 ref 추가
 const currentPage = ref(0)
 const totalPages = ref(1)
 const showDetailModal = ref(false)
 const selectedApproval = ref(null)
 const showDeleteConfirmModal = ref(false)
+const showReadConfirmModal = ref(false)
+const filterStatus = ref('all')
 
 const fetchNotifications = async (page) => {
     try {
@@ -145,7 +173,15 @@ const fetchNotifications = async (page) => {
                 'Authorization': `Bearer ${authStore.accessToken}`
             }
         })
-        notifications.value = response.data
+        allNotifications.value = response.data
+        
+        // 프론트엔드에서 필터링 적용
+        if (filterStatus.value === 'unread') {
+            notifications.value = response.data.filter(n => !n.read)
+        } else {
+            notifications.value = response.data
+        }
+        
         notificationStore.unreadCount = response.data.filter(n => !n.read).length
     } catch (error) {
         // console.error('알림 목록을 불러오는데 실패했습니다:', error)
@@ -179,9 +215,22 @@ const handleNotificationClick = async (notification) => {
         // 읽지 않은 알림일 경우에만 읽음 처리
         if (!notification.read) {
             await notificationStore.markAsRead(notification.id)
+            
+            // allNotifications에서도 해당 알림을 읽음 상태로 변경
+            const allIndex = allNotifications.value.findIndex(n => n.id === notification.id)
+            if (allIndex !== -1) {
+                allNotifications.value[allIndex].read = true
+            }
+            
+            // 현재 표시된 notifications에서도 업데이트
             const index = notifications.value.findIndex(n => n.id === notification.id)
             if (index !== -1) {
                 notifications.value[index].read = true
+            }
+            
+            // "읽지 않음" 필터가 적용된 상태라면 해당 알림을 목록에서 제거
+            if (filterStatus.value === 'unread') {
+                notifications.value = notifications.value.filter(n => n.id !== notification.id)
             }
         }
 
@@ -304,6 +353,15 @@ const handleMarkAllAsRead = async () => {
             return
         }
 
+        showReadConfirmModal.value = true
+    } catch (error) {
+        console.error('읽음 처리 확인 중 오류 발생:', error)
+        alert('읽음 처리 확인 중 오류가 발생했습니다.')
+    }
+}
+
+const executeMarkAsRead = async () => {
+    try {
         const auth = useAuthStore()
         await api.patch('/notification/read', selectedNotifications.value, {
             headers: {
@@ -311,18 +369,25 @@ const handleMarkAllAsRead = async () => {
             }
         })
         
-        // 선택된 알림들을 읽음 상태로 변경
-        notifications.value.forEach(notification => {
+        // 선택된 알림들을 읽음 상태로 변경 (allNotifications도 업데이트)
+        allNotifications.value.forEach(notification => {
             if (selectedNotifications.value.includes(notification.id)) {
                 notification.read = true
             }
         })
         
+        // 필터링 상태에 따라 notifications 업데이트
+        if (filterStatus.value === 'unread') {
+            notifications.value = allNotifications.value.filter(n => !n.read)
+        } else {
+            notifications.value = allNotifications.value
+        }
+        
         // 선택 해제
         selectedNotifications.value = []
         
-        // 목록 새로고침
-        fetchNotifications(currentPage.value)
+        // 모달 닫기
+        showReadConfirmModal.value = false
     } catch (error) {
         console.error('선택된 알림을 읽음 처리하는 중 오류 발생:', error)
         alert('선택된 알림을 읽음 처리하는 중 오류가 발생했습니다.')
@@ -335,6 +400,15 @@ const toggleNotificationSelection = (notificationId) => {
         selectedNotifications.value.push(notificationId)
     } else {
         selectedNotifications.value.splice(index, 1)
+    }
+}
+
+const handleFilterChange = () => {
+    // 필터링 상태에 따라 목록 재로드
+    if (filterStatus.value === 'unread') {
+        notifications.value = allNotifications.value.filter(n => !n.read)
+    } else {
+        notifications.value = allNotifications.value
     }
 }
 
@@ -387,7 +461,6 @@ onMounted(() => {
 
     tbody tr {
         cursor: pointer;
-        transition: background-color 0.2s;
         background-color: #ffffff;
 
         &:hover {
@@ -432,7 +505,7 @@ onMounted(() => {
 }
 
 .col-date {
-    width: 15%;
+    width: 20%;
 }
 
 .col-status {
@@ -526,55 +599,42 @@ onMounted(() => {
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.modal-content {
-    background-color: white;
-    border-radius: 8px;
+.modal-box {
     width: 500px;
     max-width: 90%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #4A6741 0%, #8BA888 100%);
+    color: white;
+    padding: 20px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    h3 {
-        margin: 0;
-        color: #333;
-        font-size: 18px;
-    }
-
-    .close-button {
-        background: none;
-        border: none;
-        font-size: 24px;
-        color: #666;
-        cursor: pointer;
-        padding: 0;
-        line-height: 1;
-    }
+    border-bottom: 1px solid #e0e0e0;
 }
 
-.modal-body {
-    padding: 20px;
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+}
 
-    .notification-content {
-        margin: 0 0 15px 0;
-        color: #333;
-        font-size: 16px;
-        line-height: 1.5;
-    }
-
-    .notification-date {
-        margin: 0;
-        color: #666;
-        font-size: 14px;
-    }
+.modal-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .modal-footer {
@@ -593,9 +653,27 @@ onMounted(() => {
         border-radius: 4px;
         cursor: pointer;
         font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s;
 
         &:hover {
             background-color: #c62828;
+        }
+    }
+
+    .read-confirm-button {
+        padding: 8px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #218838;
         }
     }
 
@@ -607,6 +685,8 @@ onMounted(() => {
         border-radius: 4px;
         cursor: pointer;
         font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s;
 
         &:hover {
             background-color: #9fa6b1;
@@ -616,9 +696,19 @@ onMounted(() => {
 
 .board-header {
     display: flex;
-    justify-content: flex-end;
-    padding: 10px 15px;
-    border-bottom: 1px solid #eee;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.filter-options {
+    display: flex;
+    align-items: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
 }
 
 .delete-button {
@@ -666,34 +756,6 @@ onMounted(() => {
     gap: 8px;
 }
 
-.confirm-button {
-    padding: 8px 16px;
-    background-color: #a6ce39;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-
-    &:hover {
-        background-color: #94b933;
-    }
-}
-
-.cancel-button {
-    padding: 8px 16px;
-    background-color: #adb5bd;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-
-    &:hover {
-        background-color: #9fa6b1;
-    }
-}
-
 .col-checkbox {
     width: 40px;
     text-align: center;
@@ -705,13 +767,20 @@ onMounted(() => {
     align-items: center;
     margin-top: 20px;
     padding: 15px 0;
-    position: relative;
 }
 
-.delete-actions {
-    display: flex;
-    gap: 8px;
-    position: absolute;
-    right: 0;
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+    outline: none;
+    
+    &:hover {
+        border-color: #adb5bd;
+    }
 }
 </style>

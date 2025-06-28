@@ -56,11 +56,7 @@ function handleClick(e) {
   e.stopPropagation()
   props.onToggle(props.node)
   
-  if (!hasChildren.value) {
-    departmentStore.setSelectedDepartment(props.node.id)
-  } else {
-    departmentStore.setSelectedDepartment(null)
-  }
+  departmentStore.setSelectedDepartment(props.node.id)
 }
 </script>
 
@@ -86,6 +82,12 @@ function handleClick(e) {
   background: #eaf6c7;
   font-weight: 600;
 }
+
+/* Focus outline 제거 */
+.node-label:focus {
+  outline: none !important;
+}
+
 .folder-icon {
   width: 18px;
   height: 18px;

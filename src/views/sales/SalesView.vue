@@ -220,7 +220,7 @@ const columns = [
   { label: '매출 날짜', key: 'salesDate' },
   { label: '부서', key: 'department' },
   { label: '직원명', key: 'employeeName' },
-  { label: '매출 금액', key: 'amount' },
+  { label: '매출 금액(원)', key: 'amount' },
   { label: '계약 코드', key: 'contractCode' }
 ]
 
@@ -241,10 +241,7 @@ const showRegisterModal = ref(false)
 
 // 금액 포맷팅 함수
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW'
-  }).format(amount)
+  return amount.toLocaleString('ko-KR')
 }
 </script>
 
