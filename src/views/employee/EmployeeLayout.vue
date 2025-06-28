@@ -392,4 +392,26 @@ export default {};
   padding: 30px;
   overflow-y: auto;
 }
+
+/* Focus outline 제거 */
+.employee-page :deep(*) {
+  outline: none !important;
+}
+
+.employee-page :deep(input:focus),
+.employee-page :deep(select:focus),
+.employee-page :deep(button:focus),
+.employee-page :deep(a:focus),
+.employee-page :deep(div:focus) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.employee-page :deep(.node-label:focus) {
+  outline: none !important;
+}
+
+.employee-page :deep(.employee-card:focus) {
+  outline: none !important;
+}
 </style>

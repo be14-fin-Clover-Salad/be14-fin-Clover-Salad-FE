@@ -239,9 +239,9 @@ function toggleExpand() {
 
 .search-filter-shell :deep(input:focus),
 .search-filter-shell :deep(select:focus) {
-  outline: none;
+  outline: none !important;
   border-color: #d5eb97;
-  box-shadow: 0 0 0 2px rgba(213, 235, 151, 0.2);
+  box-shadow: none !important;
 }
 
 .search-filter-shell :deep(input::placeholder) {
@@ -280,5 +280,15 @@ function toggleExpand() {
   .search-filter-shell :deep(input::placeholder) {
     font-size: 11px;
   }
+}
+
+.search-filter-shell :deep(button:focus) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.search-filter-shell :deep(.expand-btn:focus) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 </style>

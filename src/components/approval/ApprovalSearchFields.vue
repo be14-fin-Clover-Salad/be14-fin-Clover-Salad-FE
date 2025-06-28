@@ -29,20 +29,20 @@
     <template v-if="expanded">
       <div class="row">
         <div class="field">
-          <label>결재 요청일 (시작)</label>
-          <input v-model="filters.requestDateStart" type="date" />
+          <label>결재 요청일</label>
+          <div class="date-inputs">
+            <input v-model="filters.requestDateStart" type="date" placeholder="시작일" />
+            <span class="date-separator">~</span>
+            <input v-model="filters.requestDateEnd" type="date" placeholder="종료일" />
+          </div>
         </div>
         <div class="field">
-          <label>결재 요청일 (종료)</label>
-          <input v-model="filters.requestDateEnd" type="date" />
-        </div>
-        <div class="field">
-          <label>결재 일자 (시작)</label>
-          <input v-model="filters.approvalDateStart" type="date" />
-        </div>
-        <div class="field">
-          <label>결재 일자 (종료)</label>
-          <input v-model="filters.approvalDateEnd" type="date" />
+          <label>결재 일자</label>
+          <div class="date-inputs">
+            <input v-model="filters.approvalDateStart" type="date" placeholder="시작일" />
+            <span class="date-separator">~</span>
+            <input v-model="filters.approvalDateEnd" type="date" placeholder="종료일" />
+          </div>
         </div>
       </div>
       <div class="row">
@@ -84,8 +84,26 @@ defineProps({
 .row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 20px;
   margin-bottom: 10px;
+}
+
+.row:nth-child(2) {
+  grid-template-columns: 1fr 1fr;
+}
+
+.date-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 5px;
+  align-items: center;
+}
+
+.date-separator {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
 }
 
 .row:last-child {
@@ -125,5 +143,6 @@ defineProps({
 .field select:focus {
   outline: none;
   border-color: #007bff;
+  box-shadow: none;
 }
 </style> 

@@ -39,7 +39,7 @@ const row1 = [
 ]
 
 const row2 = [
-  { label: '연락처', key: 'phone', placeholder: '예: 010-1234-5678' },
+  { label: '연락처', key: 'phone', placeholder: '예: 01012345678 / -는 제외' },
   { label: '이메일', key: 'email', placeholder: '예: hong@email.com' },
   { label: '입사일 (시작)', key: 'hireDateFrom', type: 'date' },
   { label: '입사일 (종료)', key: 'hireDateTo', type: 'date' }
@@ -95,6 +95,12 @@ const row3 = [
   box-sizing: border-box;
   min-width: 0;
 }
+
+.field input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .field select {
   padding: 4px 8px;
   font-size: 13px;
@@ -114,5 +120,10 @@ const row3 = [
   background-position: right 8px center;
   background-size: 16px;
   padding-right: 32px;
+}
+
+.field select:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 </style> 

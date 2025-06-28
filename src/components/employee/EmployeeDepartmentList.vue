@@ -397,6 +397,16 @@ watch(() => departmentStore.selectedDepartmentId, (newId) => {
   border-radius: 4px 0 0 4px;
 }
 
+/* Focus outline 제거 */
+.employee-card:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.employee-card:active {
+  background-color: #D5E0D0;
+}
+
 /* 반응형 스타일 */
 @media (max-width: 768px) {
   .employee-dept-list-outer {
