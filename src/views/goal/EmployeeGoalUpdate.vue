@@ -37,6 +37,7 @@
         >
           <input
             type="number"
+            min="0"
             :value="getGoalValue(item.key, month)"
             @input="updateGoalValue(item.key, month, $event.target.value)"
             :disabled="isInputDisabled(month)"
@@ -45,7 +46,7 @@
         </td>
 
         <!-- 총합 -->
-        <td :class="{ 'under-total': isUnderTotal(item) }">
+        <td :class="{ 'under-total': isUnderTotal(item) || isUnderAverage(item) }">
           {{
             ['rentalProductCount', 'newCustomerCount', 'totalRentalAmount'].includes(item.key)
               ? getTotal(item.key)
@@ -54,7 +55,7 @@
         </td>
 
         <!-- 평균 -->
-        <td :class="{ 'under-total': isUnderAverage(item) }">
+        <td :class="{ 'under-total': isUnderTotal(item) || isUnderAverage(item) }">
           {{
             item.key === 'rentalRetentionCount'
               ? getRatio(item.key, item.pairKey).toFixed(1) + '%'
@@ -123,7 +124,6 @@ const targetYear = computed(() => route.params.gotTargetYear);
 const level = ref(null);
 const existDefaultGoal = ref(false);
 const goalData = ref(null);
-const today = ref(new Date());
 
 const items = [
   { label: '렌탈 상품 수', key: 'rentalProductCount' },
@@ -302,7 +302,24 @@ const isUnderTotal = (item) => {
 };
 
 const isUnderAverage = (item) => {
-  return isUnderTotal(item); // 평균 강조 조건도 동일 기준 사용
+  if (!standards.value) return false;
+
+  if (item.key === 'rentalRetentionCount') {
+    return getRatio(item.key, item.pairKey) < standards.value[item.standardKey];
+  }
+
+  if (item.key === 'customerFeedbackScore') {
+    return getFeedbackScoreAverage() < (standards.value.customerFeedbackScore / 10);
+  }
+
+  // 일반 항목 평균 기준: 연간 기준 / 12
+  const monthlyAvg = standards.value[item.key] != null
+    ? standards.value[item.key] / 12
+    : null;
+
+  const actualAvg = getTotal(item.key) / 12;
+
+  return monthlyAvg != null && actualAvg < monthlyAvg;
 };
 
 function getFeedbackScoreAverage() {
