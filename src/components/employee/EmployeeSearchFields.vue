@@ -11,9 +11,14 @@
       </div>
     </div>
     <div class="row" v-if="expanded">
-      <div class="field" v-for="(item, index) in row2" :key="item.key">
+      <div class="field" v-for="(item, index) in row2" :key="item.key" :class="{ 'date-range-field': item.type === 'date-range' }">
         <label :for="item.key">{{ item.label }}</label>
-        <input v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
+        <div v-if="item.type === 'date-range'" class="date-inputs date-range">
+          <input v-model="filters.hireDateFrom" type="date" placeholder="시작일" />
+          <span class="date-separator">~</span>
+          <input v-model="filters.hireDateTo" type="date" placeholder="종료일" />
+        </div>
+        <input v-else v-model="filters[item.key]" :placeholder="item.placeholder" :type="item.type || 'text'" />
       </div>
     </div>
     <div class="row" v-if="expanded">
@@ -41,8 +46,7 @@ const row1 = [
 const row2 = [
   { label: '연락처', key: 'phone', placeholder: '예: 01012345678 / -는 제외' },
   { label: '이메일', key: 'email', placeholder: '예: hong@email.com' },
-  { label: '입사일 (시작)', key: 'hireDateFrom', type: 'date' },
-  { label: '입사일 (종료)', key: 'hireDateTo', type: 'date' }
+  { label: '입사일', key: 'hireDate', type: 'date-range' }
 ]
 
 const row3 = [
@@ -58,7 +62,7 @@ const row3 = [
 }
 .row {
   display: grid;
-  gap: 12px;
+  gap: 20px;
   margin-bottom: 10px;
 }
 .row:nth-child(1) {
@@ -68,7 +72,7 @@ const row3 = [
   grid-template-columns: repeat(4, 1fr);
 }
 .row:nth-child(3) {
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 .field {
   display: flex;
@@ -125,5 +129,27 @@ const row3 = [
 .field select:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.date-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.date-separator {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
+}
+
+.date-range {
+  grid-column: span 2;
+}
+
+.date-range-field {
+  grid-column: span 2;
 }
 </style> 
