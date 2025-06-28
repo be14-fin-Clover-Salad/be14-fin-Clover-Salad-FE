@@ -40,16 +40,16 @@ const isSelected = computed(() => departmentStore.selectedDepartmentId === props
 const isOpen = computed(() => props.openedPath && props.openedPath.includes(props.node.id))
 
 const folderIconSrc = computed(() => {
-  if (!isOpen.value) return '/defaultFolder.svg'
+  if (!isOpen.value) return '/close.svg'
   const idx = props.openedPath ? props.openedPath.indexOf(props.node.id) : -1
   if (
     props.openedPath &&
     idx === props.openedPath.length - 1 &&
     !hasChildren.value
   ) {
-    return '/openedFolder.svg'
+    return '/open.svg'
   }
-  return '/defaultFolder.svg'
+  return '/close.svg'
 })
 
 function handleClick(e) {

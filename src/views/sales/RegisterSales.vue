@@ -26,13 +26,18 @@
           <div class="field">
             <label>부서명 <span class="required">*</span></label>
             <div class="input-container">
-              <input 
+              <select 
                 v-model="registerForm.department" 
-                type="text" 
-                placeholder="예: 영업부"
                 required
                 :class="{ 'error': errors.department }"
-              />
+              >
+                <option value="">-</option>
+                <option value="영업1팀">영업1팀</option>
+                <option value="영업2팀">영업2팀</option>
+                <option value="영업3팀">영업3팀</option>
+                <option value="영업4팀">영업4팀</option>
+                <option value="영업5팀">영업5팀</option>
+              </select>
               <span v-if="errors.department" class="error-message">{{ errors.department }}</span>
             </div>
           </div>
@@ -198,8 +203,8 @@ function validateForm() {
     errors.value.salesDate = '매출 날짜를 입력해주세요.'
   }
   
-  if (!registerForm.department.trim()) {
-    errors.value.department = '부서명을 입력해주세요.'
+  if (!registerForm.department || registerForm.department.trim() === '') {
+    errors.value.department = '부서를 선택해주세요.'
   }
   
   if (!registerForm.employeeName.trim()) {
@@ -403,7 +408,8 @@ function handleOverlayClick() {
   flex-shrink: 0;
 }
 
-.field input {
+.field input,
+.field select {
   padding: 6px 10px;
   font-size: 14px;
   border: 1px solid #ccc;
@@ -414,17 +420,20 @@ function handleOverlayClick() {
   box-sizing: border-box;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   outline: none;
   border-color: #28a745;
   box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1);
 }
 
-.field input.error {
+.field input.error,
+.field select.error {
   border-color: #dc3545;
 }
 
-.field input.error:focus {
+.field input.error:focus,
+.field select.error:focus {
   border-color: #dc3545;
   box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
 }
