@@ -25,15 +25,15 @@ defineProps({
 })
 
 const allFields = [
-  { label: '상품 코드', key: 'productCode', placeholder: 'P0001' },
-  { label: '카테고리', key: 'category', placeholder: '청소기' },
-  { label: '상품명', key: 'name', placeholder: '청소기 1호' },
-  { label: '모델명', key: 'serialNumber', placeholder: 'SN20240001' },
-  { label: '제조사', key: 'company', placeholder: '삼성' },
-  { label: '원가(시작)', key: 'originCostStart', placeholder: '150000', type: 'number' },
-  { label: '원가(끝)', key: 'originCostEnd', placeholder: '200000', type: 'number' },
-  { label: '월 렌탈료(시작)', key: 'rentalCostStart', placeholder: '13000', type: 'number' },
-  { label: '월 렌탈료(끝)', key: 'rentalCostEnd', placeholder: '18000', type: 'number' }
+  { label: '상품 코드', key: 'productCode', placeholder: '상품 코드' },
+  { label: '카테고리', key: 'category', placeholder: '카테고리' },
+  { label: '상품명', key: 'name', placeholder: '상품명' },
+  { label: '모델명', key: 'serialNumber', placeholder: '모델명' },
+  { label: '제조사', key: 'company', placeholder: '제조사' },
+  { label: '원가(시작)', key: 'originCostStart', placeholder: '원가(시작)', type: 'number' },
+  { label: '원가(끝)', key: 'originCostEnd', placeholder: '원가(끝)', type: 'number' },
+  { label: '월 렌탈료(시작)', key: 'rentalCostStart', placeholder: '월 렌탈료(시작)', type: 'number' },
+  { label: '월 렌탈료(끝)', key: 'rentalCostEnd', placeholder: '월 렌탈료(끝)', type: 'number' }
 ]
 
 // 첫 번째 행 (5개 필드)
