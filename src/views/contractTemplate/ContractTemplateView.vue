@@ -18,7 +18,7 @@
     </div>
 
     <!-- 버튼 영역 -->
-    <div class="action-buttons">
+    <div class="action-buttons" v-if="isAdmin">
       <button class="register-btn" @click="openCreateModal">등록</button>
       <button class="edit-btn" :disabled="!selectedTemplate" @click="handleEdit">수정</button>
       <button class="delete-btn" :disabled="!selectedTemplate" @click="handleDelete">삭제</button>
