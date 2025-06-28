@@ -37,6 +37,28 @@ export const useDepartmentStore = defineStore('department', {
       }
 
       return findParent(this.departmentTree, deptId)
+    },
+
+    // 특정 부서가 하위 부서를 가지고 있는지 확인하는 함수
+    hasChildren(deptId) {
+      if (!this.departmentTree || !deptId) return false
+      
+      const findNode = (nodes, targetId) => {
+        for (const node of nodes) {
+          if (node.id === targetId) {
+            return node
+          }
+          
+          if (node.children && node.children.length > 0) {
+            const result = findNode(node.children, targetId)
+            if (result) return result
+          }
+        }
+        return null
+      }
+
+      const node = findNode(this.departmentTree, deptId)
+      return node && node.children && node.children.length > 0
     }
   }
 }) 

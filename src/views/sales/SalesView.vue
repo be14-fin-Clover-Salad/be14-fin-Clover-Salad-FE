@@ -220,7 +220,7 @@ const columns = [
   { label: '매출 날짜', key: 'salesDate' },
   { label: '부서', key: 'department' },
   { label: '직원명', key: 'employeeName' },
-  { label: '매출 금액', key: 'amount' },
+  { label: '매출 금액(원)', key: 'amount' },
   { label: '계약 코드', key: 'contractCode' }
 ]
 

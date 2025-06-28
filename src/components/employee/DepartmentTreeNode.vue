@@ -56,11 +56,7 @@ function handleClick(e) {
   e.stopPropagation()
   props.onToggle(props.node)
   
-  if (!hasChildren.value) {
-    departmentStore.setSelectedDepartment(props.node.id)
-  } else {
-    departmentStore.setSelectedDepartment(null)
-  }
+  departmentStore.setSelectedDepartment(props.node.id)
 }
 </script>
 
