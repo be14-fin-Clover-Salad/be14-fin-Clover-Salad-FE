@@ -7,8 +7,8 @@
         <span>년</span>
       </div>
       <div class="section-actions">
-        <button class="button primary" @click="fillDummyData">더미 데이터 입력</button>
-        <button class="button primary" @click="onClickRegister" :disabled="!existDefaultGoal">등록</button>
+        <button class="button primary" @click="fillDummyData" hidden>더미 데이터 입력</button>
+        <button class="button primary" @click="onClickRegister" :disabled="!existDefaultGoal || existGoal">등록</button>
         <button class="button danger" @click="showGoalRegisterCancelModal = true">취소</button>
       </div>
     </div>
@@ -118,6 +118,9 @@ const authStore = useAuthStore();
 const targetYear = ref(new Date().getFullYear());
 const level = ref(null);
 const existDefaultGoal = ref(false);
+const existGoal = ref(false);
+const employeeCode = ref(null);
+const userId = ref(authStore.userInfo?.id);
 
 const items = [
   { label: '렌탈 상품 수', key: 'rentalProductCount' },
@@ -154,20 +157,9 @@ function initGoals() {
 
 initGoals();
 
-console.log('goals: ', goals);
-console.log('goals[items[0].key]: ', goals[items[0].key]);
-
 const visibleItems = computed(() => {
   return items.filter(item => !item.hidden && goals[item.key] != null);
 });
-
-console.log('goals[visibleItems.value[0].key]: ', goals[visibleItems.value[0].key]);
-console.log('goals["rentalProductCount"]: ', goals['rentalProductCount']);
-console.log('goals[items[0].key][1]: ', goals[items[0].key][1]);
-console.log('visibleItems.value:', visibleItems.value)
-console.log('visibleItems.value[0]:', visibleItems.value[0])
-console.log('visibleItems.value[0].key:', visibleItems.value[0].key)
-console.log('visibleItems.value.length:', visibleItems.value.length)
 
 const standards = ref({
   rentalProductCount: 0,     // 총 연간 렌탈 상품 수
@@ -179,11 +171,20 @@ const standards = ref({
 
 watch(targetYear, async (newYear) => {
   if (!newYear || String(newYear).length !== 4) return;
+
+  existGoal.value = false;
+
+  const employeeResponse = await api.get(`/employee/detail?employeeId=${userId.value}`);
+  employeeCode.value = Number(employeeResponse.data.code) || undefined;
+  const goalResponse = await api.get(`/api/goal/change/${employeeCode.value}/${newYear}`)
+  if (goalResponse.status === 200) {
+    alert("이미 실적 목표가 있는 해입니다.")
+    existGoal.value = true;
+  }
+
   try {
     level.value = authStore.userInfo?.levelLabel;
-    console.log('현재 로그인한 사원의 직급: ', level.value);
     const response = await api.get(`/api/goal/default/${newYear}/${level.value}`);
-    console.log('response.data: ', response.data);
     standards.value = {
       rentalProductCount: 0,
       rentalRetentionRate: 0,
@@ -192,7 +193,6 @@ watch(targetYear, async (newYear) => {
       customerFeedbackScore: 0,
       ...response.data
     };
-    console.log('standards.value: ', standards.value);
     if (!response.data) {
       console.log('기준 목표 없음');
       existDefaultGoal.value = false;
@@ -201,12 +201,8 @@ watch(targetYear, async (newYear) => {
     }
   } catch (error) {
     console.error('기준 목표 불러오기 실패: ', error);
-  } finally {
-    console.log('goals:', goals)
-    console.log('standards:', standards.value)
-    console.log('visibleItems:', visibleItems.value)
   }
-});
+}, {immediate: true});
 
 const getTotal = (key) => {
   if (!key) return 0;
@@ -369,7 +365,6 @@ async function registerGoal() {
 
       for (const item of items) {
         if (item.hidden) continue;
-
         let value = goals[item.key][month];
 
         // 고객 만족도 점수는 문자열로 변환하여 *10 처리
@@ -378,25 +373,19 @@ async function registerGoal() {
         } else {
           value = String(Number(value) || 0);
         }
-
         goal[item.key] = value;
       }
-
       goalList.push(goal);
     }
 
-    console.log('전송 데이터:', goalList);
-
     const token = useAuthStore().accessToken;
-    console.log("보낼 토큰:", token);
 
-    const response = await api.post('/api/goal/register', goalList, {
+    await api.post('/api/goal/register', goalList, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       }
     );
-    console.log('등록 완료:', response);
   } catch (error) {
     console.error('실적 목표 등록 실패:', error);
   } finally {
@@ -503,7 +492,9 @@ section {
   color: #fbe9e7;
 }
 
-.section-actions .button:disabled {
+.section-actions .button:disabled,
+.section-actions .button:disabled:hover {
+  background-color: #aaa;
   cursor: not-allowed;
 }
 
