@@ -62,7 +62,8 @@
           </ul>
         </div>
 
-        <div class="add-target-wrap">
+        <!-- ✅ 조건 추가: 작성자 또는 관리자만 대상 추가 가능 -->
+        <div class="add-target-wrap" v-if="isWriterOrAdmin">
           <button class="add-target-btn" @click="openAddTargetModal">+ 대상 추가</button>
         </div>
       </div>
@@ -110,6 +111,10 @@ const isAdmin = computed(() =>
 )
 
 const canEditOrDelete = computed(() =>
+  isAdmin.value || Number(notice.value?.writerId) === loginUserId.value
+)
+
+const isWriterOrAdmin = computed(() =>
   isAdmin.value || Number(notice.value?.writerId) === loginUserId.value
 )
 

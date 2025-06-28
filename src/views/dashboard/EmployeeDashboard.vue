@@ -238,7 +238,7 @@ async function fetchGoal() {
     sum.rental_sales_goal += g.totalRentalAmount || 0
     sum.new_customer_goal += g.newCustomerCount || 0
     if (g.totalRentalCount) rateArr.push((g.rentalRetentionCount / g.totalRentalCount) * 100)
-    if (g.customerFeedbackCount) satArr.push(g.customerFeedbackScore / g.customerFeedbackCount)
+    if (g.customerFeedbackCount) satArr.push(g.customerFeedbackScore / 10 / g.customerFeedbackCount)
   })
   goal.value = {
     rental_product_goal: sum.rental_product_goal,
@@ -326,7 +326,7 @@ const retentionPercentNum = computed(() => parseFloat(retentionPercent.value) / 
 const newCustomerPercent = computed(() => goal.value.new_customer_goal ? kpi.value.new_customer_count / goal.value.new_customer_goal : 0)
 const feedbackScore = computed(() => {
   const s = kpi.value.customer_feedback_score, c = kpi.value.customer_feedback_count
-  return c ? (s / c).toFixed(2) : '0.00'
+  return c ? (s / c / 10).toFixed(2) : '0.00'
 })
 const feedbackScoreNum = computed(() => parseFloat(feedbackScore.value))
 const feedbackMax = 5
@@ -350,7 +350,7 @@ const retentionGaugeOption = computed(() => {
   return gaugeOption(retentionPercentNum.value, gf, '#5e72e4')
 })
 const customerGaugeOption = computed(() => gaugeOption(newCustomerPercent.value, 1, '#11cdef'))
-const feedbackGaugeOption = computed(() => gaugeOption(feedbackScoreNum.value, feedbackMax, '#fb6340'))
+const feedbackGaugeOption = computed(() => gaugeOption(feedbackScoreNum.value, goal.value.satisfaction_goal, '#fb6340'))
 const salesGaugeOption = computed(() => gaugeOption(salesPercent.value, 1, '#11cdef'))
 
 const mainTitle = computed(() => {
@@ -536,7 +536,7 @@ const compareOption = computed(() => {
 }
 
 .title-block h4 {
-  margin: ;
+  margin: 5px;
   font-size: 1.25rem;
   font-weight: 600;
 }

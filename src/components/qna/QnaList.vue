@@ -1,6 +1,6 @@
 <template>
   <div class="qna-container">
-    <div class="top-area" v-if="filteredQnas.length">
+    <div class="top-area">
       <div class="filter-area">
         <select v-model="selectedStatus">
           <option value="">모든 상태</option>
@@ -60,7 +60,7 @@
       </table>
     </div>
 
-    <div class="bottom-actions" v-if="filteredQnas.length">
+    <div class="bottom-actions">
       <div class="pagination">
         <button 
           @click="changePage(currentPage - 10)"
@@ -86,14 +86,9 @@
         </button>
       </div>
     </div>
-    
-    <div class="bottom-actions" v-else>
-      <div class="qna-actions" v-if="!isAdmin">
-        <button class="ask-btn" @click="goToCreatePage">문의하기</button>
-      </div>
-    </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, watch } from 'vue'
@@ -150,26 +145,29 @@ const filteredQnas = computed(() => {
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredQnas.value.length / pageSize)
-})
+  return Math.max(1, Math.ceil(filteredQnas.value.length / pageSize));
+});
 
 const visiblePageNumbers = computed(() => {
-  const startPage = Math.floor(currentPage.value / 10) * 10 + 1
-  const endPage = Math.min(startPage + 9, totalPages.value)
-  const pages = []
-  
+  const total = totalPages.value;
+  const startPage = Math.floor(currentPage.value / 10) * 10 + 1;
+  const endPage = Math.min(startPage + 9, total);
+  const pages = [];
+
   for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
+    pages.push(i);
   }
-  
-  return pages
-})
+
+  if (pages.length === 0) pages.push(1);
+
+  return pages;
+});
 
 const changePage = (page) => {
   if (page >= 0 && page < totalPages.value) {
-    currentPage.value = page
+    currentPage.value = page;
   }
-}
+};
 
 const calcQnaNumber = (index) => {
   return filteredQnas.value.length - ((currentPage.value) * pageSize + index)
@@ -409,8 +407,9 @@ const formatTitle = (title) => title.replace(/\[(.*?)\]/g, '<strong>[$1]</strong
   &:disabled {
     background-color: transparent;
     color: #adb5bd;
-    cursor: not-allowed;
+    cursor: default;
   }
+  
 }
 
 .bottom-actions {
