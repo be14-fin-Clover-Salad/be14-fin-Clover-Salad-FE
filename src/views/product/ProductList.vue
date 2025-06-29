@@ -9,10 +9,6 @@
     >
       <template #fields="{ filters, expanded }">
         <ProductSearchFields :filters="filters" :expanded="expanded"/>
-        <!-- 기존 버전 -->
-    <!-- <SearchFilterShell :initial="searchForm" :showToggle="false" @search="handleSearch" @reset="handleReset">
-      <template #fields="{ filters }">
-        <ProductSearchFields :filters="filters"/> -->
       </template>
     </SearchFilterShell>
     <div class="action-buttons">
@@ -44,10 +40,10 @@
     name: '',
     serialNumber: '',
     company: '',
-    originCostStart: '',
-    originCostEnd: '',
-    rentalCostStart: '',
-    rentalCostEnd: ''
+    minOriginCost: '',
+    maxOriginCost: '',
+    minRentalCost: '',
+    maxRentalCost: ''
   });
 
   const router = useRouter()
