@@ -82,7 +82,6 @@ onMounted(async () => {
 
 async function handleSearch(data) {
   try {
-    console.log(data)
     isLoading.value = true;
     const response = await api.get('/api/goal/employee', {
       params: data
@@ -132,13 +131,9 @@ function handleRowClick(goal) {
 }
 
 function handleRowDblClick(goal) {
-  console.log(goal);
   const targetYear = ref(Math.trunc(unformatDate(goal.targetDate) / 100));
   const selectedEmployeeCode = ref(employeeCode.value);
-  console.log(targetYear.value, selectedEmployeeCode.value);
   if (targetYear.value && selectedEmployeeCode.value) {
-    console.log('selectedEmployeeCode', selectedEmployeeCode.value);
-    console.log('targetYear', targetYear.value);
     router.push(`/goal/detail/${selectedEmployeeCode.value}/${targetYear.value}`);
   } else {
     console.warn('선택된 실적 목표가 없습니다.');
